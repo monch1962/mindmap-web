@@ -18,6 +18,12 @@ export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: Mi
         collapsed: node.collapsed,
         color: node.style?.color,
         fontSize: node.style?.fontSize,
+        backgroundColor: node.style?.backgroundColor,
+        bold: node.style?.bold,
+        italic: node.style?.italic,
+        fontName: node.style?.fontName,
+        icon: node.icon,
+        link: node.link,
         metadata: node.metadata,
       },
     });
@@ -30,6 +36,13 @@ export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: Mi
         target: node.id,
         type: 'smoothstep',
         animated: false,
+        style: node.edgeStyle?.color || node.edgeStyle?.width || node.edgeStyle?.style
+          ? {
+              stroke: node.edgeStyle.color,
+              strokeWidth: node.edgeStyle.width,
+              strokeDasharray: node.edgeStyle?.style === 'linear' ? '0' : undefined,
+            }
+          : undefined,
       });
     }
 
@@ -73,6 +86,9 @@ export function flowToTree(nodes: MindMapNode[], edges: MindMapEdge[]): MindMapT
     const node = nodeMap.get(nodeId)!;
     const childIds = childrenMap.get(nodeId) || [];
 
+    // Find edge to this node to get edge style
+    const edgeToThisNode = edges.find((e) => e.target === nodeId);
+
     return {
       id: node.id,
       content: node.data.label,
@@ -81,8 +97,20 @@ export function flowToTree(nodes: MindMapNode[], edges: MindMapEdge[]): MindMapT
       style: {
         color: node.data.color,
         fontSize: node.data.fontSize,
+        backgroundColor: node.data.backgroundColor,
+        bold: node.data.bold,
+        italic: node.data.italic,
+        fontName: node.data.fontName,
       },
       metadata: node.data.metadata,
+      icon: node.data.icon,
+      link: node.data.link,
+      edgeStyle: edgeToThisNode?.style
+        ? {
+            color: edgeToThisNode.style.stroke as string,
+            width: edgeToThisNode.style.strokeWidth as number,
+          }
+        : undefined,
       children: childIds.map(buildTree),
     };
   }

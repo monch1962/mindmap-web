@@ -32,6 +32,12 @@ export interface MindMapNodeData {
   collapsed?: boolean;
   color?: string;
   fontSize?: number;
+  backgroundColor?: string;
+  bold?: boolean;
+  italic?: boolean;
+  fontName?: string;
+  icon?: string;
+  link?: string;
   metadata?: NodeMetadata;
 }
 
@@ -57,8 +63,22 @@ export interface MindMapTree {
   style?: {
     color?: string;
     fontSize?: number;
+    backgroundColor?: string;
+    bold?: boolean;
+    italic?: boolean;
+    fontName?: string;
   };
   metadata?: NodeMetadata;
+  // FreeMind-specific attributes
+  link?: string;
+  created?: number; // timestamp
+  modified?: number; // timestamp
+  icon?: string; // FreeMind icon type
+  edgeStyle?: {
+    color?: string;
+    width?: number;
+    style?: 'bezier' | 'linear' | 'sharp_linear' | 'sharp_bezier';
+  };
 }
 
 /**

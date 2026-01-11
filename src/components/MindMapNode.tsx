@@ -6,6 +6,9 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
   const defaultStyle = {
     fontSize: data.fontSize || 14,
     color: data.color || '#333',
+    fontWeight: data.bold ? 'bold' as const : 'normal' as const,
+    fontStyle: data.italic ? 'italic' as const : 'normal' as const,
+    fontFamily: data.fontName || 'inherit',
   };
 
   const hasMetadata = data.metadata && (
@@ -16,6 +19,28 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
     (data.metadata.attachments && data.metadata.attachments.length > 0)
   );
 
+  const hasLink = data.link || data.metadata?.url;
+
+  // FreeMind icon mapping
+  const iconMap: Record<string, string> = {
+    'yes': '✅',
+    'no': '❌',
+    'help': '❓',
+    'idea': '💡',
+    'important': '⭐',
+    'wizard': '🧙',
+    'time': '⏰',
+    'warning': '⚠️',
+    'flag': '🚩',
+    'clanbomber': '💣',
+    'desktopnew': '🖥️',
+    'kde': '🐧',
+    'gnome': '🐭',
+    'linux': '🐧',
+    'button_ok': '🆗',
+    'button_cancel': '🚫',
+  };
+
   return (
     <div
       className={`mindmap-node ${selected ? 'selected' : ''}`}
@@ -23,7 +48,7 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         padding: '12px 16px',
         borderRadius: '8px',
         border: '2px solid ' + (selected ? '#3b82f6' : '#e5e7eb'),
-        background: 'white',
+        background: data.backgroundColor || 'white',
         minWidth: '100px',
         maxWidth: '300px',
         boxShadow: selected ? '0 4px 12px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
@@ -37,6 +62,21 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         style={{ background: '#3b82f6', width: 8, height: 8 }}
       />
 
+      {/* Icon (if present) */}
+      {data.icon && iconMap[data.icon] && (
+        <div
+          style={{
+            position: 'absolute',
+            left: -10,
+            top: -10,
+            fontSize: '16px',
+          }}
+          title={`Icon: ${data.icon}`}
+        >
+          {iconMap[data.icon]}
+        </div>
+      )}
+
       {/* Node content */}
       <div
         contentEditable
@@ -44,15 +84,17 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         style={{
           ...defaultStyle,
           outline: 'none',
-          cursor: 'text',
+          cursor: hasLink ? 'pointer' : 'text',
+          textDecoration: hasLink ? 'underline' : 'none',
         }}
         className="node-content"
+        title={hasLink ? data.link || data.metadata?.url : undefined}
       >
         {data.label}
       </div>
 
       {/* Metadata indicators */}
-      {hasMetadata && (
+      {(hasMetadata || data.link || data.icon) && (
         <div
           style={{
             position: 'absolute',
@@ -60,9 +102,11 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
             right: -8,
             display: 'flex',
             gap: '4px',
+            flexWrap: 'wrap',
+            maxWidth: '80px',
           }}
         >
-          {data.metadata?.url && (
+          {data.link && (
             <div
               style={{
                 background: '#f59e0b',
@@ -77,7 +121,27 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
                 fontWeight: 'bold',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
-              title="Has URL"
+              title={`Link: ${data.link}`}
+            >
+              🔗
+            </div>
+          )}
+          {data.metadata?.url && !data.link && (
+            <div
+              style={{
+                background: '#f59e0b',
+                color: 'white',
+                borderRadius: '50%',
+                width: 18,
+                height: 18,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }}
+              title="Has URL in metadata"
             >
               🔗
             </div>
