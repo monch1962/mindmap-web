@@ -53,6 +53,7 @@ export interface MindMapNodeData {
   cloud?: {
     color?: string;
   };
+  lastModified?: number;
 }
 
 /**

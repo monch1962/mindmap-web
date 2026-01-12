@@ -21,6 +21,8 @@ import CrossLinkEdge from './CrossLinkEdge';
 import SearchPanel, { type SearchOptions } from './SearchPanel';
 import SaveHistoryPanel from './SaveHistoryPanel';
 import ConflictResolutionModal from './ConflictResolutionModal';
+import HistoryPanel from './HistoryPanel';
+import StatisticsPanel from './StatisticsPanel';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
@@ -64,6 +66,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
   const [showSaveHistory, setShowSaveHistory] = useState(false);
   const [conflictSlot, setConflictSlot] = useState<any>(null);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showStatistics, setShowStatistics] = useState(false);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -77,7 +81,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   });
 
   // Undo/Redo hook
-  const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo } = useUndoRedo();
+  const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
 
   const handleUndo = () => {
     if (!canUndo) return;
@@ -101,51 +105,85 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
   // Search handlers
   const handleSearch = (query: string, options: SearchOptions) => {
-    if (!query.trim()) {
+    setSearchOptions(options);
+
+    // Get unique icons and clouds from nodes
+    const uniqueIcons = Array.from(new Set(nodes.map(n => n.data.icon).filter(Boolean)));
+    const uniqueClouds = Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter(Boolean)));
+
+    // If no query and no filters, clear results
+    if (!query.trim() && !options.filterIcon && !options.filterCloud && !options.filterDate) {
       setSearchResults([]);
       setSearchQuery('');
-      setSearchOptions(options);
       setCurrentResultIndex(0);
       return;
     }
 
-    setSearchOptions(options);
+    const now = Date.now();
+    const timeLimits = {
+      hour: 60 * 60 * 1000,
+      day: 24 * 60 * 60 * 1000,
+      week: 7 * 24 * 60 * 60 * 1000,
+      month: 30 * 24 * 60 * 60 * 1000,
+    };
 
     const matchingNodeIds = nodes.filter((node) => {
-      const label = node.data.label || '';
-      const notes = node.data.metadata?.notes || '';
-      const searchText = options.searchInNotes
-        ? `${label} ${notes}`
-        : label;
+      // Text search
+      if (query.trim()) {
+        const label = node.data.label || '';
+        const notes = node.data.metadata?.notes || '';
+        const searchText = options.searchInNotes
+          ? `${label} ${notes}`
+          : label;
 
-      let searchQuery = query;
-      let searchTarget = searchText;
+        let searchQuery = query;
+        let searchTarget = searchText;
 
-      // Case sensitivity
-      if (!options.caseSensitive) {
-        searchQuery = searchQuery.toLowerCase();
-        searchTarget = searchTarget.toLowerCase();
-      }
+        // Case sensitivity
+        if (!options.caseSensitive) {
+          searchQuery = searchQuery.toLowerCase();
+          searchTarget = searchTarget.toLowerCase();
+        }
 
-      // Regex mode
-      if (options.useRegex) {
-        try {
-          const regex = new RegExp(searchQuery, options.caseSensitive ? 'g' : 'gi');
-          return regex.test(searchTarget);
-        } catch {
-          // Invalid regex, fall back to regular search
-          return searchTarget.includes(searchQuery);
+        // Regex mode
+        if (options.useRegex) {
+          try {
+            const regex = new RegExp(searchQuery, options.caseSensitive ? 'g' : 'gi');
+            if (!regex.test(searchTarget)) return false;
+          } catch {
+            // Invalid regex, fall back to regular search
+            if (!searchTarget.includes(searchQuery)) return false;
+          }
+        } else if (options.wholeWord) {
+          // Whole word mode
+          const words = searchTarget.split(/\s+/);
+          if (!words.some((word) => word === searchQuery)) return false;
+        } else {
+          // Default: contains search
+          if (!searchTarget.includes(searchQuery)) return false;
         }
       }
 
-      // Whole word mode
-      if (options.wholeWord) {
-        const words = searchTarget.split(/\s+/);
-        return words.some((word) => word === searchQuery);
+      // Icon filter
+      if (options.filterIcon && node.data.icon !== options.filterIcon) {
+        return false;
       }
 
-      // Default: contains search
-      return searchTarget.includes(searchQuery);
+      // Cloud filter
+      if (options.filterCloud && node.data.cloud?.color !== options.filterCloud) {
+        return false;
+      }
+
+      // Date filter - use creation timestamp if available (stored in node data)
+      if (options.filterDate) {
+        const nodeTime = (node.data as any).lastModified || now;
+        const timeDiff = now - nodeTime;
+        if (timeDiff > timeLimits[options.filterDate]) {
+          return false;
+        }
+      }
+
+      return true;
     }).map((node) => node.id);
 
     setSearchResults(matchingNodeIds);
@@ -184,6 +222,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             data: {
               ...node.data,
               metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+              lastModified: Date.now(),
             },
           };
         }
@@ -203,6 +242,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             data: {
               ...node.data,
               icon: icon || undefined,
+              lastModified: Date.now(),
             },
           };
         }
@@ -222,6 +262,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             data: {
               ...node.data,
               cloud: cloud || undefined,
+              lastModified: Date.now(),
             },
           };
         }
@@ -410,6 +451,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         if (showSaveHistory) {
           setShowSaveHistory(false);
         }
+        if (showHistoryPanel) {
+          setShowHistoryPanel(false);
+        }
+        if (showStatistics) {
+          setShowStatistics(false);
+        }
         if (crossLinkMode) {
           setCrossLinkMode(false);
           setCrossLinkSource(null);
@@ -427,15 +474,30 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       // Ctrl H - Show save history
       if (event.key === 'h' || event.key === 'H') {
         if (event.ctrlKey || event.metaKey) {
+          if (event.shiftKey) {
+            // Ctrl Shift H - Show undo/redo history
+            event.preventDefault();
+            setShowHistoryPanel(!showHistoryPanel);
+          } else {
+            // Ctrl H - Show save history
+            event.preventDefault();
+            setShowSaveHistory(!showSaveHistory);
+          }
+        }
+      }
+
+      // Ctrl I - Show statistics
+      if (event.key === 'i' || event.key === 'I') {
+        if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
-          setShowSaveHistory(!showSaveHistory);
+          setShowStatistics(!showStatistics);
         }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, crossLinkMode, searchResults, currentResultIndex, saveNow]);
+  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -448,7 +510,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         x: parent.position.x + 250,
         y: parent.position.y + Math.random() * 50,
       },
-      data: { label: 'New Node' },
+      data: { label: 'New Node', lastModified: Date.now() },
     };
 
     setNodes((nds) => [...nds, newNode]);
@@ -479,7 +541,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           x: sibling.position.x,
           y: sibling.position.y + 100,
         },
-        data: { label: 'New Node' },
+        data: { label: 'New Node', lastModified: Date.now() },
       };
       setNodes((nds) => [...nds, newNode]);
       setSelectedNodeId(newNode.id);
@@ -493,7 +555,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         x: sibling.position.x,
         y: sibling.position.y + 100,
       },
-      data: { label: 'New Node' },
+      data: { label: 'New Node', lastModified: Date.now() },
     };
 
     setNodes((nds) => [...nds, newNode]);
@@ -576,6 +638,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       setNodes(conflictSlot.nodes);
       setEdges(conflictSlot.edges);
       setConflictSlot(null);
+    }
+  };
+
+  const handleJumpToHistory = (index: number, fromPast: boolean) => {
+    const state = jumpToHistory(index, fromPast);
+    if (state) {
+      setNodes(state.nodes);
+      setEdges(state.edges);
     }
   };
 
@@ -853,6 +923,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               onPrevious={handlePreviousResult}
               resultCount={searchResults.length}
               currentResult={currentResultIndex}
+              availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter(Boolean)))}
+              availableClouds={Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter(Boolean)))}
             />
           </Panel>
         )}
@@ -897,6 +969,24 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             }}
           >
             ↷
+          </button>
+          <button
+            onClick={() => setShowHistoryPanel(true)}
+            title="History (Ctrl+Shift+H)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: 'pointer',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            🕐
           </button>
           <button
             onClick={() => zoomIn()}
@@ -1016,7 +1106,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             F2 - Edit text<br />
             Space - Toggle collapse<br />
             <strong>Zoom:</strong> Ctrl +/-/0<br />
-            <strong>Notes:</strong> F3 / Ctrl+N
+            <strong>Notes:</strong> F3 / Ctrl+N<br />
+            <strong>Stats:</strong> Ctrl+I
             {selectedNodeId && (
               <button
                 onClick={() => setShowNotesPanel(!showNotesPanel)}
@@ -1034,6 +1125,21 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
                 {showNotesPanel ? 'Hide Notes' : 'Show Notes'}
               </button>
             )}
+            <button
+              onClick={() => setShowStatistics(true)}
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: '#f3f4f6',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              📊 Statistics
+            </button>
           </div>
         </Panel>
 
@@ -1082,6 +1188,29 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           saveSlot={conflictSlot}
           onRestore={handleConflictRestore}
           onDismiss={() => setConflictSlot(null)}
+        />
+      )}
+
+      {/* History Panel */}
+      {showHistoryPanel && (
+        <HistoryPanel
+          history={getFullHistory()}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onJump={handleJumpToHistory}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onClose={() => setShowHistoryPanel(false)}
+        />
+      )}
+
+      {/* Statistics Panel */}
+      {showStatistics && (
+        <StatisticsPanel
+          nodes={nodes}
+          edges={edges}
+          selectedNodeId={selectedNodeId}
+          onClose={() => setShowStatistics(false)}
         />
       )}
     </div>
