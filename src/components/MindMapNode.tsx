@@ -183,6 +183,16 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           ref={contentRef}
           contentEditable={!isRichText}
           suppressContentEditableWarning
+          onInput={(e) => {
+            if (isRichText) return; // RichTextEditor handles its own input
+            const content = e.currentTarget.innerHTML;
+            // Sanitize and dispatch change event
+            const sanitizedContent = isRichText ? content : content; // Don't sanitize plain text yet
+            const event = new CustomEvent('nodeLabelChange', {
+              detail: { nodeId: id, content: sanitizedContent },
+            });
+            window.dispatchEvent(event);
+          }}
           style={{
             ...defaultStyle,
             outline: 'none',
@@ -352,53 +362,66 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
         <div
           style={{
             position: 'absolute',
-            right: -45,
+            right: -50,
             top: '50%',
             transform: 'translateY(-50%)',
             display: 'flex',
             flexDirection: 'column',
             gap: '4px',
+            zIndex: 1000,
           }}
         >
           <button
-            onMouseDown={handleExpandAll}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Expand all clicked for node:', id);
+              handleExpandAll(e);
+            }}
             title="Expand all descendants"
             style={{
               background: '#10b981',
               color: 'white',
               border: 'none',
               borderRadius: '50%',
-              width: '24px',
-              height: '24px',
+              width: '28px',
+              height: '28px',
               cursor: 'pointer',
-              fontSize: '16px',
+              fontSize: '18px',
               fontWeight: 'bold',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              flexShrink: 0,
             }}
+            type="button"
           >
             +
           </button>
           <button
-            onMouseDown={handleCollapseAll}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Collapse all clicked for node:', id);
+              handleCollapseAll(e);
+            }}
             title="Collapse all descendants"
             style={{
               background: '#ef4444',
               color: 'white',
               border: 'none',
               borderRadius: '50%',
-              width: '24px',
-              height: '24px',
+              width: '28px',
+              height: '28px',
               cursor: 'pointer',
-              fontSize: '16px',
+              fontSize: '18px',
               fontWeight: 'bold',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              flexShrink: 0,
             }}
+            type="button"
           >
             -
           </button>
