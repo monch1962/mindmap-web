@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -9,214 +9,244 @@ import ReactFlow, {
   ReactFlowProvider,
   Panel,
   useReactFlow,
-} from 'reactflow';
-import type { Connection, OnConnect, Node, Edge } from 'reactflow';
-import 'reactflow/dist/style.css';
+} from 'reactflow'
+import type { Connection, OnConnect, Node, Edge } from 'reactflow'
+import 'reactflow/dist/style.css'
 
-import MindMapNode from './MindMapNode';
-import MetadataPanel from './MetadataPanel';
-import NotesPanel from './NotesPanel';
-import CloudBackground from './CloudBackground';
-import CrossLinkEdge from './CrossLinkEdge';
-import SearchPanel, { type SearchOptions } from './SearchPanel';
-import SaveHistoryPanel from './SaveHistoryPanel';
-import ConflictResolutionModal from './ConflictResolutionModal';
-import HistoryPanel from './HistoryPanel';
-import StatisticsPanel from './StatisticsPanel';
-import KeyboardShortcutsModal from './KeyboardShortcutsModal';
-import BulkOperationsPanel from './BulkOperationsPanel';
-import MobileToolbar from './MobileToolbar';
-import AIAssistantPanel from './AIAssistantPanel';
-import CommentsPanel from './CommentsPanel';
-import PresenceIndicator from './PresenceIndicator';
-import WebhookIntegrationPanel from './WebhookIntegrationPanel';
-import CalendarExportPanel from './CalendarExportPanel';
-import EmailIntegrationPanel from './EmailIntegrationPanel';
-import PresentationMode from './PresentationMode';
-import ThreeDView from './ThreeDView';
-import TemplatesPanel from './TemplatesPanel';
-import ThemeSettingsPanel from './ThemeSettingsPanel';
-import type { MindMapNodeData, MindMapTree, NodeMetadata, User, Comment } from '../types';
-import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
-import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
-import { parseAITextToMindMap } from '../utils/aiParser';
-import { exportToPDF, exportToPowerPoint, downloadMarkdown, createPresentation } from '../utils/enhancedExports';
-import { useAutoSave } from '../hooks/useAutoSave';
-import { useUndoRedo } from '../hooks/useUndoRedo';
-import { useOfflineSync } from '../hooks/useOfflineSync';
-import { useGestureNavigation } from '../hooks/useGestureNavigation';
-import { initializeTheme, toggleDarkMode, getEffectiveTheme } from '../utils/theme';
+import MindMapNode from './MindMapNode'
+import MetadataPanel from './MetadataPanel'
+import NotesPanel from './NotesPanel'
+import CloudBackground from './CloudBackground'
+import CrossLinkEdge from './CrossLinkEdge'
+import SearchPanel, { type SearchOptions } from './SearchPanel'
+import SaveHistoryPanel from './SaveHistoryPanel'
+import ConflictResolutionModal from './ConflictResolutionModal'
+import HistoryPanel from './HistoryPanel'
+import StatisticsPanel from './StatisticsPanel'
+import KeyboardShortcutsModal from './KeyboardShortcutsModal'
+import BulkOperationsPanel from './BulkOperationsPanel'
+import MobileToolbar from './MobileToolbar'
+import AIAssistantPanel from './AIAssistantPanel'
+import CommentsPanel from './CommentsPanel'
+import PresenceIndicator from './PresenceIndicator'
+import WebhookIntegrationPanel from './WebhookIntegrationPanel'
+import CalendarExportPanel from './CalendarExportPanel'
+import EmailIntegrationPanel from './EmailIntegrationPanel'
+import PresentationMode from './PresentationMode'
+import ThreeDView from './ThreeDView'
+import TemplatesPanel from './TemplatesPanel'
+import ThemeSettingsPanel from './ThemeSettingsPanel'
+import type { MindMapNodeData, MindMapTree, NodeMetadata, User, Comment } from '../types'
+import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter'
+import {
+  parseJSON,
+  stringifyJSON,
+  parseFreeMind,
+  toFreeMind,
+  parseOPML,
+  toOPML,
+  parseMarkdown,
+  toMarkdown,
+  toD2,
+  toYaml,
+  parseYaml,
+} from '../utils/formats'
+import { parseAITextToMindMap } from '../utils/aiParser'
+import {
+  exportToPDF,
+  exportToPowerPoint,
+  downloadMarkdown,
+  createPresentation,
+} from '../utils/enhancedExports'
+import { useAutoSave } from '../hooks/useAutoSave'
+import { useUndoRedo } from '../hooks/useUndoRedo'
+import { useOfflineSync } from '../hooks/useOfflineSync'
+import { useGestureNavigation } from '../hooks/useGestureNavigation'
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
+import { initializeTheme, toggleDarkMode, getEffectiveTheme } from '../utils/theme'
 
 const nodeTypes = {
   mindmap: MindMapNode,
-};
+}
 
 const edgeTypes = {
   crosslink: CrossLinkEdge,
   default: CrossLinkEdge,
-};
+}
 
 interface MindMapCanvasProps {
-  initialData?: MindMapTree;
+  initialData?: MindMapTree
 }
 
 function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const { nodes: initialNodes, edges: initialEdges } = initialData
     ? treeToFlow(initialData)
-    : { nodes: [], edges: [] };
+    : { nodes: [], edges: [] }
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<MindMapNodeData>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
-  const [showBulkOperations, setShowBulkOperations] = useState(false);
-  const [showNotesPanel, setShowNotesPanel] = useState(false);
-  const [crossLinkMode, setCrossLinkMode] = useState(false);
-  const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [currentResultIndex, setCurrentResultIndex] = useState(0);
-  const [showSaveHistory, setShowSaveHistory] = useState(false);
-  const [conflictSlot, setConflictSlot] = useState<{ nodes: Node<MindMapNodeData>[]; edges: Edge[]; tree: MindMapTree; timestamp: number; label: string } | null>(null);
-  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
-  const [showStatistics, setShowStatistics] = useState(false);
-  const [showShortcuts, setShowShortcuts] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [showWebhookPanel, setShowWebhookPanel] = useState(false);
-  const [showCalendarPanel, setShowCalendarPanel] = useState(false);
-  const [showEmailPanel, setShowEmailPanel] = useState(false);
-  const [showPresentation, setShowPresentation] = useState(false);
-  const [show3DView, setShow3DView] = useState(false);
-  const [showTemplatesPanel, setShowTemplatesPanel] = useState(false);
-  const [showThemeSettings, setShowThemeSettings] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(getEffectiveTheme);
+  const [nodes, setNodes, onNodesChange] = useNodesState<MindMapNodeData>(initialNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
+  const [showBulkOperations, setShowBulkOperations] = useState(false)
+  const [showNotesPanel, setShowNotesPanel] = useState(false)
+  const [crossLinkMode, setCrossLinkMode] = useState(false)
+  const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved')
+  const [showSearch, setShowSearch] = useState(false)
+  const [, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<string[]>([])
+  const [currentResultIndex, setCurrentResultIndex] = useState(0)
+  const [showSaveHistory, setShowSaveHistory] = useState(false)
+  const [conflictSlot, setConflictSlot] = useState<{
+    nodes: Node<MindMapNodeData>[]
+    edges: Edge[]
+    tree: MindMapTree
+    timestamp: number
+    label: string
+  } | null>(null)
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false)
+  const [showStatistics, setShowStatistics] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [showAIAssistant, setShowAIAssistant] = useState(false)
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [showWebhookPanel, setShowWebhookPanel] = useState(false)
+  const [showCalendarPanel, setShowCalendarPanel] = useState(false)
+  const [showEmailPanel, setShowEmailPanel] = useState(false)
+  const [showPresentation, setShowPresentation] = useState(false)
+  const [show3DView, setShow3DView] = useState(false)
+  const [showTemplatesPanel, setShowTemplatesPanel] = useState(false)
+  const [showThemeSettings, setShowThemeSettings] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(getEffectiveTheme)
   const [currentUser] = useState(() => {
-    const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`;
-    const color = localStorage.getItem('user_color') || '#3b82f6';
-    return { id: Date.now().toString(), name, color };
-  });
-  const [onlineUsers] = useState<User[]>([currentUser]);
+    const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`
+    const color = localStorage.getItem('user_color') || '#3b82f6'
+    return { id: Date.now().toString(), name, color }
+  })
+  const [onlineUsers] = useState<User[]>([currentUser])
 
-  const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null
+  const { zoomIn, zoomOut, fitView } = useReactFlow()
 
   // Helper functions for collapsing/expanding descendants
-  const collapseAllDescendants = useCallback((nodeId: string) => {
-    setNodes((nds) => {
-      // Find all descendant nodes
-      const descendantIds = new Set<string>();
-      const queue = [nodeId];
+  const collapseAllDescendants = useCallback(
+    (nodeId: string) => {
+      setNodes(nds => {
+        // Find all descendant nodes
+        const descendantIds = new Set<string>()
+        const queue = [nodeId]
 
-      while (queue.length > 0) {
-        const currentId = queue.shift()!;
-        // Find all children (edges where source is currentId)
-        const children = edges.filter((e) => e.source === currentId);
-        children.forEach((edge) => {
-          descendantIds.add(edge.target);
-          queue.push(edge.target);
-        });
-      }
-
-      // Set collapsed=true for all descendants
-      return nds.map((node) => {
-        if (descendantIds.has(node.id)) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              collapsed: true,
-            },
-          };
+        while (queue.length > 0) {
+          const currentId = queue.shift()!
+          // Find all children (edges where source is currentId)
+          const children = edges.filter(e => e.source === currentId)
+          children.forEach(edge => {
+            descendantIds.add(edge.target)
+            queue.push(edge.target)
+          })
         }
-        return node;
-      });
-    });
-  }, [edges, setNodes]);
 
-  const expandAllDescendants = useCallback((nodeId: string) => {
-    setNodes((nds) => {
-      // Find all descendant nodes
-      const descendantIds = new Set<string>();
-      const queue = [nodeId];
+        // Set collapsed=true for all descendants
+        return nds.map(node => {
+          if (descendantIds.has(node.id)) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                collapsed: true,
+              },
+            }
+          }
+          return node
+        })
+      })
+    },
+    [edges, setNodes]
+  )
 
-      while (queue.length > 0) {
-        const currentId = queue.shift()!;
-        // Find all children (edges where source is currentId)
-        const children = edges.filter((e) => e.source === currentId);
-        children.forEach((edge) => {
-          descendantIds.add(edge.target);
-          queue.push(edge.target);
-        });
-      }
+  const expandAllDescendants = useCallback(
+    (nodeId: string) => {
+      setNodes(nds => {
+        // Find all descendant nodes
+        const descendantIds = new Set<string>()
+        const queue = [nodeId]
 
-      // Set collapsed=false for all descendants
-      return nds.map((node) => {
-        if (descendantIds.has(node.id)) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              collapsed: false,
-            },
-          };
+        while (queue.length > 0) {
+          const currentId = queue.shift()!
+          // Find all children (edges where source is currentId)
+          const children = edges.filter(e => e.source === currentId)
+          children.forEach(edge => {
+            descendantIds.add(edge.target)
+            queue.push(edge.target)
+          })
         }
-        return node;
-      });
-    });
-  }, [edges, setNodes]);
+
+        // Set collapsed=false for all descendants
+        return nds.map(node => {
+          if (descendantIds.has(node.id)) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                collapsed: false,
+              },
+            }
+          }
+          return node
+        })
+      })
+    },
+    [edges, setNodes]
+  )
 
   // Transform nodes to add multi-selection state
   const transformedNodes = useMemo(() => {
-    return nodes.map((node) => ({
+    return nodes.map(node => ({
       ...node,
       selected: node.id === selectedNodeId || selectedNodeIds.has(node.id),
-    }));
-  }, [nodes, selectedNodeId, selectedNodeIds]);
+    }))
+  }, [nodes, selectedNodeId, selectedNodeIds])
 
   // Auto-save hook with history
   const { saveNow, saveHistory, restoreFromHistory, deleteHistorySlot } = useAutoSave({
     nodes,
     edges,
     onSaveStatusChange: setSaveStatus,
-    onConflictFound: (slot) => setConflictSlot(slot),
-  });
+    onConflictFound: slot => setConflictSlot(slot),
+  })
 
   // Undo/Redo hook
-  const { canUndo, canRedo, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
+  const { canUndo, canRedo, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo()
 
   // Offline sync hook - runs for side effects
   useOfflineSync({
     onOnline: () => {
       // Sync data when coming back online
-      console.log('Back online - syncing data');
+      console.log('Back online - syncing data')
     },
     onOffline: () => {
       // Notify user they're offline
-      console.log('Gone offline - changes will be saved locally');
+      console.log('Gone offline - changes will be saved locally')
     },
-  });
+  })
 
   // Gesture navigation
   useGestureNavigation({
     enabled: true,
-  });
+  })
 
   // Initialize theme on mount
   useEffect(() => {
-    initializeTheme();
-  }, []);
+    initializeTheme()
+  }, [])
 
   // Handle node label changes from rich text editor
   useEffect(() => {
     const handleNodeLabelChange = (e: CustomEvent) => {
-      const { nodeId, label } = e.detail;
-      setNodes((nds) =>
-        nds.map((node) => {
+      const { nodeId, label } = e.detail
+      setNodes(nds =>
+        nds.map(node => {
           if (node.id === nodeId) {
             return {
               ...node,
@@ -225,17 +255,17 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
                 label,
                 lastModified: Date.now(),
               },
-            };
+            }
           }
-          return node;
+          return node
         })
-      );
-    };
+      )
+    }
 
     const handleNodeCheckboxChange = (e: CustomEvent) => {
-      const { nodeId, checked } = e.detail;
-      setNodes((nds) =>
-        nds.map((node) => {
+      const { nodeId, checked } = e.detail
+      setNodes(nds =>
+        nds.map(node => {
           if (node.id === nodeId) {
             return {
               ...node,
@@ -244,79 +274,107 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
                 checked,
                 lastModified: Date.now(),
               },
-            };
+            }
           }
-          return node;
+          return node
         })
-      );
-    };
+      )
+    }
 
     const handleCollapseAll = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      collapseAllDescendants(customEvent.detail.nodeId);
-    };
+      const customEvent = e as CustomEvent
+      collapseAllDescendants(customEvent.detail.nodeId)
+    }
 
     const handleExpandAll = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      expandAllDescendants(customEvent.detail.nodeId);
-    };
+      const customEvent = e as CustomEvent
+      expandAllDescendants(customEvent.detail.nodeId)
+    }
 
-    window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
-    window.addEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
-    window.addEventListener('collapseAllDescendants', handleCollapseAll as EventListener);
-    window.addEventListener('expandAllDescendants', handleExpandAll as EventListener);
+    window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener)
+    window.addEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener)
+    window.addEventListener('collapseAllDescendants', handleCollapseAll as EventListener)
+    window.addEventListener('expandAllDescendants', handleExpandAll as EventListener)
     return () => {
-      window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
-      window.removeEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
-      window.removeEventListener('collapseAllDescendants', handleCollapseAll as EventListener);
-      window.removeEventListener('expandAllDescendants', handleExpandAll as EventListener);
-    };
-  }, [collapseAllDescendants, expandAllDescendants, setNodes]);
+      window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener)
+      window.removeEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener)
+      window.removeEventListener('collapseAllDescendants', handleCollapseAll as EventListener)
+      window.removeEventListener('expandAllDescendants', handleExpandAll as EventListener)
+    }
+  }, [collapseAllDescendants, expandAllDescendants, setNodes])
 
   // Node manipulation functions (must be declared before keyboard handler useEffect)
-  const createChildNode = useCallback((parentId: string) => {
-    const parent = nodes.find((n) => n.id === parentId);
-    if (!parent) return;
+  const createChildNode = useCallback(
+    (parentId: string) => {
+      const parent = nodes.find(n => n.id === parentId)
+      if (!parent) return
 
-    const newNode: Node<MindMapNodeData> = {
-      id: generateId(),
-      type: 'mindmap',
-      position: {
-        x: parent.position.x + 250,
-        y: parent.position.y + Math.random() * 50,
-      },
-      data: { label: 'New Node', lastModified: Date.now() },
-    };
+      const newNode: Node<MindMapNodeData> = {
+        id: generateId(),
+        type: 'mindmap',
+        position: {
+          x: parent.position.x + 250,
+          y: parent.position.y + Math.random() * 50,
+        },
+        data: { label: 'New Node', lastModified: Date.now() },
+      }
 
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `${parentId}-${newNode.id}`,
-        source: parentId,
-        target: newNode.id,
-        type: 'smoothstep',
-      },
-    ]);
-    setSelectedNodeId(newNode.id);
+      setNodes(nds => [...nds, newNode])
+      setEdges(eds => [
+        ...eds,
+        {
+          id: `${parentId}-${newNode.id}`,
+          source: parentId,
+          target: newNode.id,
+          type: 'smoothstep',
+        },
+      ])
+      setSelectedNodeId(newNode.id)
 
-    // Trigger edit mode for the new node
-    setTimeout(() => {
-      const event = new CustomEvent('triggerNodeEdit', {
-        detail: { nodeId: newNode.id },
-      });
-      window.dispatchEvent(event);
-    }, 100);
-  }, [nodes, setNodes, setEdges, setSelectedNodeId]);
+      // Trigger edit mode for the new node
+      setTimeout(() => {
+        const event = new CustomEvent('triggerNodeEdit', {
+          detail: { nodeId: newNode.id },
+        })
+        window.dispatchEvent(event)
+      }, 100)
+    },
+    [nodes, setNodes, setEdges, setSelectedNodeId]
+  )
 
-  const createSiblingNode = useCallback((siblingId: string) => {
-    const sibling = nodes.find((n) => n.id === siblingId);
-    if (!sibling) return;
+  const createSiblingNode = useCallback(
+    (siblingId: string) => {
+      const sibling = nodes.find(n => n.id === siblingId)
+      if (!sibling) return
 
-    // Find parent edge
-    const parentEdge = edges.find((e) => e.target === siblingId);
-    if (!parentEdge) {
-      // Root node - create a new root sibling
+      // Find parent edge
+      const parentEdge = edges.find(e => e.target === siblingId)
+      if (!parentEdge) {
+        // Root node - create a new root sibling
+        const newNode: Node<MindMapNodeData> = {
+          id: generateId(),
+          type: 'mindmap',
+          position: {
+            x: sibling.position.x,
+            y: sibling.position.y + 100,
+          },
+          data: { label: 'New Sibling', lastModified: Date.now() },
+        }
+
+        setNodes(nds => [...nds, newNode])
+        setSelectedNodeId(newNode.id)
+
+        setTimeout(() => {
+          const event = new CustomEvent('triggerNodeEdit', {
+            detail: { nodeId: newNode.id },
+          })
+          window.dispatchEvent(event)
+        }, 100)
+
+        return
+      }
+
+      const parentId = parentEdge.source
       const newNode: Node<MindMapNodeData> = {
         id: generateId(),
         type: 'mindmap',
@@ -325,275 +383,259 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           y: sibling.position.y + 100,
         },
         data: { label: 'New Sibling', lastModified: Date.now() },
-      };
+      }
 
-      setNodes((nds) => [...nds, newNode]);
-      setSelectedNodeId(newNode.id);
+      setNodes(nds => [...nds, newNode])
+      setEdges(eds => [
+        ...eds,
+        {
+          id: `${parentId}-${newNode.id}`,
+          source: parentId,
+          target: newNode.id,
+          type: 'smoothstep',
+        },
+      ])
+      setSelectedNodeId(newNode.id)
 
       setTimeout(() => {
         const event = new CustomEvent('triggerNodeEdit', {
           detail: { nodeId: newNode.id },
-        });
-        window.dispatchEvent(event);
-      }, 100);
+        })
+        window.dispatchEvent(event)
+      }, 100)
+    },
+    [nodes, edges, setNodes, setEdges, setSelectedNodeId]
+  )
 
-      return;
-    }
+  const deleteNode = useCallback(
+    (nodeId: string) => {
+      // Don't delete if it's the only node
+      if (nodes.length === 1) return
 
-    const parentId = parentEdge.source;
-    const newNode: Node<MindMapNodeData> = {
-      id: generateId(),
-      type: 'mindmap',
-      position: {
-        x: sibling.position.x,
-        y: sibling.position.y + 100,
-      },
-      data: { label: 'New Sibling', lastModified: Date.now() },
-    };
+      // Find all descendants
+      const nodesToDelete = new Set<string>([nodeId])
+      const queue = [nodeId]
 
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `${parentId}-${newNode.id}`,
-        source: parentId,
-        target: newNode.id,
-        type: 'smoothstep',
-      },
-    ]);
-    setSelectedNodeId(newNode.id);
+      while (queue.length > 0) {
+        const currentId = queue.shift()!
+        const children = edges.filter(e => e.source === currentId)
+        children.forEach(edge => {
+          nodesToDelete.add(edge.target)
+          queue.push(edge.target)
+        })
+      }
 
-    setTimeout(() => {
-      const event = new CustomEvent('triggerNodeEdit', {
-        detail: { nodeId: newNode.id },
-      });
-      window.dispatchEvent(event);
-    }, 100);
-  }, [nodes, edges, setNodes, setEdges, setSelectedNodeId]);
+      // Remove nodes and edges
+      setNodes(nds => nds.filter(n => !nodesToDelete.has(n.id)))
+      setEdges(eds => eds.filter(e => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target)))
 
-  const deleteNode = useCallback((nodeId: string) => {
-    // Don't delete if it's the only node
-    if (nodes.length === 1) return;
-
-    // Find all descendants
-    const nodesToDelete = new Set<string>([nodeId]);
-    const queue = [nodeId];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      const children = edges.filter((e) => e.source === currentId);
-      children.forEach((edge) => {
-        nodesToDelete.add(edge.target);
-        queue.push(edge.target);
-      });
-    }
-
-    // Remove nodes and edges
-    setNodes((nds) => nds.filter((n) => !nodesToDelete.has(n.id)));
-    setEdges((eds) =>
-      eds.filter((e) => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target))
-    );
-
-    // Clear selection if deleted node was selected
-    if (selectedNodeId === nodeId || nodesToDelete.has(selectedNodeId || '')) {
-      setSelectedNodeId(null);
-    }
-  }, [nodes, edges, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
+      // Clear selection if deleted node was selected
+      if (selectedNodeId === nodeId || nodesToDelete.has(selectedNodeId || '')) {
+        setSelectedNodeId(null)
+      }
+    },
+    [nodes, edges, selectedNodeId, setNodes, setEdges, setSelectedNodeId]
+  )
 
   const editNode = useCallback((nodeId: string) => {
-    const nodeElement = document.querySelector(`[data-nodeid="${nodeId}"] .node-content`) as HTMLElement;
+    const nodeElement = document.querySelector(
+      `[data-nodeid="${nodeId}"] .node-content`
+    ) as HTMLElement
     if (nodeElement) {
-      nodeElement.focus();
+      nodeElement.focus()
       // Select all text
-      const range = document.createRange();
-      range.selectNodeContents(nodeElement);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+      const range = document.createRange()
+      range.selectNodeContents(nodeElement)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
     }
-  }, []);
+  }, [])
 
-  const toggleCollapse = useCallback((nodeId: string) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              collapsed: !node.data.collapsed,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  }, [setNodes]);
+  const toggleCollapse = useCallback(
+    (nodeId: string) => {
+      setNodes(nds =>
+        nds.map(node => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                collapsed: !node.data.collapsed,
+              },
+            }
+          }
+          return node
+        })
+      )
+    },
+    [setNodes]
+  )
 
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Listen for theme changes
   useEffect(() => {
     const handleThemeChange = () => {
-      setCurrentTheme(getEffectiveTheme());
-    };
+      setCurrentTheme(getEffectiveTheme())
+    }
 
     // Listen for storage events (theme changes from other tabs)
-    window.addEventListener('storage', handleThemeChange);
+    window.addEventListener('storage', handleThemeChange)
 
     // Listen for custom theme change events
-    window.addEventListener('themeChange', handleThemeChange);
+    window.addEventListener('themeChange', handleThemeChange)
 
     return () => {
-      window.removeEventListener('storage', handleThemeChange);
-      window.removeEventListener('themeChange', handleThemeChange);
-    };
-  }, []);
+      window.removeEventListener('storage', handleThemeChange)
+      window.removeEventListener('themeChange', handleThemeChange)
+    }
+  }, [])
 
   const handleUndo = () => {
-    if (!canUndo) return;
+    if (!canUndo) return
 
-    const previousState = undo();
+    const previousState = undo()
     if (previousState) {
-      setNodes(previousState.nodes);
-      setEdges(previousState.edges);
+      setNodes(previousState.nodes)
+      setEdges(previousState.edges)
     }
-  };
+  }
 
   const handleRedo = () => {
-    if (!canRedo) return;
+    if (!canRedo) return
 
-    const nextState = redo();
+    const nextState = redo()
     if (nextState) {
-      setNodes(nextState.nodes);
-      setEdges(nextState.edges);
+      setNodes(nextState.nodes)
+      setEdges(nextState.edges)
     }
-  };
+  }
 
   // Template Handler
   const handleApplyTemplate = (tree: MindMapTree) => {
-    const { nodes: newNodes, edges: newEdges } = treeToFlow(tree);
-    setNodes(newNodes);
-    setEdges(newEdges);
-    fitView({ duration: 800 });
-  };
+    const { nodes: newNodes, edges: newEdges } = treeToFlow(tree)
+    setNodes(newNodes)
+    setEdges(newEdges)
+    fitView({ duration: 800 })
+  }
 
   // Search handlers
   const handleSearch = (query: string, options: SearchOptions) => {
     // If no query and no filters, clear results
     if (!query.trim() && !options.filterIcon && !options.filterCloud && !options.filterDate) {
-      setSearchResults([]);
-      setSearchQuery('');
-      setCurrentResultIndex(0);
-      return;
+      setSearchResults([])
+      setSearchQuery('')
+      setCurrentResultIndex(0)
+      return
     }
 
-    const now = Date.now();
+    const now = Date.now()
     const timeLimits = {
       hour: 60 * 60 * 1000,
       day: 24 * 60 * 60 * 1000,
       week: 7 * 24 * 60 * 60 * 1000,
       month: 30 * 24 * 60 * 60 * 1000,
-    };
+    }
 
-    const matchingNodeIds = nodes.filter((node) => {
-      // Text search
-      if (query.trim()) {
-        const label = node.data.label || '';
-        const notes = node.data.metadata?.notes || '';
-        const searchText = options.searchInNotes
-          ? `${label} ${notes}`
-          : label;
+    const matchingNodeIds = nodes
+      .filter(node => {
+        // Text search
+        if (query.trim()) {
+          const label = node.data.label || ''
+          const notes = node.data.metadata?.notes || ''
+          const searchText = options.searchInNotes ? `${label} ${notes}` : label
 
-        let searchQuery = query;
-        let searchTarget = searchText;
+          let searchQuery = query
+          let searchTarget = searchText
 
-        // Case sensitivity
-        if (!options.caseSensitive) {
-          searchQuery = searchQuery.toLowerCase();
-          searchTarget = searchTarget.toLowerCase();
-        }
-
-        // Regex mode
-        if (options.useRegex) {
-          try {
-            const regex = new RegExp(searchQuery, options.caseSensitive ? 'g' : 'gi');
-            if (!regex.test(searchTarget)) return false;
-          } catch {
-            // Invalid regex, fall back to regular search
-            if (!searchTarget.includes(searchQuery)) return false;
+          // Case sensitivity
+          if (!options.caseSensitive) {
+            searchQuery = searchQuery.toLowerCase()
+            searchTarget = searchTarget.toLowerCase()
           }
-        } else if (options.wholeWord) {
-          // Whole word mode
-          const words = searchTarget.split(/\s+/);
-          if (!words.some((word) => word === searchQuery)) return false;
-        } else {
-          // Default: contains search
-          if (!searchTarget.includes(searchQuery)) return false;
+
+          // Regex mode
+          if (options.useRegex) {
+            try {
+              const regex = new RegExp(searchQuery, options.caseSensitive ? 'g' : 'gi')
+              if (!regex.test(searchTarget)) return false
+            } catch {
+              // Invalid regex, fall back to regular search
+              if (!searchTarget.includes(searchQuery)) return false
+            }
+          } else if (options.wholeWord) {
+            // Whole word mode
+            const words = searchTarget.split(/\s+/)
+            if (!words.some(word => word === searchQuery)) return false
+          } else {
+            // Default: contains search
+            if (!searchTarget.includes(searchQuery)) return false
+          }
         }
-      }
 
-      // Icon filter
-      if (options.filterIcon && node.data.icon !== options.filterIcon) {
-        return false;
-      }
-
-      // Cloud filter
-      if (options.filterCloud && node.data.cloud?.color !== options.filterCloud) {
-        return false;
-      }
-
-      // Date filter - use creation timestamp if available (stored in node data)
-      if (options.filterDate) {
-        const nodeTime = (node.data as any).lastModified || now;
-        const timeDiff = now - nodeTime;
-        if (timeDiff > timeLimits[options.filterDate]) {
-          return false;
+        // Icon filter
+        if (options.filterIcon && node.data.icon !== options.filterIcon) {
+          return false
         }
-      }
 
-      return true;
-    }).map((node) => node.id);
+        // Cloud filter
+        if (options.filterCloud && node.data.cloud?.color !== options.filterCloud) {
+          return false
+        }
 
-    setSearchResults(matchingNodeIds);
-    setSearchQuery(query);
-    setCurrentResultIndex(0);
+        // Date filter - use creation timestamp if available (stored in node data)
+        if (options.filterDate) {
+          const nodeTime = node.data.lastModified || now
+          const timeDiff = now - nodeTime
+          if (timeDiff > timeLimits[options.filterDate]) {
+            return false
+          }
+        }
+
+        return true
+      })
+      .map(node => node.id)
+
+    setSearchResults(matchingNodeIds)
+    setSearchQuery(query)
+    setCurrentResultIndex(0)
 
     if (matchingNodeIds.length > 0) {
-      setSelectedNodeId(matchingNodeIds[0]);
+      setSelectedNodeId(matchingNodeIds[0])
     }
-  };
+  }
 
   const handleNextResult = () => {
-    if (searchResults.length === 0) return;
+    if (searchResults.length === 0) return
 
-    const nextIndex = (currentResultIndex + 1) % searchResults.length;
-    setCurrentResultIndex(nextIndex);
-    setSelectedNodeId(searchResults[nextIndex]);
-  };
+    const nextIndex = (currentResultIndex + 1) % searchResults.length
+    setCurrentResultIndex(nextIndex)
+    setSelectedNodeId(searchResults[nextIndex])
+  }
 
   const handlePreviousResult = () => {
-    if (searchResults.length === 0) return;
+    if (searchResults.length === 0) return
 
-    const prevIndex = (currentResultIndex - 1 + searchResults.length) % searchResults.length;
-    setCurrentResultIndex(prevIndex);
-    setSelectedNodeId(searchResults[prevIndex]);
-  };
+    const prevIndex = (currentResultIndex - 1 + searchResults.length) % searchResults.length
+    setCurrentResultIndex(prevIndex)
+    setSelectedNodeId(searchResults[prevIndex])
+  }
 
   const handleUpdateMetadata = (metadata: NodeMetadata) => {
-    if (!selectedNodeId) return;
+    if (!selectedNodeId) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (node.id === selectedNodeId) {
           return {
             ...node,
@@ -602,18 +644,18 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   const handleUpdateIcon = (icon: string | null) => {
-    if (!selectedNodeId) return;
+    if (!selectedNodeId) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (node.id === selectedNodeId) {
           return {
             ...node,
@@ -622,18 +664,18 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               icon: icon || undefined,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   const handleUpdateCloud = (cloud: { color?: string } | null) => {
-    if (!selectedNodeId) return;
+    if (!selectedNodeId) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (node.id === selectedNodeId) {
           return {
             ...node,
@@ -642,77 +684,77 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               cloud: cloud || undefined,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   // Multi-selection handlers
   const handleMultiSelectToggle = (nodeId: string, addToSelection: boolean) => {
     if (addToSelection) {
-      setSelectedNodeIds((prev) => {
-        const newSet = new Set(prev);
+      setSelectedNodeIds(prev => {
+        const newSet = new Set(prev)
         if (newSet.has(nodeId)) {
-          newSet.delete(nodeId);
+          newSet.delete(nodeId)
         } else {
-          newSet.add(nodeId);
+          newSet.add(nodeId)
         }
         // Show bulk operations panel if we have more than one node selected
-        setShowBulkOperations(newSet.size > 1);
-        return newSet;
-      });
+        setShowBulkOperations(newSet.size > 1)
+        return newSet
+      })
     } else {
-      setSelectedNodeIds(new Set());
-      setSelectedNodeId(nodeId);
+      setSelectedNodeIds(new Set())
+      setSelectedNodeId(nodeId)
     }
-  };
+  }
 
   const handleClearSelection = () => {
-    setSelectedNodeIds(new Set());
-    setSelectedNodeId(null);
-    setShowBulkOperations(false);
-  };
+    setSelectedNodeIds(new Set())
+    setSelectedNodeId(null)
+    setShowBulkOperations(false)
+  }
 
   const handleSelectAll = () => {
-    setSelectedNodeIds(new Set(nodes.map((n) => n.id)));
-    setShowBulkOperations(true);
-  };
+    setSelectedNodeIds(new Set(nodes.map(n => n.id)))
+    setShowBulkOperations(true)
+  }
 
   const handleBulkDelete = () => {
-    if (selectedNodeIds.size === 0) return;
+    if (selectedNodeIds.size === 0) return
 
     // Don't delete if it would delete all nodes
     if (selectedNodeIds.size >= nodes.length) {
-      alert('Cannot delete all nodes');
-      return;
+      alert('Cannot delete all nodes')
+      return
     }
 
     // Find all descendants of selected nodes
-    const allToDelete = new Set<string>(selectedNodeIds);
-    let added = true;
+    const allToDelete = new Set<string>(selectedNodeIds)
+    let added = true
 
     while (added) {
-      added = false;
-      edges.forEach((edge) => {
+      added = false
+      edges.forEach(edge => {
         if (allToDelete.has(edge.source) && !allToDelete.has(edge.target)) {
-          allToDelete.add(edge.target);
-          added = true;
+          allToDelete.add(edge.target)
+          added = true
         }
-      });
+      })
     }
 
-    setNodes((nds) => nds.filter((n) => !allToDelete.has(n.id)));
-    setEdges((eds) => eds.filter((e) => !allToDelete.has(e.source) && !allToDelete.has(e.target)));
-    handleClearSelection();
-  };
+    setNodes(nds => nds.filter(n => !allToDelete.has(n.id)))
+    setEdges(eds => eds.filter(e => !allToDelete.has(e.source) && !allToDelete.has(e.target)))
+    handleClearSelection()
+  }
 
   const handleBulkIconChange = (icon: string | null) => {
-    if (selectedNodeIds.size === 0) return;
+    if (selectedNodeIds.size === 0) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (selectedNodeIds.has(node.id)) {
           return {
             ...node,
@@ -721,18 +763,18 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               icon: icon || undefined,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   const handleBulkCloudChange = (cloud: { color: string } | null) => {
-    if (selectedNodeIds.size === 0) return;
+    if (selectedNodeIds.size === 0) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (selectedNodeIds.has(node.id)) {
           return {
             ...node,
@@ -741,18 +783,18 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               cloud: cloud || undefined,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   const handleBulkColorChange = (backgroundColor: string) => {
-    if (selectedNodeIds.size === 0) return;
+    if (selectedNodeIds.size === 0) return
 
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds =>
+      nds.map(node => {
         if (selectedNodeIds.has(node.id)) {
           return {
             ...node,
@@ -761,24 +803,26 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               backgroundColor,
               lastModified: Date.now(),
             },
-          };
+          }
         }
-        return node;
+        return node
       })
-    );
-  };
+    )
+  }
 
   // AI Handlers
   const handleAIGenerateMindMap = (text: string) => {
     try {
-      const mindMapTree = parseAITextToMindMap(text);
-      const { nodes: newNodes, edges: newEdges } = treeToFlow(mindMapTree);
-      setNodes(newNodes);
-      setEdges(newEdges);
-    } catch (error: any) {
-      alert(`Error generating mind map: ${error.message}`);
+      const mindMapTree = parseAITextToMindMap(text)
+      const { nodes: newNodes, edges: newEdges } = treeToFlow(mindMapTree)
+      setNodes(newNodes)
+      setEdges(newEdges)
+    } catch (error) {
+      alert(
+        `Error generating mind map: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
-  };
+  }
 
   const handleAISuggestIdeas = (nodeId: string) => {
     // This would normally get suggestions from AI
@@ -789,13 +833,13 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       'Include counter-arguments',
       'Add references',
       'Create sub-categories',
-    ];
+    ]
 
-    const node = nodes.find((n) => n.id === nodeId);
-    if (!node) return;
+    const node = nodes.find(n => n.id === nodeId)
+    if (!node) return
 
     // Add suggestions as child nodes
-    const newNodes = suggestions.map((suggestion) => ({
+    const newNodes = suggestions.map(suggestion => ({
       id: generateId(),
       type: 'mindmap',
       position: {
@@ -803,46 +847,46 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         y: node.position.y + Math.random() * 100,
       },
       data: { label: suggestion, lastModified: Date.now() },
-    }));
+    }))
 
-    const newEdges = newNodes.map((newNode) => ({
+    const newEdges = newNodes.map(newNode => ({
       id: `${nodeId}-${newNode.id}`,
       source: nodeId,
       target: newNode.id,
       type: 'smoothstep',
-    }));
+    }))
 
-    setNodes((nds) => [...nds, ...newNodes]);
-    setEdges((eds) => [...eds, ...newEdges]);
-  };
+    setNodes(nds => [...nds, ...newNodes])
+    setEdges(eds => [...eds, ...newEdges])
+  }
 
   const handleAISummarizeBranch = (nodeId: string) => {
-    const node = nodes.find((n) => n.id === nodeId);
-    if (!node) return;
+    const node = nodes.find(n => n.id === nodeId)
+    if (!node) return
 
     // Get all descendants
-    const descendants = new Set<string>([nodeId]);
-    let added = true;
+    const descendants = new Set<string>([nodeId])
+    let added = true
     while (added) {
-      added = false;
-      edges.forEach((edge) => {
+      added = false
+      edges.forEach(edge => {
         if (descendants.has(edge.source) && !descendants.has(edge.target)) {
-          descendants.add(edge.target);
-          added = true;
+          descendants.add(edge.target)
+          added = true
         }
-      });
+      })
     }
 
-    const branchNodes = nodes.filter((n) => descendants.has(n.id));
-    const summary = `Branch: ${node.data.label}\nContains ${branchNodes.length} nodes`;
+    const branchNodes = nodes.filter(n => descendants.has(n.id))
+    const summary = `Branch: ${node.data.label}\nContains ${branchNodes.length} nodes`
 
     // Show the summary in a modal or alert
-    alert(summary);
-  };
+    alert(summary)
+  }
 
   // Comment Handlers
   const handleAddComment = (content: string) => {
-    if (!selectedNodeId) return;
+    if (!selectedNodeId) return
 
     const newComment = {
       id: generateId(),
@@ -852,22 +896,22 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       content,
       timestamp: Date.now(),
       resolved: false,
-    };
+    }
 
-    setComments((prev) => [...prev, newComment]);
-  };
+    setComments(prev => [...prev, newComment])
+  }
 
   const handleResolveComment = (commentId: string) => {
-    setComments((prev) =>
-      prev.map((comment) =>
+    setComments(prev =>
+      prev.map(comment =>
         comment.id === commentId ? { ...comment, resolved: !comment.resolved } : comment
       )
-    );
-  };
+    )
+  }
 
   const handleDeleteComment = (commentId: string) => {
-    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
-  };
+    setComments(prev => prev.filter(comment => comment.id !== commentId))
+  }
 
   const onConnect: OnConnect = useCallback(
     (params: Connection) => {
@@ -878,27 +922,25 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         style: crossLinkMode
           ? { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5,5' }
           : undefined,
-      };
-      setEdges((eds) => addEdge(newEdge, eds));
+      }
+      setEdges(eds => addEdge(newEdge, eds))
       if (crossLinkMode) {
-        setCrossLinkMode(false);
-        setCrossLinkSource(null);
+        setCrossLinkMode(false)
+        setCrossLinkSource(null)
       }
     },
     [setEdges, crossLinkMode]
-  );
+  )
 
   // Handle cross-link creation via node clicks
   const handleNodeClickForCrossLink = (nodeId: string) => {
     if (crossLinkMode) {
       if (crossLinkSource === null) {
         // First click - set as source
-        setCrossLinkSource(nodeId);
+        setCrossLinkSource(nodeId)
       } else if (crossLinkSource !== nodeId) {
         // Second click - create cross-link
-        const existingEdge = edges.find(
-          (e) => e.source === crossLinkSource && e.target === nodeId
-        );
+        const existingEdge = edges.find(e => e.source === crossLinkSource && e.target === nodeId)
 
         if (!existingEdge) {
           const newEdge = {
@@ -908,535 +950,304 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             type: 'crosslink' as const,
             data: { isCrossLink: true },
             style: { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5,5' },
-          };
-          setEdges((eds) => [...eds, newEdge]);
+          }
+          setEdges(eds => [...eds, newEdge])
         }
 
         // Reset cross-link mode
-        setCrossLinkMode(false);
-        setCrossLinkSource(null);
+        setCrossLinkMode(false)
+        setCrossLinkSource(null)
       }
     }
-  };
+  }
 
-  // Keyboard shortcuts for mind map operations
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle shortcuts when not editing text
-      if (document.activeElement?.classList.contains('node-content')) {
-        return;
-      }
-
-      // Tab - Create child node
-      if (event.key === 'Tab' && selectedNodeId) {
-        event.preventDefault();
-        createChildNode(selectedNodeId);
-      }
-
-      // Enter - Create sibling node
-      if (event.key === 'Enter' && selectedNodeId) {
-        event.preventDefault();
-        createSiblingNode(selectedNodeId);
-      }
-
-      // Delete/Backspace - Delete node
-      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeId) {
-        event.preventDefault();
-        deleteNode(selectedNodeId);
-      }
-
-      // E - Edit node content (accessible on all platforms)
-      if (event.key === 'e' && selectedNodeId) {
-        // Only trigger if no modifier keys are pressed (to avoid conflict with Ctrl+E browser shortcuts)
-        if (!event.ctrlKey && !event.metaKey && !event.altKey) {
-          event.preventDefault();
-          editNode(selectedNodeId);
-        }
-      }
-
-      // Space - Toggle collapse
-      if (event.key === ' ' && selectedNodeId) {
-        event.preventDefault();
-        toggleCollapse(selectedNodeId);
-      }
-
-      // Ctrl + or = - Zoom in
-      if (event.key === '=' || event.key === '+') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          zoomIn();
-        }
-      }
-
-      // Ctrl - or _ - Zoom out
-      if (event.key === '-' || event.key === '_') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          zoomOut();
-        }
-      }
-
-      // Ctrl 0 - Fit view
-      if (event.key === '0') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          fitView();
-        }
-      }
-
-      // Ctrl N - Toggle notes panel
-      if (event.key === 'n' || event.key === 'N') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          if (selectedNode) {
-            setShowNotesPanel(!showNotesPanel);
-          }
-        }
-      }
-
-      // Ctrl Z - Undo
-      if (event.key === 'z' || event.key === 'Z') {
-        if (event.ctrlKey || event.metaKey) {
-          if (event.shiftKey) {
-            // Ctrl Shift Z - Redo
-            event.preventDefault();
-            handleRedo();
-          } else {
-            // Ctrl Z - Undo
-            event.preventDefault();
-            handleUndo();
-          }
-        }
-      }
-
-      // Ctrl Y - Redo
-      if (event.key === 'y' || event.key === 'Y') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          handleRedo();
-        }
-      }
-
-      // Ctrl F - Open search
-      if (event.key === 'f' || event.key === 'F') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          setShowSearch(true);
-        }
-      }
-
-      // Ctrl G - Next search result (standard "find next" shortcut)
-      if (event.key === 'g' || event.key === 'G') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          if (event.shiftKey) {
-            handlePreviousResult();
-          } else {
-            handleNextResult();
-          }
-        }
-      }
-
-      // Escape - Close panels
-      if (event.key === 'Escape') {
-        if (showSearch) {
-          setShowSearch(false);
-        }
-        if (showNotesPanel) {
-          setShowNotesPanel(false);
-        }
-        if (showSaveHistory) {
-          setShowSaveHistory(false);
-        }
-        if (showHistoryPanel) {
-          setShowHistoryPanel(false);
-        }
-        if (showStatistics) {
-          setShowStatistics(false);
-        }
-        if (showShortcuts) {
-          setShowShortcuts(false);
-        }
-        if (showAIAssistant) {
-          setShowAIAssistant(false);
-        }
-        if (showCommentsPanel) {
-          setShowCommentsPanel(false);
-        }
-        if (showWebhookPanel) {
-          setShowWebhookPanel(false);
-        }
-        if (showCalendarPanel) {
-          setShowCalendarPanel(false);
-        }
-        if (showEmailPanel) {
-          setShowEmailPanel(false);
-        }
-        if (showPresentation) {
-          setShowPresentation(false);
-        }
-        if (show3DView) {
-          setShow3DView(false);
-        }
-        if (showTemplatesPanel) {
-          setShowTemplatesPanel(false);
-        }
-        if (showThemeSettings) {
-          setShowThemeSettings(false);
-        }
-        if (crossLinkMode) {
-          setCrossLinkMode(false);
-          setCrossLinkSource(null);
-        }
-        if (showBulkOperations || selectedNodeIds.size > 0) {
-          handleClearSelection();
-        }
-      }
-
-      // ? - Show keyboard shortcuts
-      if (event.key === '?') {
-        event.preventDefault();
-        setShowShortcuts(!showShortcuts);
-      }
-
-      // Ctrl S - Manual save
-      if (event.key === 's' || event.key === 'S') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          saveNow();
-        }
-      }
-
-      // Ctrl H - Show save history
-      if (event.key === 'h' || event.key === 'H') {
-        if (event.ctrlKey || event.metaKey) {
-          if (event.shiftKey) {
-            // Ctrl Shift H - Show undo/redo history
-            event.preventDefault();
-            setShowHistoryPanel(!showHistoryPanel);
-          } else {
-            // Ctrl H - Show save history
-            event.preventDefault();
-            setShowSaveHistory(!showSaveHistory);
-          }
-        }
-      }
-
-      // Ctrl I - Show statistics
-      if (event.key === 'i' || event.key === 'I') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          setShowStatistics(!showStatistics);
-        }
-      }
-
-      // Ctrl Shift A - Open AI Assistant
-      if (event.key === 'a' || event.key === 'A') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowAIAssistant(!showAIAssistant);
-        }
-      }
-
-      // Ctrl Shift C - Toggle Comments Panel
-      if (event.key === 'c' || event.key === 'C') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowCommentsPanel(!showCommentsPanel);
-        }
-      }
-
-      // Ctrl Shift W - Toggle Webhook Integration
-      if (event.key === 'w' || event.key === 'W') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowWebhookPanel(!showWebhookPanel);
-        }
-      }
-
-      // Ctrl Shift D - Toggle Calendar Export (D for Date/Calendar)
-      if (event.key === 'd' || event.key === 'D') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowCalendarPanel(!showCalendarPanel);
-        }
-      }
-
-      // Ctrl Shift E - Toggle Email Integration
-      if (event.key === 'e' || event.key === 'E') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowEmailPanel(!showEmailPanel);
-        }
-      }
-
-      // Ctrl Shift P - Toggle Presentation Mode
-      if (event.key === 'p' || event.key === 'P') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowPresentation(!showPresentation);
-        }
-      }
-
-      // Ctrl Shift 3 - Toggle 3D View
-      if (event.key === '3') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShow3DView(!show3DView);
-        }
-      }
-
-      // Ctrl Shift T - Toggle Templates Panel
-      if (event.key === 't' || event.key === 'T') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowTemplatesPanel(!showTemplatesPanel);
-        }
-      }
-
-      // Ctrl Shift ; - Toggle Theme Settings (using ; to avoid conflicts)
-      if (event.key === ';') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          setShowThemeSettings(!showThemeSettings);
-        }
-      }
-
-      // Ctrl Shift D - Toggle dark mode
-      if (event.key === 'D' || event.key === 'd') {
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-          event.preventDefault();
-          toggleDarkMode();
-          setCurrentTheme(getEffectiveTheme());
-        }
-      }
-
-      // Ctrl A - Select all nodes
-      if (event.key === 'a' || event.key === 'A') {
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault();
-          handleSelectAll();
-        }
-      }
-
-      // Delete/Backspace - Bulk delete if multiple selected
-      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeIds.size > 1) {
-        event.preventDefault();
-        handleBulkDelete();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showTemplatesPanel, showThemeSettings, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow, createChildNode, createSiblingNode, deleteNode, editNode, toggleCollapse]);
+  // Keyboard shortcuts hook - handles all keyboard shortcuts for the application
+  useKeyboardShortcuts(
+    {
+      selectedNodeId,
+      selectedNodeIds,
+      nodes,
+      edges,
+      showNotesPanel,
+      showSearch,
+      showSaveHistory,
+      showHistoryPanel,
+      showStatistics,
+      showShortcuts,
+      showAIAssistant,
+      showCommentsPanel,
+      showWebhookPanel,
+      showCalendarPanel,
+      showEmailPanel,
+      showPresentation,
+      show3DView,
+      showTemplatesPanel,
+      showThemeSettings,
+      showBulkOperations,
+      crossLinkMode,
+      searchResults,
+      currentResultIndex,
+      canUndo,
+      canRedo,
+    },
+    {
+      zoomIn,
+      zoomOut,
+      fitView,
+      setShowNotesPanel,
+      setShowSearch,
+      setShowSaveHistory,
+      setShowHistoryPanel,
+      setShowStatistics,
+      setShowShortcuts,
+      setShowAIAssistant,
+      setShowCommentsPanel,
+      setShowWebhookPanel,
+      setShowCalendarPanel,
+      setShowEmailPanel,
+      setShowPresentation,
+      setShow3DView,
+      setShowTemplatesPanel,
+      setShowThemeSettings,
+      setCrossLinkMode,
+      setCrossLinkSource,
+      createChildNode,
+      createSiblingNode,
+      deleteNode,
+      editNode,
+      toggleCollapse,
+      handleUndo,
+      handleRedo,
+      handleNextResult,
+      handlePreviousResult,
+      handleClearSelection,
+      handleBulkDelete,
+      handleSelectAll,
+      saveNow,
+      toggleDarkMode,
+      setCurrentTheme,
+      getEffectiveTheme,
+    }
+  )
 
   const handleRestoreFromHistory = (index: number) => {
-    const slot = restoreFromHistory(index);
+    const slot = restoreFromHistory(index)
     if (slot) {
-      setNodes(slot.nodes);
-      setEdges(slot.edges);
-      setShowSaveHistory(false);
+      setNodes(slot.nodes)
+      setEdges(slot.edges)
+      setShowSaveHistory(false)
     }
-  };
+  }
 
   const handleConflictRestore = () => {
     if (conflictSlot) {
-      setNodes(conflictSlot.nodes);
-      setEdges(conflictSlot.edges);
-      setConflictSlot(null);
+      setNodes(conflictSlot.nodes)
+      setEdges(conflictSlot.edges)
+      setConflictSlot(null)
     }
-  };
+  }
 
   const handleJumpToHistory = (index: number, fromPast: boolean) => {
-    const state = jumpToHistory(index, fromPast);
+    const state = jumpToHistory(index, fromPast)
     if (state) {
-      setNodes(state.nodes);
-      setEdges(state.edges);
+      setNodes(state.nodes)
+      setEdges(state.edges)
     }
-  };
+  }
 
-  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2' | 'yaml' | 'pdf' | 'powerpoint' | 'presentation') => {
-    const tree = flowToTree(nodes, edges);
-    if (!tree) return;
+  const saveToFile = (
+    format:
+      | 'json'
+      | 'freemind'
+      | 'opml'
+      | 'markdown'
+      | 'd2'
+      | 'yaml'
+      | 'pdf'
+      | 'powerpoint'
+      | 'presentation'
+  ) => {
+    const tree = flowToTree(nodes, edges)
+    if (!tree) return
 
     // Handle special export formats
     if (format === 'pdf') {
-      exportToPDF(tree);
-      return;
+      exportToPDF(tree)
+      return
     }
 
     if (format === 'powerpoint') {
-      exportToPowerPoint(tree);
-      return;
+      exportToPowerPoint(tree)
+      return
     }
 
     if (format === 'presentation') {
-      createPresentation(tree);
-      return;
+      createPresentation(tree)
+      return
     }
 
-    let content: string;
-    let filename: string;
-    let mimeType: string;
+    let content: string
+    let filename: string
+    let mimeType: string
 
     switch (format) {
       case 'json':
-        content = stringifyJSON(tree);
-        filename = 'mindmap.json';
-        mimeType = 'application/json';
-        break;
+        content = stringifyJSON(tree)
+        filename = 'mindmap.json'
+        mimeType = 'application/json'
+        break
       case 'freemind':
-        content = toFreeMind(tree);
-        filename = 'mindmap.mm';
-        mimeType = 'application/xml';
-        break;
+        content = toFreeMind(tree)
+        filename = 'mindmap.mm'
+        mimeType = 'application/xml'
+        break
       case 'opml':
-        content = toOPML(tree);
-        filename = 'mindmap.opml';
-        mimeType = 'application/xml';
-        break;
+        content = toOPML(tree)
+        filename = 'mindmap.opml'
+        mimeType = 'application/xml'
+        break
       case 'markdown':
-        content = toMarkdown(tree);
-        filename = 'mindmap.md';
-        mimeType = 'text/markdown';
-        break;
+        content = toMarkdown(tree)
+        filename = 'mindmap.md'
+        mimeType = 'text/markdown'
+        break
       case 'd2':
-        content = toD2(tree);
-        filename = 'mindmap.d2';
-        mimeType = 'text/plain';
-        break;
+        content = toD2(tree)
+        filename = 'mindmap.d2'
+        mimeType = 'text/plain'
+        break
       case 'yaml':
-        content = toYaml(tree);
-        filename = 'mindmap.yaml';
-        mimeType = 'text/yaml';
-        break;
+        content = toYaml(tree)
+        filename = 'mindmap.yaml'
+        mimeType = 'text/yaml'
+        break
     }
 
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const loadFromFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'yaml') => {
-    const input = document.createElement('input');
-    input.type = 'file';
+    const input = document.createElement('input')
+    input.type = 'file'
     input.accept =
       format === 'json'
         ? '.json'
         : format === 'freemind'
-        ? '.mm'
-        : format === 'opml'
-        ? '.opml'
-        : format === 'yaml'
-        ? '.yaml,.yml'
-        : '.md';
+          ? '.mm'
+          : format === 'opml'
+            ? '.opml'
+            : format === 'yaml'
+              ? '.yaml,.yml'
+              : '.md'
 
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+    input.onchange = async e => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
 
-      const text = await file.text();
-      let tree: MindMapTree;
+      const text = await file.text()
+      let tree: MindMapTree
 
       try {
         switch (format) {
           case 'json':
-            tree = parseJSON(text);
-            break;
+            tree = parseJSON(text)
+            break
           case 'freemind':
-            tree = parseFreeMind(text);
-            break;
+            tree = parseFreeMind(text)
+            break
           case 'opml':
-            tree = parseOPML(text);
-            break;
+            tree = parseOPML(text)
+            break
           case 'markdown':
-            tree = parseMarkdown(text);
-            break;
+            tree = parseMarkdown(text)
+            break
           case 'yaml':
-            tree = parseYaml(text);
-            break;
+            tree = parseYaml(text)
+            break
         }
 
-        const { nodes: newNodes, edges: newEdges } = treeToFlow(tree, true); // Use auto-layout for imports
-        setNodes(newNodes);
-        setEdges(newEdges);
+        const { nodes: newNodes, edges: newEdges } = treeToFlow(tree, true) // Use auto-layout for imports
+        setNodes(newNodes)
+        setEdges(newEdges)
 
         // Fit view to show all nodes after a short delay to ensure rendering
-        setTimeout(() => fitView({ padding: 0.2 }), 100);
+        setTimeout(() => fitView({ padding: 0.2 }), 100)
       } catch (error) {
-        alert(`Error loading file: ${error}`);
+        alert(`Error loading file: ${error}`)
       }
-    };
+    }
 
-    input.click();
-  };
+    input.click()
+  }
 
   const exportAsPNG = () => {
     // Create a canvas element
-    const canvas = document.createElement('canvas');
-    canvas.width = 1920;
-    canvas.height = 1080;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const canvas = document.createElement('canvas')
+    canvas.width = 1920
+    canvas.height = 1080
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
     // Draw white background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // For simplicity, we'll create an SVG first and then draw it to canvas
     // This is a basic implementation - a more robust solution would use html2canvas
-    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement;
-    if (!svgElement) return;
+    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement
+    if (!svgElement) return
 
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
+    const svgData = new XMLSerializer().serializeToString(svgElement)
+    const img = new Image()
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
 
     img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
 
       // Download the image
-      const pngUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = pngUrl;
-      a.download = 'mindmap.png';
-      a.click();
-    };
+      const pngUrl = canvas.toDataURL('image/png')
+      const a = document.createElement('a')
+      a.href = pngUrl
+      a.download = 'mindmap.png'
+      a.click()
+    }
 
-    img.src = url;
-  };
+    img.src = url
+  }
 
   const exportAsSVG = () => {
-    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement;
-    if (!svgElement) return;
+    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement
+    if (!svgElement) return
 
-    const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svgElement);
+    const serializer = new XMLSerializer()
+    let source = serializer.serializeToString(svgElement)
 
     // Add namespaces
-    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"')
     }
-    if (!source.match(/^<svg[^>]+xmlns:xlink="http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+      source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
     }
 
     // Add XML declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source
 
     // Create blob and download
-    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mindmap.svg';
-    a.click();
-  };
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'mindmap.svg'
+    a.click()
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -1450,24 +1261,24 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         edgeTypes={edgeTypes}
         onNodeClick={(event, node) => {
           if (crossLinkMode) {
-            handleNodeClickForCrossLink(node.id);
+            handleNodeClickForCrossLink(node.id)
           } else if (event.shiftKey) {
             // Shift+click - Toggle node in multi-selection
-            handleMultiSelectToggle(node.id, true);
+            handleMultiSelectToggle(node.id, true)
           } else {
             // Regular click - Clear multi-selection and select single node
             if (selectedNodeIds.size > 0) {
-              handleClearSelection();
+              handleClearSelection()
             }
-            setSelectedNodeId(node.id);
+            setSelectedNodeId(node.id)
           }
         }}
         onPaneClick={() => {
-          setSelectedNodeId(null);
-          handleClearSelection();
+          setSelectedNodeId(null)
+          handleClearSelection()
           if (crossLinkMode) {
-            setCrossLinkMode(false);
-            setCrossLinkSource(null);
+            setCrossLinkMode(false)
+            setCrossLinkSource(null)
           }
         }}
         fitView
@@ -1556,8 +1367,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               onPrevious={handlePreviousResult}
               resultCount={searchResults.length}
               currentResult={currentResultIndex}
-              availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i))))}
-              availableClouds={Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter((c): c is string => Boolean(c))))}
+              availableIcons={Array.from(
+                new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i)))
+              )}
+              availableClouds={Array.from(
+                new Set(nodes.map(n => n.data.cloud?.color).filter((c): c is string => Boolean(c)))
+              )}
             />
           </Panel>
         )}
@@ -1681,8 +1496,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
             <button
               onClick={() => {
-                toggleDarkMode();
-                setCurrentTheme(getEffectiveTheme());
+                toggleDarkMode()
+                setCurrentTheme(getEffectiveTheme())
               }}
               title="Toggle dark mode (Ctrl+Shift+D)"
               style={{
@@ -1724,7 +1539,9 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => saveToFile('pdf')}>PDF (Print)</button>
             <button onClick={() => saveToFile('powerpoint')}>PowerPoint</button>
             <button onClick={() => saveToFile('presentation')}>Presentation</button>
-            <button onClick={() => downloadMarkdown(flowToTree(nodes, edges)!, 'notion.md')}>Notion/Obsidian</button>
+            <button onClick={() => downloadMarkdown(flowToTree(nodes, edges)!, 'notion.md')}>
+              Notion/Obsidian
+            </button>
             <hr />
             <div>
               <strong>Export As Image:</strong>
@@ -1765,17 +1582,28 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
         <Panel position="bottom-left">
           <div style={{ fontSize: '12px', color: '#666' }}>
-            <strong>Shortcuts:</strong><br />
-            Tab - Create child<br />
-            Enter - Create sibling<br />
-            Delete - Remove node<br />
-            F2 - Edit text<br />
-            Space - Toggle collapse<br />
-            <strong>Multi-Select:</strong> Shift+Click<br />
-            <strong>Select All:</strong> Ctrl+A<br />
-            <strong>Zoom:</strong> Ctrl +/-/0<br />
-            <strong>Notes:</strong> F3 / Ctrl+N<br />
-            <strong>Stats:</strong> Ctrl+I<br />
+            <strong>Shortcuts:</strong>
+            <br />
+            Tab - Create child
+            <br />
+            Enter - Create sibling
+            <br />
+            Delete - Remove node
+            <br />
+            F2 - Edit text
+            <br />
+            Space - Toggle collapse
+            <br />
+            <strong>Multi-Select:</strong> Shift+Click
+            <br />
+            <strong>Select All:</strong> Ctrl+A
+            <br />
+            <strong>Zoom:</strong> Ctrl +/-/0
+            <br />
+            <strong>Notes:</strong> F3 / Ctrl+N
+            <br />
+            <strong>Stats:</strong> Ctrl+I
+            <br />
             <strong>Help:</strong> ?
             {selectedNodeId && (
               <button
@@ -1974,12 +1802,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         visible={showNotesPanel}
         onClose={() => setShowNotesPanel(false)}
         notes={selectedNode?.data.metadata?.notes || ''}
-        onSave={(notes) => {
+        onSave={notes => {
           if (selectedNodeId) {
             handleUpdateMetadata({
               ...(selectedNode?.data.metadata || {}),
               notes: notes || undefined,
-            });
+            })
           }
         }}
       />
@@ -2027,9 +1855,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       )}
 
       {/* Keyboard Shortcuts Modal */}
-      {showShortcuts && (
-        <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />
-      )}
+      {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
 
       {/* Bulk Operations Panel */}
       {showBulkOperations && selectedNodeIds.size > 1 && (
@@ -2039,7 +1865,9 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           onBulkIconChange={handleBulkIconChange}
           onBulkCloudChange={handleBulkCloudChange}
           onBulkColorChange={handleBulkColorChange}
-          availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i))))}
+          availableIcons={Array.from(
+            new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i)))
+          )}
           onClearSelection={handleClearSelection}
           onClose={() => setShowBulkOperations(false)}
         />
@@ -2092,9 +1920,9 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         visible={showWebhookPanel}
         onClose={() => setShowWebhookPanel(false)}
         tree={flowToTree(nodes, edges)}
-        onWebhookData={(data) => {
+        onWebhookData={data => {
           if (data.parentId) {
-            createChildNode(data.parentId);
+            createChildNode(data.parentId)
           }
         }}
       />
@@ -2147,7 +1975,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }}
       />
     </div>
-  );
+  )
 }
 
 export default function MindMapCanvasWrapper(props: MindMapCanvasProps) {
@@ -2155,5 +1983,5 @@ export default function MindMapCanvasWrapper(props: MindMapCanvasProps) {
     <ReactFlowProvider>
       <MindMapCanvas {...props} />
     </ReactFlowProvider>
-  );
+  )
 }
