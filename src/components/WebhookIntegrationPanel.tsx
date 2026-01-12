@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { MindMapTree } from '../types';
 import {
   registerWebhook,
@@ -42,6 +42,12 @@ export default function WebhookIntegrationPanel({
       }
     }
     setTestPayload(JSON.stringify(generateTestPayload(), null, 2));
+     
+  }, []);
+
+  const showStatus = useCallback((type: 'success' | 'error', text: string) => {
+    setStatusMessage({ type, text });
+    setTimeout(() => setStatusMessage(null), 3000);
   }, []);
 
   const handleSaveConfig = () => {
@@ -49,7 +55,7 @@ export default function WebhookIntegrationPanel({
     showStatus('success', 'Webhook configuration saved!');
   };
 
-  const handleTestWebhook = async () => {
+  const handleTestWebhook = useCallback(async () => {
     if (!config.webhookUrl || !tree) {
       showStatus('error', 'Please enter a webhook URL');
       return;
@@ -63,17 +69,19 @@ export default function WebhookIntegrationPanel({
     );
 
     if (success) {
-      const newConfig = { ...config, lastTriggered: Date.now() };
+      const timestamp = Date.now();
+      const newConfig = { ...config, lastTriggered: timestamp };
       registerWebhook(newConfig);
       setConfig(newConfig);
-      setLastTriggered(new Date().toLocaleString());
+      setLastTriggered(new Date(timestamp).toLocaleString());
       showStatus('success', 'Webhook triggered successfully!');
     } else {
       showStatus('error', 'Failed to trigger webhook. Check URL and API key.');
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, tree]);
 
-  const handleSimulateIncoming = () => {
+  const handleSimulateIncoming = useCallback(() => {
     try {
       const payload = JSON.parse(incomingData);
       if (validateWebhookPayload(payload)) {
@@ -90,12 +98,8 @@ export default function WebhookIntegrationPanel({
     } catch {
       showStatus('error', 'Invalid JSON format');
     }
-  };
-
-  const showStatus = (type: 'success' | 'error', text: string) => {
-    setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 3000);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomingData, onWebhookData]);
 
   if (!visible) return null;
 

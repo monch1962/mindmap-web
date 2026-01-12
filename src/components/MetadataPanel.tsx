@@ -37,15 +37,19 @@ export default function MetadataPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset local state when metadata changes (component is keyed by nodeId in parent)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    setUrl(metadata?.url || '');
-    setDescription(metadata?.description || '');
-    setNotes(metadata?.notes || '');
-    setTags(metadata?.tags?.join(', ') || '');
-    setAttachments(metadata?.attachments || []);
-    setCloudColor(cloud?.color || '#f0f9ff');
-  }, [metadata, cloud]);
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  useEffect(
+    () => {
+      setUrl(metadata?.url || '');
+      setDescription(metadata?.description || '');
+      setNotes(metadata?.notes || '');
+      setTags(metadata?.tags?.join(', ') || '');
+      setAttachments(metadata?.attachments || []);
+      setCloudColor(cloud?.color || '#f0f9ff');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [metadata, cloud],
+  );
 
   const handleSave = () => {
     const updatedMetadata: NodeMetadata = {};

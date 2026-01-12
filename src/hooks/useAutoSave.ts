@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Node, Edge } from 'reactflow';
-import type { MindMapNodeData } from '../types';
+import type { MindMapNodeData, MindMapTree } from '../types';
 import { flowToTree } from '../utils/mindmapConverter';
 
 const AUTOSAVE_KEY = 'mindmap_autosave';
@@ -11,7 +11,7 @@ const MAX_HISTORY_SLOTS = 5; // Keep last 5 auto-saves
 export interface SaveSlot {
   nodes: Node<MindMapNodeData>[];
   edges: Edge[];
-  tree: any;
+  tree: MindMapTree | null;
   timestamp: number;
   label: string;
 }

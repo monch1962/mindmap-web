@@ -31,12 +31,14 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
   const [showCustomEditor, setShowCustomEditor] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => {
     if (visible) {
       setLocalThemeMode(getThemeMode());
       setCurrentScheme(getColorScheme());
       setCustomSchemes(getCustomColorSchemes());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   useEffect(() => {

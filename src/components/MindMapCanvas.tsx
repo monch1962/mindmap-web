@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, useMemo } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -26,38 +26,23 @@ import StatisticsPanel from './StatisticsPanel'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import BulkOperationsPanel from './BulkOperationsPanel'
 import MobileToolbar from './MobileToolbar'
-import AIAssistantPanel from './AIAssistantPanel'
-import CommentsPanel from './CommentsPanel'
 import PresenceIndicator from './PresenceIndicator'
-import WebhookIntegrationPanel from './WebhookIntegrationPanel'
-import CalendarExportPanel from './CalendarExportPanel'
-import EmailIntegrationPanel from './EmailIntegrationPanel'
-import PresentationMode from './PresentationMode'
-import ThreeDView from './ThreeDView'
-import TemplatesPanel from './TemplatesPanel'
-import ThemeSettingsPanel from './ThemeSettingsPanel'
+
+// Lazy load heavy feature components
+const AIAssistantPanel = lazy(() => import('./AIAssistantPanel'))
+const CommentsPanel = lazy(() => import('./CommentsPanel'))
+const WebhookIntegrationPanel = lazy(() => import('./WebhookIntegrationPanel'))
+const CalendarExportPanel = lazy(() => import('./CalendarExportPanel'))
+const EmailIntegrationPanel = lazy(() => import('./EmailIntegrationPanel'))
+const PresentationMode = lazy(() => import('./PresentationMode'))
+const ThreeDView = lazy(() => import('./ThreeDView'))
+const TemplatesPanel = lazy(() => import('./TemplatesPanel'))
+const ThemeSettingsPanel = lazy(() => import('./ThemeSettingsPanel'))
 import type { MindMapNodeData, MindMapTree, NodeMetadata, User, Comment } from '../types'
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter'
-import {
-  parseJSON,
-  stringifyJSON,
-  parseFreeMind,
-  toFreeMind,
-  parseOPML,
-  toOPML,
-  parseMarkdown,
-  toMarkdown,
-  toD2,
-  toYaml,
-  parseYaml,
-} from '../utils/formats'
+import { useFileOperations } from '../hooks/useFileOperations'
 import { parseAITextToMindMap } from '../utils/aiParser'
-import {
-  exportToPDF,
-  exportToPowerPoint,
-  downloadMarkdown,
-  createPresentation,
-} from '../utils/enhancedExports'
+import { downloadMarkdown } from '../utils/enhancedExports'
 import { useAutoSave } from '../hooks/useAutoSave'
 import { useUndoRedo } from '../hooks/useUndoRedo'
 import { useOfflineSync } from '../hooks/useOfflineSync'
@@ -100,7 +85,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [conflictSlot, setConflictSlot] = useState<{
     nodes: Node<MindMapNodeData>[]
     edges: Edge[]
-    tree: MindMapTree
+    tree: MindMapTree | null
     timestamp: number
     label: string
   } | null>(null)
@@ -214,6 +199,15 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     edges,
     onSaveStatusChange: setSaveStatus,
     onConflictFound: slot => setConflictSlot(slot),
+  })
+
+  // File operations hook
+  const { saveToFile, loadFromFile, exportAsPNG, exportAsSVG } = useFileOperations({
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    fitView,
   })
 
   // Undo/Redo hook
@@ -1055,200 +1049,6 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     }
   }
 
-  const saveToFile = (
-    format:
-      | 'json'
-      | 'freemind'
-      | 'opml'
-      | 'markdown'
-      | 'd2'
-      | 'yaml'
-      | 'pdf'
-      | 'powerpoint'
-      | 'presentation'
-  ) => {
-    const tree = flowToTree(nodes, edges)
-    if (!tree) return
-
-    // Handle special export formats
-    if (format === 'pdf') {
-      exportToPDF(tree)
-      return
-    }
-
-    if (format === 'powerpoint') {
-      exportToPowerPoint(tree)
-      return
-    }
-
-    if (format === 'presentation') {
-      createPresentation(tree)
-      return
-    }
-
-    let content: string
-    let filename: string
-    let mimeType: string
-
-    switch (format) {
-      case 'json':
-        content = stringifyJSON(tree)
-        filename = 'mindmap.json'
-        mimeType = 'application/json'
-        break
-      case 'freemind':
-        content = toFreeMind(tree)
-        filename = 'mindmap.mm'
-        mimeType = 'application/xml'
-        break
-      case 'opml':
-        content = toOPML(tree)
-        filename = 'mindmap.opml'
-        mimeType = 'application/xml'
-        break
-      case 'markdown':
-        content = toMarkdown(tree)
-        filename = 'mindmap.md'
-        mimeType = 'text/markdown'
-        break
-      case 'd2':
-        content = toD2(tree)
-        filename = 'mindmap.d2'
-        mimeType = 'text/plain'
-        break
-      case 'yaml':
-        content = toYaml(tree)
-        filename = 'mindmap.yaml'
-        mimeType = 'text/yaml'
-        break
-    }
-
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const loadFromFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'yaml') => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept =
-      format === 'json'
-        ? '.json'
-        : format === 'freemind'
-          ? '.mm'
-          : format === 'opml'
-            ? '.opml'
-            : format === 'yaml'
-              ? '.yaml,.yml'
-              : '.md'
-
-    input.onchange = async e => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
-
-      const text = await file.text()
-      let tree: MindMapTree
-
-      try {
-        switch (format) {
-          case 'json':
-            tree = parseJSON(text)
-            break
-          case 'freemind':
-            tree = parseFreeMind(text)
-            break
-          case 'opml':
-            tree = parseOPML(text)
-            break
-          case 'markdown':
-            tree = parseMarkdown(text)
-            break
-          case 'yaml':
-            tree = parseYaml(text)
-            break
-        }
-
-        const { nodes: newNodes, edges: newEdges } = treeToFlow(tree, true) // Use auto-layout for imports
-        setNodes(newNodes)
-        setEdges(newEdges)
-
-        // Fit view to show all nodes after a short delay to ensure rendering
-        setTimeout(() => fitView({ padding: 0.2 }), 100)
-      } catch (error) {
-        alert(`Error loading file: ${error}`)
-      }
-    }
-
-    input.click()
-  }
-
-  const exportAsPNG = () => {
-    // Create a canvas element
-    const canvas = document.createElement('canvas')
-    canvas.width = 1920
-    canvas.height = 1080
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Draw white background
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    // For simplicity, we'll create an SVG first and then draw it to canvas
-    // This is a basic implementation - a more robust solution would use html2canvas
-    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement
-    if (!svgElement) return
-
-    const svgData = new XMLSerializer().serializeToString(svgElement)
-    const img = new Image()
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(svgBlob)
-
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0)
-      URL.revokeObjectURL(url)
-
-      // Download the image
-      const pngUrl = canvas.toDataURL('image/png')
-      const a = document.createElement('a')
-      a.href = pngUrl
-      a.download = 'mindmap.png'
-      a.click()
-    }
-
-    img.src = url
-  }
-
-  const exportAsSVG = () => {
-    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement
-    if (!svgElement) return
-
-    const serializer = new XMLSerializer()
-    let source = serializer.serializeToString(svgElement)
-
-    // Add namespaces
-    if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"')
-    }
-    if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
-    }
-
-    // Add XML declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source
-
-    // Create blob and download
-    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'mindmap.svg'
-    a.click()
-  }
-
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
@@ -1891,89 +1691,107 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       )}
 
       {/* AI Assistant Panel */}
-      <AIAssistantPanel
-        visible={showAIAssistant}
-        onClose={() => setShowAIAssistant(false)}
-        onGenerateMindMap={handleAIGenerateMindMap}
-        onSuggestIdeas={handleAISuggestIdeas}
-        onSummarizeBranch={handleAISummarizeBranch}
-        selectedNodeId={selectedNodeId}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading AI Assistant...</div>}>
+        <AIAssistantPanel
+          visible={showAIAssistant}
+          onClose={() => setShowAIAssistant(false)}
+          onGenerateMindMap={handleAIGenerateMindMap}
+          onSuggestIdeas={handleAISuggestIdeas}
+          onSummarizeBranch={handleAISummarizeBranch}
+          selectedNodeId={selectedNodeId}
+        />
+      </Suspense>
 
       {/* Comments Panel */}
-      <CommentsPanel
-        visible={showCommentsPanel}
-        onClose={() => setShowCommentsPanel(false)}
-        nodeId={selectedNodeId}
-        nodeLabel={selectedNode?.data?.label || ''}
-        comments={comments}
-        onAddComment={handleAddComment}
-        onResolveComment={handleResolveComment}
-        onDeleteComment={handleDeleteComment}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Comments...</div>}>
+        <CommentsPanel
+          visible={showCommentsPanel}
+          onClose={() => setShowCommentsPanel(false)}
+          nodeId={selectedNodeId}
+          nodeLabel={selectedNode?.data?.label || ''}
+          comments={comments}
+          onAddComment={handleAddComment}
+          onResolveComment={handleResolveComment}
+          onDeleteComment={handleDeleteComment}
+        />
+      </Suspense>
 
       {/* Presence Indicator */}
       <PresenceIndicator users={onlineUsers} currentUser={currentUser} />
 
       {/* Webhook Integration Panel */}
-      <WebhookIntegrationPanel
-        visible={showWebhookPanel}
-        onClose={() => setShowWebhookPanel(false)}
-        tree={flowToTree(nodes, edges)}
-        onWebhookData={data => {
-          if (data.parentId) {
-            createChildNode(data.parentId)
-          }
-        }}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Webhook Integration...</div>}>
+        <WebhookIntegrationPanel
+          visible={showWebhookPanel}
+          onClose={() => setShowWebhookPanel(false)}
+          tree={flowToTree(nodes, edges)}
+          onWebhookData={data => {
+            if (data.parentId) {
+              createChildNode(data.parentId)
+            }
+          }}
+        />
+      </Suspense>
 
       {/* Calendar Export Panel */}
-      <CalendarExportPanel
-        visible={showCalendarPanel}
-        onClose={() => setShowCalendarPanel(false)}
-        tree={flowToTree(nodes, edges)}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Calendar Export...</div>}>
+        <CalendarExportPanel
+          visible={showCalendarPanel}
+          onClose={() => setShowCalendarPanel(false)}
+          tree={flowToTree(nodes, edges)}
+        />
+      </Suspense>
 
       {/* Email Integration Panel */}
-      <EmailIntegrationPanel
-        visible={showEmailPanel}
-        onClose={() => setShowEmailPanel(false)}
-        tree={flowToTree(nodes, edges)}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Email Integration...</div>}>
+        <EmailIntegrationPanel
+          visible={showEmailPanel}
+          onClose={() => setShowEmailPanel(false)}
+          tree={flowToTree(nodes, edges)}
+        />
+      </Suspense>
 
       {/* Presentation Mode */}
       {showPresentation && (
-        <PresentationMode
-          visible={showPresentation}
-          onClose={() => setShowPresentation(false)}
-          tree={flowToTree(nodes, edges)}
-        />
+        <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Presentation...</div>}>
+          <PresentationMode
+            visible={showPresentation}
+            onClose={() => setShowPresentation(false)}
+            tree={flowToTree(nodes, edges)}
+          />
+        </Suspense>
       )}
 
       {/* 3D View */}
       {show3DView && (
-        <ThreeDView
-          visible={show3DView}
-          onClose={() => setShow3DView(false)}
-          tree={flowToTree(nodes, edges)}
-        />
+        <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading 3D View...</div>}>
+          <ThreeDView
+            visible={show3DView}
+            onClose={() => setShow3DView(false)}
+            tree={flowToTree(nodes, edges)}
+          />
+        </Suspense>
       )}
 
       {/* Templates Panel */}
-      <TemplatesPanel
-        visible={showTemplatesPanel}
-        onClose={() => setShowTemplatesPanel(false)}
-        onApplyTemplate={handleApplyTemplate}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Templates...</div>}>
+        <TemplatesPanel
+          visible={showTemplatesPanel}
+          onClose={() => setShowTemplatesPanel(false)}
+          onApplyTemplate={handleApplyTemplate}
+        />
+      </Suspense>
 
       {/* Theme Settings Panel */}
-      <ThemeSettingsPanel
-        visible={showThemeSettings}
-        onClose={() => setShowThemeSettings(false)}
-        onThemeChange={() => {
-          // Theme change handled by the panel itself
-        }}
-      />
+      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Theme Settings...</div>}>
+        <ThemeSettingsPanel
+          visible={showThemeSettings}
+          onClose={() => setShowThemeSettings(false)}
+          onThemeChange={() => {
+            // Theme change handled by the panel itself
+          }}
+        />
+      </Suspense>
     </div>
   )
 }

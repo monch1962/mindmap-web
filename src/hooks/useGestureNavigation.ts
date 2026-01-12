@@ -192,6 +192,7 @@ export function useGestureNavigation({
       container.removeEventListener('pointerout', handlePointerUp as EventListener);
       container.removeEventListener('pointerleave', handlePointerUp as EventListener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, gestureState, getViewport, setViewport, zoomTo]);
 
   return {
@@ -218,6 +219,7 @@ export function useTouchControls(enabled: boolean = true) {
     // Detect touch device
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTouchState(prev => ({ ...prev, isTouch: isTouchDevice }));
 
     if (isTouchDevice) {
@@ -266,6 +268,7 @@ export function calculateFitZoom(
 /**
  * Animate zoom to target (deprecated - use ReactFlow's zoomTo instead)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function animateZoomTo(_targetZoom: number, _duration: number = 300): void {
   console.warn('animateZoomTo is deprecated. Use ReactFlow\'s zoomTo function instead.');
   // This function is kept for backward compatibility but no longer works

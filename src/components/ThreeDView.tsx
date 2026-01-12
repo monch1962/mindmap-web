@@ -23,6 +23,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
   const [zoom, setZoom] = useState(1);
   const [autoRotate, setAutoRotate] = useState(true);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
@@ -51,6 +52,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
   // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
+    setIsDraggingState(true);
     lastMousePos.current = { x: e.clientX, y: e.clientY };
     setAutoRotate(false);
   };
@@ -71,6 +73,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
   const handleMouseUp = () => {
     isDragging.current = false;
+    setIsDraggingState(false);
   };
 
   // Zoom handlers
@@ -116,6 +119,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, autoRotate]);
 
   if (!visible || !tree) return null;
@@ -131,7 +135,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
         background: 'radial-gradient(circle at center, #1e1b4b 0%, #0f0f23 100%)',
         zIndex: 2000,
         overflow: 'hidden',
-        cursor: isDragging.current ? 'grabbing' : 'grab',
+        cursor: isDraggingState ? 'grabbing' : 'grab',
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

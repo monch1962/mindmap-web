@@ -12,13 +12,13 @@ export function parseAITextToMindMap(text: string): MindMapTree {
   }
 
   // Parse hierarchy based on indentation
-  const root: any = {
+  const root: MindMapTree = {
     id: generateId(),
-    label: lines[0].trim(),
+    content: lines[0].trim(),
     children: [],
   };
 
-  const stack: Array<{ node: any; level: number }> = [{ node: root, level: 0 }];
+  const stack: Array<{ node: MindMapTree; level: number }> = [{ node: root, level: 0 }];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -27,9 +27,9 @@ export function parseAITextToMindMap(text: string): MindMapTree {
 
     if (!label) continue;
 
-    const newNode = {
+    const newNode: MindMapTree = {
       id: generateId(),
-      label,
+      content: label,
       children: [],
     };
 

@@ -7,27 +7,27 @@
 declare const self: ServiceWorkerGlobalScope;
 
 interface ExtendableEvent extends Event {
-  waitUntil(promise: Promise<any>): void;
+  waitUntil(promise: Promise<unknown>): void;
   tag?: string;
 }
 
 interface ExtendableMessageEvent extends MessageEvent {
-  waitUntil(promise: Promise<any>): void;
+  waitUntil(promise: Promise<unknown>): void;
   ports: MessagePort[];
-  data: any;
+  data: unknown;
 }
 
 interface FetchEvent extends Event {
   request: Request;
   respondWith(response: Promise<Response> | Response): void;
-  waitUntil(promise: Promise<any>): void;
+  waitUntil(promise: Promise<unknown>): void;
 }
 
 interface Client {
   url: string;
   frameType?: string;
   id: string;
-  postMessage(message: any, transfer?: Transferable[]): void;
+  postMessage(message: unknown, transfer?: Transferable[]): void;
 }
 
 declare global {
@@ -38,8 +38,20 @@ declare global {
       matchAll(options?: { includeUncontrolled?: boolean }): Promise<Array<Client>>;
     };
     addEventListener(
-      type: 'install' | 'activate' | 'fetch' | 'sync' | 'message',
-      listener: (event: ExtendableEvent | FetchEvent | ExtendableMessageEvent | any) => any
+      type: 'install' | 'activate',
+      listener: (event: ExtendableEvent) => void
+    ): void;
+    addEventListener(
+      type: 'fetch',
+      listener: (event: FetchEvent) => void
+    ): void;
+    addEventListener(
+      type: 'sync',
+      listener: (event: ExtendableEvent) => void
+    ): void;
+    addEventListener(
+      type: 'message',
+      listener: (event: ExtendableMessageEvent) => void
     ): void;
   }
 }
@@ -284,7 +296,7 @@ async function handleOfflinePost(request: Request): Promise<Response> {
   try {
     const response = await fetch(request);
     return response;
-  } catch (error) {
+  } catch {
     console.log('[SW] Offline - storing request for background sync');
 
     // Store request for background sync
@@ -363,7 +375,9 @@ async function syncOfflineRequests(): Promise<void> {
 self.addEventListener('message', (event: ExtendableMessageEvent & { tag?: string }) => {
   console.log('[SW] Received message:', event.data);
 
-  switch (event.data.type) {
+  const data = event.data as { type: string; [key: string]: unknown } | undefined;
+
+  switch (data?.type) {
     case 'SKIP_WAITING':
       self.skipWaiting();
       break;
@@ -416,10 +430,10 @@ async function clearCache(): Promise<void> {
 /**
  * Get offline requests
  */
-async function getOfflineRequests(): Promise<any[]> {
+async function getOfflineRequests(): Promise<unknown[]> {
   const cache = await caches.open(OFFLINE_CACHE);
   const keys = await cache.keys();
-  const requests = [];
+  const requests: unknown[] = [];
 
   for (const request of keys) {
     const response = await cache.match(request);

@@ -23,7 +23,7 @@ export default function RichTextEditor({
   const [linkUrl, setLinkUrl] = useState('');
 
   // Sync local state with props when content changes
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => {
     // Sanitize content on initialization
     const sanitizedContent = sanitizeHtml(content);
@@ -36,6 +36,7 @@ export default function RichTextEditor({
       }
       setText(sanitizedContent);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 
   const execCommand = (command: string, value: string = '') => {

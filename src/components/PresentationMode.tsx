@@ -27,13 +27,14 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
   const [showNotes, setShowNotes] = useState(false);
 
   // Reset slides when tree changes
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => {
     if (tree) {
       const generatedSlides = generateSlides(tree);
       setSlides(generatedSlides);
       setCurrentSlideIndex(0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tree]);
 
   // Navigation callbacks (must be declared before the keyboard effect)

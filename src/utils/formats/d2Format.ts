@@ -90,6 +90,7 @@ export function toD2(tree: MindMapTree): string {
  * Parse D2 format to mind map tree (basic support)
  * This is a simplified parser that handles basic D2 syntax
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function parseD2(_d2String: string): MindMapTree {
   // Parameter is intentionally unused - this function currently throws an error
   // This is a simplified parser - full D2 parsing would require a proper tokenizer

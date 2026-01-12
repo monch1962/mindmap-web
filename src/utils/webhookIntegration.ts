@@ -10,7 +10,7 @@ export interface WebhookPayload {
   data: {
     parentId?: string;
     content: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   };
   source: 'zapier' | 'make' | 'ifft' | 'custom';
   timestamp: number;
@@ -100,7 +100,7 @@ export function processWebhookPayload(payload: WebhookPayload): {
   nodeId: string;
   content: string;
   parentId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 } {
   return {
     nodeId: `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -202,15 +202,19 @@ export function generateTestPayload(): WebhookPayload {
 /**
  * Validate webhook payload
  */
-export function validateWebhookPayload(payload: any): payload is WebhookPayload {
+export function validateWebhookPayload(payload: unknown): payload is WebhookPayload {
   return (
     typeof payload === 'object' &&
     payload !== null &&
-    typeof payload.action === 'string' &&
-    typeof payload.data === 'object' &&
-    typeof payload.data.content === 'string' &&
-    typeof payload.source === 'string' &&
-    typeof payload.timestamp === 'number' &&
-    ['create', 'update', 'add_node'].includes(payload.action)
+    'action' in payload &&
+    'data' in payload &&
+    'source' in payload &&
+    'timestamp' in payload &&
+    typeof (payload as WebhookPayload).action === 'string' &&
+    typeof (payload as WebhookPayload).data === 'object' &&
+    typeof (payload as WebhookPayload).data.content === 'string' &&
+    typeof (payload as WebhookPayload).source === 'string' &&
+    typeof (payload as WebhookPayload).timestamp === 'number' &&
+    ['create', 'update', 'add_node'].includes((payload as WebhookPayload).action)
   );
 }

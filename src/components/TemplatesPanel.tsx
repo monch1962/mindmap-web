@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { templates, getTemplatesByCategory, type Template } from '../utils/mindmapTemplates';
+import type { MindMapTree } from '../types';
 
 interface TemplatesPanelProps {
   visible: boolean;
@@ -437,7 +438,7 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
 /**
  * Tree preview component
  */
-function TreePreview({ tree, level = 0 }: { tree: any; level?: number }) {
+function TreePreview({ tree, level = 0 }: { tree: MindMapTree; level?: number }) {
   const indent = level * 20;
 
   return (
@@ -457,7 +458,7 @@ function TreePreview({ tree, level = 0 }: { tree: any; level?: number }) {
       </div>
       {tree.children && tree.children.length > 0 && (
         <div style={{ marginLeft: '16px' }}>
-          {tree.children.map((child: any) => (
+          {tree.children.map((child: MindMapTree) => (
             <TreePreview key={child.id} tree={child} level={level + 1} />
           ))}
         </div>

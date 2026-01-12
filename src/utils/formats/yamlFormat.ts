@@ -1,13 +1,23 @@
 import yaml from 'js-yaml';
 import type { MindMapTree } from '../../types';
 
+interface YamlNode {
+  content?: string;
+  label?: string;
+  notes?: string;
+  link?: string;
+  icon?: string;
+  cloud?: { color?: string };
+  children?: YamlNode[];
+}
+
 /**
  * Convert mind map tree to YAML format
  */
 export function toYaml(tree: MindMapTree): string {
   // Convert tree to nested object structure
-  const toObject = (node: MindMapTree): any => {
-    const obj: any = {
+  const toObject = (node: MindMapTree): YamlNode => {
+    const obj: YamlNode = {
       content: node.content,
     };
 
@@ -47,14 +57,14 @@ export function toYaml(tree: MindMapTree): string {
  * Parse YAML to mind map tree
  */
 export function parseYaml(yamlString: string): MindMapTree {
-  const obj = yaml.load(yamlString) as any;
+  const obj = yaml.load(yamlString) as YamlNode | null | undefined;
 
   if (!obj || typeof obj !== 'object') {
     throw new Error('Invalid YAML format');
   }
 
   // Convert object to tree structure
-  const fromObject = (obj: any): MindMapTree => {
+  const fromObject = (obj: YamlNode): MindMapTree => {
     const node: MindMapTree = {
       id: String(Date.now() + Math.random()),
       content: obj.content || obj.label || 'Root',

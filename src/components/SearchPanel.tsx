@@ -52,7 +52,7 @@ export default function SearchPanel({
     }
   };
 
-  const setFilter = (key: keyof SearchOptions, value: any) => {
+  const setFilter = (key: keyof SearchOptions, value: SearchOptions[keyof SearchOptions] | undefined) => {
     setOptions((prev) => ({ ...prev, [key]: value || undefined }));
     // Re-search when filter changes
     onSearch(query, { ...options, [key]: value || undefined });

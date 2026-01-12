@@ -75,6 +75,7 @@ function generateSummaryEmail(tree: MindMapTree, config: EmailConfig): string {
 /**
  * Generate detailed email format
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateDetailedEmail(tree: MindMapTree, _config: EmailConfig): string {
   const lines: string[] = [];
 
@@ -114,6 +115,7 @@ function generateDetailedEmail(tree: MindMapTree, _config: EmailConfig): string 
 /**
  * Generate bullet points email format
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateBulletPointsEmail(tree: MindMapTree, _config: EmailConfig): string {
   const lines: string[] = [];
 
@@ -140,6 +142,7 @@ function generateBulletPointsEmail(tree: MindMapTree, _config: EmailConfig): str
 /**
  * Generate newsletter-style email
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateNewsletterEmail(tree: MindMapTree, _config: EmailConfig): string {
   const lines: string[] = [];
 

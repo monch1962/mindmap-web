@@ -108,9 +108,8 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
 
     try {
       // sync API might not be available in all browsers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ('sync' in swRegistration) {
-        await (swRegistration as any).sync.register('sync-offline-requests');
+        await (swRegistration as ServiceWorkerRegistration & { sync: { register(tag: string): void } }).sync.register('sync-offline-requests');
       }
       const count = await checkPendingSync();
       console.log('[PWA] Synced offline requests');
@@ -333,15 +332,21 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
 /**
  * Hook for PWA install prompt
  */
+// BeforeInstallPromptEvent is not in standard TypeScript types
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
       console.log('[PWA] Install prompt available');
     };
@@ -349,8 +354,8 @@ export function usePWAInstall() {
     window.addEventListener('beforeinstallprompt', handler);
 
     // Check if already installed on mount
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (window.matchMedia('(display-mode: standalone)').matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInstalled(true);
     }
 
