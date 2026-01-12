@@ -18,9 +18,14 @@ import MetadataPanel from './MetadataPanel';
 import NotesPanel from './NotesPanel';
 import CloudBackground from './CloudBackground';
 import CrossLinkEdge from './CrossLinkEdge';
+import SearchPanel, { type SearchOptions } from './SearchPanel';
+import SaveHistoryPanel from './SaveHistoryPanel';
+import ConflictResolutionModal from './ConflictResolutionModal';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
-import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2 } from '../utils/formats';
+import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { useUndoRedo } from '../hooks/useUndoRedo';
 
 const nodeTypes = {
   mindmap: MindMapNode,
@@ -46,9 +51,127 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const [crossLinkMode, setCrossLinkMode] = useState(false);
   const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
+  const [showSearch, setShowSearch] = useState(false);
+  const [_searchQuery, setSearchQuery] = useState('');
+  const [searchOptions, setSearchOptions] = useState<SearchOptions>({
+    caseSensitive: false,
+    wholeWord: false,
+    useRegex: false,
+    searchInNotes: false,
+  });
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(0);
+  const [showSaveHistory, setShowSaveHistory] = useState(false);
+  const [conflictSlot, setConflictSlot] = useState<any>(null);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  // Auto-save hook with history
+  const { saveNow, saveHistory, restoreFromHistory, deleteHistorySlot } = useAutoSave({
+    nodes,
+    edges,
+    onSaveStatusChange: setSaveStatus,
+    onConflictFound: (slot) => setConflictSlot(slot),
+  });
+
+  // Undo/Redo hook
+  const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo } = useUndoRedo();
+
+  const handleUndo = () => {
+    if (!canUndo) return;
+
+    const previousState = undo();
+    if (previousState) {
+      setNodes(previousState.nodes);
+      setEdges(previousState.edges);
+    }
+  };
+
+  const handleRedo = () => {
+    if (!canRedo) return;
+
+    const nextState = redo();
+    if (nextState) {
+      setNodes(nextState.nodes);
+      setEdges(nextState.edges);
+    }
+  };
+
+  // Search handlers
+  const handleSearch = (query: string, options: SearchOptions) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setSearchQuery('');
+      setSearchOptions(options);
+      setCurrentResultIndex(0);
+      return;
+    }
+
+    setSearchOptions(options);
+
+    const matchingNodeIds = nodes.filter((node) => {
+      const label = node.data.label || '';
+      const notes = node.data.metadata?.notes || '';
+      const searchText = options.searchInNotes
+        ? `${label} ${notes}`
+        : label;
+
+      let searchQuery = query;
+      let searchTarget = searchText;
+
+      // Case sensitivity
+      if (!options.caseSensitive) {
+        searchQuery = searchQuery.toLowerCase();
+        searchTarget = searchTarget.toLowerCase();
+      }
+
+      // Regex mode
+      if (options.useRegex) {
+        try {
+          const regex = new RegExp(searchQuery, options.caseSensitive ? 'g' : 'gi');
+          return regex.test(searchTarget);
+        } catch {
+          // Invalid regex, fall back to regular search
+          return searchTarget.includes(searchQuery);
+        }
+      }
+
+      // Whole word mode
+      if (options.wholeWord) {
+        const words = searchTarget.split(/\s+/);
+        return words.some((word) => word === searchQuery);
+      }
+
+      // Default: contains search
+      return searchTarget.includes(searchQuery);
+    }).map((node) => node.id);
+
+    setSearchResults(matchingNodeIds);
+    setSearchQuery(query);
+    setCurrentResultIndex(0);
+
+    if (matchingNodeIds.length > 0) {
+      setSelectedNodeId(matchingNodeIds[0]);
+    }
+  };
+
+  const handleNextResult = () => {
+    if (searchResults.length === 0) return;
+
+    const nextIndex = (currentResultIndex + 1) % searchResults.length;
+    setCurrentResultIndex(nextIndex);
+    setSelectedNodeId(searchResults[nextIndex]);
+  };
+
+  const handlePreviousResult = () => {
+    if (searchResults.length === 0) return;
+
+    const prevIndex = (currentResultIndex - 1 + searchResults.length) % searchResults.length;
+    setCurrentResultIndex(prevIndex);
+    setSelectedNodeId(searchResults[prevIndex]);
+  };
 
   const handleUpdateMetadata = (metadata: NodeMetadata) => {
     if (!selectedNodeId) return;
@@ -234,11 +357,85 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         event.preventDefault();
         setShowNotesPanel(!showNotesPanel);
       }
+
+      // Ctrl Z - Undo
+      if (event.key === 'z' || event.key === 'Z') {
+        if (event.ctrlKey || event.metaKey) {
+          if (event.shiftKey) {
+            // Ctrl Shift Z - Redo
+            event.preventDefault();
+            handleRedo();
+          } else {
+            // Ctrl Z - Undo
+            event.preventDefault();
+            handleUndo();
+          }
+        }
+      }
+
+      // Ctrl Y - Redo
+      if (event.key === 'y' || event.key === 'Y') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          handleRedo();
+        }
+      }
+
+      // Ctrl F - Open search
+      if (event.key === 'f' || event.key === 'F') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          setShowSearch(true);
+        }
+      }
+
+      // F3 - Next search result
+      if (event.key === 'F3') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          handlePreviousResult();
+        } else {
+          handleNextResult();
+        }
+      }
+
+      // Escape - Close panels
+      if (event.key === 'Escape') {
+        if (showSearch) {
+          setShowSearch(false);
+        }
+        if (showNotesPanel) {
+          setShowNotesPanel(false);
+        }
+        if (showSaveHistory) {
+          setShowSaveHistory(false);
+        }
+        if (crossLinkMode) {
+          setCrossLinkMode(false);
+          setCrossLinkSource(null);
+        }
+      }
+
+      // Ctrl S - Manual save
+      if (event.key === 's' || event.key === 'S') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          saveNow();
+        }
+      }
+
+      // Ctrl H - Show save history
+      if (event.key === 'h' || event.key === 'H') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          setShowSaveHistory(!showSaveHistory);
+        }
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel]);
+  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -365,7 +562,24 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     );
   };
 
-  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2') => {
+  const handleRestoreFromHistory = (index: number) => {
+    const slot = restoreFromHistory(index);
+    if (slot) {
+      setNodes(slot.nodes);
+      setEdges(slot.edges);
+      setShowSaveHistory(false);
+    }
+  };
+
+  const handleConflictRestore = () => {
+    if (conflictSlot) {
+      setNodes(conflictSlot.nodes);
+      setEdges(conflictSlot.edges);
+      setConflictSlot(null);
+    }
+  };
+
+  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2' | 'yaml') => {
     const tree = flowToTree(nodes, edges);
     if (!tree) return;
 
@@ -399,6 +613,11 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         filename = 'mindmap.d2';
         mimeType = 'text/plain';
         break;
+      case 'yaml':
+        content = toYaml(tree);
+        filename = 'mindmap.yaml';
+        mimeType = 'text/yaml';
+        break;
     }
 
     const blob = new Blob([content], { type: mimeType });
@@ -410,7 +629,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     URL.revokeObjectURL(url);
   };
 
-  const loadFromFile = (format: 'json' | 'freemind' | 'opml' | 'markdown') => {
+  const loadFromFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'yaml') => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept =
@@ -420,6 +639,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         ? '.mm'
         : format === 'opml'
         ? '.opml'
+        : format === 'yaml'
+        ? '.yaml,.yml'
         : '.md';
 
     input.onchange = async (e) => {
@@ -442,6 +663,9 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             break;
           case 'markdown':
             tree = parseMarkdown(text);
+            break;
+          case 'yaml':
+            tree = parseYaml(text);
             break;
         }
 
@@ -550,7 +774,130 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         <Controls />
         <MiniMap />
 
+        {/* Save Status Indicator */}
+        <Panel position="top-center" style={{ background: 'transparent' }}>
+          <div
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {saveStatus === 'saved' && (
+                <>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span style={{ color: '#10b981', fontWeight: 'bold' }}>Saved</span>
+                </>
+              )}
+              {saveStatus === 'unsaved' && (
+                <>
+                  <span style={{ color: '#f59e0b' }}>●</span>
+                  <span style={{ color: '#f59e0b' }}>Unsaved changes</span>
+                </>
+              )}
+              {saveStatus === 'saving' && (
+                <>
+                  <span style={{ color: '#3b82f6' }}>⟳</span>
+                  <span style={{ color: '#3b82f6' }}>Saving...</span>
+                </>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                onClick={saveNow}
+                title="Save now (Ctrl+S)"
+                style={{
+                  padding: '4px 8px',
+                  background: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: '500',
+                }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowSaveHistory(true)}
+                title="View save history (Ctrl+H)"
+                style={{
+                  padding: '4px 8px',
+                  background: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: '500',
+                }}
+              >
+                History ({saveHistory.length})
+              </button>
+            </div>
+          </div>
+        </Panel>
+
+        {/* Search Panel */}
+        {showSearch && (
+          <Panel position="top-center" style={{ top: '60px' }}>
+            <SearchPanel
+              onSearch={handleSearch}
+              onNext={handleNextResult}
+              onPrevious={handlePreviousResult}
+              resultCount={searchResults.length}
+              currentResult={currentResultIndex}
+            />
+          </Panel>
+        )}
+
         <Panel position="bottom-right" style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleUndo}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: canUndo ? 'pointer' : 'not-allowed',
+              fontSize: '16px',
+              opacity: canUndo ? 1 : 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ↶
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: canRedo ? 'pointer' : 'not-allowed',
+              fontSize: '16px',
+              opacity: canRedo ? 1 : 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ↷
+          </button>
           <button
             onClick={() => zoomIn()}
             title="Zoom In (Ctrl +)"
@@ -621,6 +968,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => saveToFile('opml')}>OPML</button>
             <button onClick={() => saveToFile('markdown')}>Markdown</button>
             <button onClick={() => saveToFile('d2')}>D2</button>
+            <button onClick={() => saveToFile('yaml')}>YAML</button>
             <hr />
             <div>
               <strong>Export As Image:</strong>
@@ -635,6 +983,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => loadFromFile('freemind')}>FreeMind (.mm)</button>
             <button onClick={() => loadFromFile('opml')}>OPML</button>
             <button onClick={() => loadFromFile('markdown')}>Markdown</button>
+            <button onClick={() => loadFromFile('yaml')}>YAML</button>
             <hr />
             <div>
               <strong>Cross-Links:</strong>
@@ -716,6 +1065,25 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           }
         }}
       />
+
+      {/* Save History Panel */}
+      {showSaveHistory && (
+        <SaveHistoryPanel
+          saveHistory={saveHistory}
+          onRestore={handleRestoreFromHistory}
+          onDelete={deleteHistorySlot}
+          onClose={() => setShowSaveHistory(false)}
+        />
+      )}
+
+      {/* Conflict Resolution Modal */}
+      {conflictSlot && (
+        <ConflictResolutionModal
+          saveSlot={conflictSlot}
+          onRestore={handleConflictRestore}
+          onDismiss={() => setConflictSlot(null)}
+        />
+      )}
     </div>
   );
 }
