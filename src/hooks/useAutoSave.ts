@@ -68,7 +68,7 @@ export function useAutoSave({ nodes, edges, onSaveStatusChange, onConflictFound 
       return [];
     };
 
-    const history = loadHistory();
+    loadHistory();
 
     // Check for conflict - if there's an auto-save from previous session
     const saved = localStorage.getItem(AUTOSAVE_KEY);

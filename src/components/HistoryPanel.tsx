@@ -35,7 +35,6 @@ export default function HistoryPanel({
   onRedo,
   onClose,
 }: HistoryPanelProps) {
-  const pastLength = history.filter(h => !h.isCurrent).length;
   const currentIndex = history.findIndex(h => h.isCurrent);
 
   return (

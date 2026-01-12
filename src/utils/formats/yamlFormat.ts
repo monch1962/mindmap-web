@@ -8,7 +8,7 @@ export function toYaml(tree: MindMapTree): string {
   // Convert tree to nested object structure
   const toObject = (node: MindMapTree): any => {
     const obj: any = {
-      label: node.label,
+      content: node.content,
     };
 
     if (node.children && node.children.length > 0) {
@@ -56,7 +56,9 @@ export function parseYaml(yamlString: string): MindMapTree {
   // Convert object to tree structure
   const fromObject = (obj: any): MindMapTree => {
     const node: MindMapTree = {
-      label: obj.label || 'Root',
+      id: String(Date.now() + Math.random()),
+      content: obj.content || obj.label || 'Root',
+      children: [],
     };
 
     if (obj.children && Array.isArray(obj.children)) {

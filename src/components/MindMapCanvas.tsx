@@ -26,9 +26,14 @@ import StatisticsPanel from './StatisticsPanel';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import BulkOperationsPanel from './BulkOperationsPanel';
 import MobileToolbar from './MobileToolbar';
+import AIAssistantPanel from './AIAssistantPanel';
+import CommentsPanel from './CommentsPanel';
+import PresenceIndicator from './PresenceIndicator';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
+import { parseAITextToMindMap } from '../utils/aiParser';
+import { exportToPDF, exportToPowerPoint, downloadMarkdown, createPresentation } from '../utils/enhancedExports';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 
@@ -61,7 +66,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [showSearch, setShowSearch] = useState(false);
   const [_searchQuery, setSearchQuery] = useState('');
-  const [searchOptions] = useState<SearchOptions>({
+  const [_searchOptions] = useState<SearchOptions>({
     caseSensitive: false,
     wholeWord: false,
     useRegex: false,
@@ -75,9 +80,26 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [showStatistics, setShowStatistics] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [currentUser] = useState(() => {
+    const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`;
+    const color = localStorage.getItem('user_color') || '#3b82f6';
+    return { id: Date.now().toString(), name, color };
+  });
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([currentUser]);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  // Update onlineUsers when currentUser changes
+  useEffect(() => {
+    setOnlineUsers((prev) => {
+      const filtered = prev.filter((u) => u.id !== currentUser.id);
+      return [...filtered, currentUser];
+    });
+  }, [currentUser]);
 
   // Transform nodes to add multi-selection state
   const transformedNodes = useMemo(() => {
@@ -119,8 +141,31 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       );
     };
 
+    const handleNodeCheckboxChange = (e: CustomEvent) => {
+      const { nodeId, checked } = e.detail;
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                checked,
+                lastModified: Date.now(),
+              },
+            };
+          }
+          return node;
+        })
+      );
+    };
+
     window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
-    return () => window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
+    window.addEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
+    return () => {
+      window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
+      window.removeEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
+    };
   }, []);
 
   // Detect mobile screen size
@@ -435,6 +480,107 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     );
   };
 
+  // AI Handlers
+  const handleAIGenerateMindMap = (text: string) => {
+    try {
+      const mindMapTree = parseAITextToMindMap(text);
+      const { nodes: newNodes, edges: newEdges } = treeToFlow(mindMapTree);
+      setNodes(newNodes);
+      setEdges(newEdges);
+    } catch (error: any) {
+      alert(`Error generating mind map: ${error.message}`);
+    }
+  };
+
+  const handleAISuggestIdeas = (nodeId: string) => {
+    // This would normally get suggestions from AI
+    // For now, it's a placeholder that could be expanded
+    const suggestions = [
+      'Consider related concepts',
+      'Add examples',
+      'Include counter-arguments',
+      'Add references',
+      'Create sub-categories',
+    ];
+
+    const node = nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    // Add suggestions as child nodes
+    const newNodes = suggestions.map((suggestion) => ({
+      id: generateId(),
+      type: 'mindmap',
+      position: {
+        x: node.position.x + 250,
+        y: node.position.y + Math.random() * 100,
+      },
+      data: { label: suggestion, lastModified: Date.now() },
+    }));
+
+    const newEdges = newNodes.map((newNode) => ({
+      id: `${nodeId}-${newNode.id}`,
+      source: nodeId,
+      target: newNode.id,
+      type: 'smoothstep',
+    }));
+
+    setNodes((nds) => [...nds, ...newNodes]);
+    setEdges((eds) => [...eds, ...newEdges]);
+  };
+
+  const handleAISummarizeBranch = (nodeId: string) => {
+    const node = nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    // Get all descendants
+    const descendants = new Set<string>([nodeId]);
+    let added = true;
+    while (added) {
+      added = false;
+      edges.forEach((edge) => {
+        if (descendants.has(edge.source) && !descendants.has(edge.target)) {
+          descendants.add(edge.target);
+          added = true;
+        }
+      });
+    }
+
+    const branchNodes = nodes.filter((n) => descendants.has(n.id));
+    const summary = `Branch: ${node.data.label}\nContains ${branchNodes.length} nodes`;
+
+    // Show the summary in a modal or alert
+    alert(summary);
+  };
+
+  // Comment Handlers
+  const handleAddComment = (content: string) => {
+    if (!selectedNodeId) return;
+
+    const newComment = {
+      id: generateId(),
+      nodeId: selectedNodeId,
+      author: currentUser.name,
+      authorColor: currentUser.color,
+      content,
+      timestamp: Date.now(),
+      resolved: false,
+    };
+
+    setComments((prev) => [...prev, newComment]);
+  };
+
+  const handleResolveComment = (commentId: string) => {
+    setComments((prev) =>
+      prev.map((comment) =>
+        comment.id === commentId ? { ...comment, resolved: !comment.resolved } : comment
+      )
+    );
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+  };
+
   const onConnect: OnConnect = useCallback(
     (params: Connection) => {
       const newEdge = {
@@ -624,6 +770,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         if (showShortcuts) {
           setShowShortcuts(false);
         }
+        if (showAIAssistant) {
+          setShowAIAssistant(false);
+        }
+        if (showCommentsPanel) {
+          setShowCommentsPanel(false);
+        }
         if (crossLinkMode) {
           setCrossLinkMode(false);
           setCrossLinkSource(null);
@@ -670,6 +822,22 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
+      // Ctrl Shift A - Open AI Assistant
+      if (event.key === 'a' || event.key === 'A') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowAIAssistant(!showAIAssistant);
+        }
+      }
+
+      // Ctrl Shift C - Toggle Comments Panel
+      if (event.key === 'c' || event.key === 'C') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowCommentsPanel(!showCommentsPanel);
+        }
+      }
+
       // Ctrl A - Select all nodes
       if (event.key === 'a' || event.key === 'A') {
         if (event.ctrlKey || event.metaKey) {
@@ -687,7 +855,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
+  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -863,9 +1031,25 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     }
   };
 
-  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2' | 'yaml') => {
+  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2' | 'yaml' | 'pdf' | 'powerpoint' | 'presentation') => {
     const tree = flowToTree(nodes, edges);
     if (!tree) return;
+
+    // Handle special export formats
+    if (format === 'pdf') {
+      exportToPDF(tree);
+      return;
+    }
+
+    if (format === 'powerpoint') {
+      exportToPowerPoint(tree);
+      return;
+    }
+
+    if (format === 'presentation') {
+      createPresentation(tree);
+      return;
+    }
 
     let content: string;
     let filename: string;
@@ -1283,6 +1467,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => saveToFile('yaml')}>YAML</button>
             <hr />
             <div>
+              <strong>Enhanced Exports:</strong>
+            </div>
+            <button onClick={() => saveToFile('pdf')}>PDF (Print)</button>
+            <button onClick={() => saveToFile('powerpoint')}>PowerPoint</button>
+            <button onClick={() => saveToFile('presentation')}>Presentation</button>
+            <button onClick={() => downloadMarkdown(flowToTree(nodes, edges)!, 'notion.md')}>Notion/Obsidian</button>
+            <hr />
+            <div>
               <strong>Export As Image:</strong>
             </div>
             <button onClick={exportAsSVG}>SVG</button>
@@ -1379,6 +1571,21 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               }}
             >
               ⌨️ Shortcuts
+            </button>
+            <button
+              onClick={() => setShowAIAssistant(!showAIAssistant)}
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showAIAssistant ? '#8b5cf6' : '#f3f4f6',
+                color: showAIAssistant ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              🤖 AI Assistant
             </button>
           </div>
         </Panel>
@@ -1489,6 +1696,31 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           hasSelection={!!selectedNodeId}
         />
       )}
+
+      {/* AI Assistant Panel */}
+      <AIAssistantPanel
+        visible={showAIAssistant}
+        onClose={() => setShowAIAssistant(false)}
+        onGenerateMindMap={handleAIGenerateMindMap}
+        onSuggestIdeas={handleAISuggestIdeas}
+        onSummarizeBranch={handleAISummarizeBranch}
+        selectedNodeId={selectedNodeId}
+      />
+
+      {/* Comments Panel */}
+      <CommentsPanel
+        visible={showCommentsPanel}
+        onClose={() => setShowCommentsPanel(false)}
+        nodeId={selectedNodeId}
+        nodeLabel={selectedNode?.data?.label || ''}
+        comments={comments}
+        onAddComment={handleAddComment}
+        onResolveComment={handleResolveComment}
+        onDeleteComment={handleDeleteComment}
+      />
+
+      {/* Presence Indicator */}
+      <PresenceIndicator users={onlineUsers} currentUser={currentUser} />
     </div>
   );
 }

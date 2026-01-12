@@ -6,6 +6,7 @@ import RichTextEditor from './RichTextEditor';
 
 const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [localChecked, setLocalChecked] = useState(data.checked || false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const defaultStyle = {
@@ -45,6 +46,15 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
 
   const handleCancel = () => {
     setIsEditing(false);
+  };
+
+  const handleToggleCheckbox = () => {
+    const newChecked = !localChecked;
+    setLocalChecked(newChecked);
+    const event = new CustomEvent('nodeCheckboxChange', {
+      detail: { nodeId: id, checked: newChecked },
+    });
+    window.dispatchEvent(event);
   };
 
   // Listen for F2 key to edit and triggerNodeEdit event
@@ -124,20 +134,72 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
 
       {/* Node content */}
       <div
-        ref={contentRef}
-        contentEditable={!isRichText}
-        suppressContentEditableWarning
         style={{
-          ...defaultStyle,
-          outline: 'none',
-          cursor: hasLink ? 'pointer' : 'text',
-          textDecoration: hasLink ? 'underline' : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
         }}
-        className="node-content"
-        title={hasLink ? data.link || data.metadata?.url : undefined}
-        dangerouslySetInnerHTML={isRichText ? { __html: data.label } : undefined}
       >
-        {!isRichText && data.label}
+        {/* Checkbox for task nodes */}
+        {(data.nodeType === 'checkbox' || data.checked !== undefined) && (
+          <input
+            type="checkbox"
+            checked={localChecked}
+            onChange={handleToggleCheckbox}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              cursor: 'pointer',
+              width: '16px',
+              height: '16px',
+              flexShrink: 0,
+            }}
+          />
+        )}
+
+        {/* Label */}
+        <div
+          ref={contentRef}
+          contentEditable={!isRichText}
+          suppressContentEditableWarning
+          style={{
+            ...defaultStyle,
+            outline: 'none',
+            cursor: hasLink ? 'pointer' : 'text',
+            textDecoration: hasLink ? 'underline' : 'none',
+            textDecorationLine: localChecked ? 'line-through' : undefined,
+            opacity: localChecked ? 0.6 : 1,
+            flex: 1,
+          }}
+          className="node-content"
+          title={hasLink ? data.link || data.metadata?.url : undefined}
+          dangerouslySetInnerHTML={isRichText ? { __html: data.label } : undefined}
+        >
+          {!isRichText && data.label}
+        </div>
+
+        {/* Progress bar */}
+        {data.nodeType === 'progress' && data.progress !== undefined && (
+          <div
+            style={{
+              width: '60px',
+              height: '6px',
+              background: '#e5e7eb',
+              borderRadius: '3px',
+              overflow: 'hidden',
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: `${data.progress}%`,
+                height: '100%',
+                background: data.progress >= 100 ? '#10b981' : '#3b82f6',
+                borderRadius: '3px',
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Metadata indicators */}

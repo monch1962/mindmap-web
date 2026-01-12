@@ -54,6 +54,15 @@ export interface MindMapNodeData {
     color?: string;
   };
   lastModified?: number;
+  // Task tracking
+  checked?: boolean;
+  progress?: number; // 0-100
+  // Advanced features
+  nodeType?: 'default' | 'checkbox' | 'progress' | 'image' | 'code' | 'math';
+  imageData?: string; // Base64 encoded image
+  code?: string;
+  codeLanguage?: string;
+  math?: string; // LaTeX formula
 }
 
 /**

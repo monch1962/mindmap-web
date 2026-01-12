@@ -39,6 +39,8 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['Ctrl', 'H'], action: 'Toggle save history', category: 'Panels' },
   { keys: ['Ctrl', 'Shift', 'H'], action: 'Toggle undo/redo history', category: 'Panels' },
   { keys: ['Ctrl', 'I'], action: 'Toggle statistics', category: 'Panels' },
+  { keys: ['Ctrl', 'Shift', 'A'], action: 'Toggle AI Assistant', category: 'Panels' },
+  { keys: ['Ctrl', 'Shift', 'C'], action: 'Toggle comments panel', category: 'Panels' },
   { keys: ['Escape'], action: 'Close panels', category: 'Panels' },
   { keys: ['?'], action: 'Show keyboard shortcuts', category: 'Panels' },
 ];
