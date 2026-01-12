@@ -34,6 +34,8 @@ import CalendarExportPanel from './CalendarExportPanel';
 import EmailIntegrationPanel from './EmailIntegrationPanel';
 import PresentationMode from './PresentationMode';
 import ThreeDView from './ThreeDView';
+import TemplatesPanel from './TemplatesPanel';
+import ThemeSettingsPanel from './ThemeSettingsPanel';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
@@ -41,6 +43,9 @@ import { parseAITextToMindMap } from '../utils/aiParser';
 import { exportToPDF, exportToPowerPoint, downloadMarkdown, createPresentation } from '../utils/enhancedExports';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
+import { useOfflineSync } from '../hooks/useOfflineSync';
+import { useGestureNavigation } from '../hooks/useGestureNavigation';
+import { initializeTheme } from '../utils/theme';
 
 const nodeTypes = {
   mindmap: MindMapNode,
@@ -93,6 +98,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [showEmailPanel, setShowEmailPanel] = useState(false);
   const [showPresentation, setShowPresentation] = useState(false);
   const [show3DView, setShow3DView] = useState(false);
+  const [showTemplatesPanel, setShowTemplatesPanel] = useState(false);
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
   const [currentUser] = useState(() => {
     const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`;
     const color = localStorage.getItem('user_color') || '#3b82f6';
@@ -129,6 +136,28 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
   // Undo/Redo hook
   const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
+
+  // Offline sync hook - runs for side effects
+  useOfflineSync({
+    onOnline: () => {
+      // Sync data when coming back online
+      console.log('Back online - syncing data');
+    },
+    onOffline: () => {
+      // Notify user they're offline
+      console.log('Gone offline - changes will be saved locally');
+    },
+  });
+
+  // Gesture navigation
+  useGestureNavigation({
+    enabled: true,
+  });
+
+  // Initialize theme on mount
+  useEffect(() => {
+    initializeTheme();
+  }, []);
 
   // Handle node label changes from rich text editor
   useEffect(() => {
@@ -207,6 +236,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       setNodes(nextState.nodes);
       setEdges(nextState.edges);
     }
+  };
+
+  // Template Handler
+  const handleApplyTemplate = (tree: MindMapTree) => {
+    const { nodes: newNodes, edges: newEdges } = treeToFlow(tree);
+    setNodes(newNodes);
+    setEdges(newEdges);
+    fitView({ duration: 800 });
   };
 
   // Search handlers
@@ -801,6 +838,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         if (show3DView) {
           setShow3DView(false);
         }
+        if (showTemplatesPanel) {
+          setShowTemplatesPanel(false);
+        }
+        if (showThemeSettings) {
+          setShowThemeSettings(false);
+        }
         if (crossLinkMode) {
           setCrossLinkMode(false);
           setCrossLinkSource(null);
@@ -903,6 +946,22 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
+      // Ctrl Shift T - Toggle Templates Panel
+      if (event.key === 't' || event.key === 'T') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowTemplatesPanel(!showTemplatesPanel);
+        }
+      }
+
+      // Ctrl Shift ; - Toggle Theme Settings (using ; to avoid conflicts)
+      if (event.key === ';') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowThemeSettings(!showThemeSettings);
+        }
+      }
+
       // Ctrl A - Select all nodes
       if (event.key === 'a' || event.key === 'A') {
         if (event.ctrlKey || event.metaKey) {
@@ -920,7 +979,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
+  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showTemplatesPanel, showThemeSettings, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -1732,6 +1791,38 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             >
               🎨 3D View
             </button>
+            <button
+              onClick={() => setShowTemplatesPanel(!showTemplatesPanel)}
+              title="Templates (Ctrl+Shift+T)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showTemplatesPanel ? '#8b5cf6' : '#f3f4f6',
+                color: showTemplatesPanel ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              📋 Templates
+            </button>
+            <button
+              onClick={() => setShowThemeSettings(!showThemeSettings)}
+              title="Theme Settings (Ctrl+Shift+;)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showThemeSettings ? '#8b5cf6' : '#f3f4f6',
+                color: showThemeSettings ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              🎨 Theme
+            </button>
           </div>
         </Panel>
 
@@ -1910,6 +2001,22 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           tree={flowToTree(nodes, edges)}
         />
       )}
+
+      {/* Templates Panel */}
+      <TemplatesPanel
+        visible={showTemplatesPanel}
+        onClose={() => setShowTemplatesPanel(false)}
+        onApplyTemplate={handleApplyTemplate}
+      />
+
+      {/* Theme Settings Panel */}
+      <ThemeSettingsPanel
+        visible={showThemeSettings}
+        onClose={() => setShowThemeSettings(false)}
+        onThemeChange={() => {
+          // Theme change handled by the panel itself
+        }}
+      />
     </div>
   );
 }
