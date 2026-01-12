@@ -29,6 +29,11 @@ import MobileToolbar from './MobileToolbar';
 import AIAssistantPanel from './AIAssistantPanel';
 import CommentsPanel from './CommentsPanel';
 import PresenceIndicator from './PresenceIndicator';
+import WebhookIntegrationPanel from './WebhookIntegrationPanel';
+import CalendarExportPanel from './CalendarExportPanel';
+import EmailIntegrationPanel from './EmailIntegrationPanel';
+import PresentationMode from './PresentationMode';
+import ThreeDView from './ThreeDView';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
@@ -83,6 +88,11 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showCommentsPanel, setShowCommentsPanel] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
+  const [showWebhookPanel, setShowWebhookPanel] = useState(false);
+  const [showCalendarPanel, setShowCalendarPanel] = useState(false);
+  const [showEmailPanel, setShowEmailPanel] = useState(false);
+  const [showPresentation, setShowPresentation] = useState(false);
+  const [show3DView, setShow3DView] = useState(false);
   const [currentUser] = useState(() => {
     const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`;
     const color = localStorage.getItem('user_color') || '#3b82f6';
@@ -776,6 +786,21 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         if (showCommentsPanel) {
           setShowCommentsPanel(false);
         }
+        if (showWebhookPanel) {
+          setShowWebhookPanel(false);
+        }
+        if (showCalendarPanel) {
+          setShowCalendarPanel(false);
+        }
+        if (showEmailPanel) {
+          setShowEmailPanel(false);
+        }
+        if (showPresentation) {
+          setShowPresentation(false);
+        }
+        if (show3DView) {
+          setShow3DView(false);
+        }
         if (crossLinkMode) {
           setCrossLinkMode(false);
           setCrossLinkSource(null);
@@ -838,6 +863,46 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
+      // Ctrl Shift W - Toggle Webhook Integration
+      if (event.key === 'w' || event.key === 'W') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowWebhookPanel(!showWebhookPanel);
+        }
+      }
+
+      // Ctrl Shift D - Toggle Calendar Export (D for Date/Calendar)
+      if (event.key === 'd' || event.key === 'D') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowCalendarPanel(!showCalendarPanel);
+        }
+      }
+
+      // Ctrl Shift E - Toggle Email Integration
+      if (event.key === 'e' || event.key === 'E') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowEmailPanel(!showEmailPanel);
+        }
+      }
+
+      // Ctrl Shift P - Toggle Presentation Mode
+      if (event.key === 'p' || event.key === 'P') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShowPresentation(!showPresentation);
+        }
+      }
+
+      // Ctrl Shift 3 - Toggle 3D View
+      if (event.key === '3') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          setShow3DView(!show3DView);
+        }
+      }
+
       // Ctrl A - Select all nodes
       if (event.key === 'a' || event.key === 'A') {
         if (event.ctrlKey || event.metaKey) {
@@ -855,7 +920,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
+  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -1587,6 +1652,86 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             >
               🤖 AI Assistant
             </button>
+            <button
+              onClick={() => setShowWebhookPanel(!showWebhookPanel)}
+              title="Webhook Integration (Ctrl+Shift+W)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showWebhookPanel ? '#8b5cf6' : '#f3f4f6',
+                color: showWebhookPanel ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              🔗 Webhooks
+            </button>
+            <button
+              onClick={() => setShowCalendarPanel(!showCalendarPanel)}
+              title="Calendar Export (Ctrl+Shift+D)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showCalendarPanel ? '#8b5cf6' : '#f3f4f6',
+                color: showCalendarPanel ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              📅 Calendar
+            </button>
+            <button
+              onClick={() => setShowEmailPanel(!showEmailPanel)}
+              title="Email Integration (Ctrl+Shift+E)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showEmailPanel ? '#8b5cf6' : '#f3f4f6',
+                color: showEmailPanel ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              ✉️ Email
+            </button>
+            <button
+              onClick={() => setShowPresentation(!showPresentation)}
+              title="Presentation Mode (Ctrl+Shift+P)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: showPresentation ? '#8b5cf6' : '#f3f4f6',
+                color: showPresentation ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              🎯 Present
+            </button>
+            <button
+              onClick={() => setShow3DView(!show3DView)}
+              title="3D View (Ctrl+Shift+3)"
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: show3DView ? '#8b5cf6' : '#f3f4f6',
+                color: show3DView ? 'white' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              🎨 3D View
+            </button>
           </div>
         </Panel>
 
@@ -1721,6 +1866,50 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
       {/* Presence Indicator */}
       <PresenceIndicator users={onlineUsers} currentUser={currentUser} />
+
+      {/* Webhook Integration Panel */}
+      <WebhookIntegrationPanel
+        visible={showWebhookPanel}
+        onClose={() => setShowWebhookPanel(false)}
+        tree={flowToTree(nodes, edges)}
+        onWebhookData={(data) => {
+          if (data.parentId) {
+            createChildNode(data.parentId);
+          }
+        }}
+      />
+
+      {/* Calendar Export Panel */}
+      <CalendarExportPanel
+        visible={showCalendarPanel}
+        onClose={() => setShowCalendarPanel(false)}
+        tree={flowToTree(nodes, edges)}
+      />
+
+      {/* Email Integration Panel */}
+      <EmailIntegrationPanel
+        visible={showEmailPanel}
+        onClose={() => setShowEmailPanel(false)}
+        tree={flowToTree(nodes, edges)}
+      />
+
+      {/* Presentation Mode */}
+      {showPresentation && (
+        <PresentationMode
+          visible={showPresentation}
+          onClose={() => setShowPresentation(false)}
+          tree={flowToTree(nodes, edges)}
+        />
+      )}
+
+      {/* 3D View */}
+      {show3DView && (
+        <ThreeDView
+          visible={show3DView}
+          onClose={() => setShow3DView(false)}
+          tree={flowToTree(nodes, edges)}
+        />
+      )}
     </div>
   );
 }
