@@ -259,23 +259,25 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       );
     };
 
+    const handleCollapseAll = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      collapseAllDescendants(customEvent.detail.nodeId);
+    };
+
+    const handleExpandAll = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      expandAllDescendants(customEvent.detail.nodeId);
+    };
+
     window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
     window.addEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
-    window.addEventListener('collapseAllDescendants', ((e: CustomEvent) => {
-      collapseAllDescendants(e.detail.nodeId);
-    }) as EventListener);
-    window.addEventListener('expandAllDescendants', ((e: CustomEvent) => {
-      expandAllDescendants(e.detail.nodeId);
-    }) as EventListener);
+    window.addEventListener('collapseAllDescendants', handleCollapseAll as EventListener);
+    window.addEventListener('expandAllDescendants', handleExpandAll as EventListener);
     return () => {
       window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
       window.removeEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
-      window.removeEventListener('collapseAllDescendants', ((e: CustomEvent) => {
-        collapseAllDescendants(e.detail.nodeId);
-      }) as EventListener);
-      window.removeEventListener('expandAllDescendants', ((e: CustomEvent) => {
-        expandAllDescendants(e.detail.nodeId);
-      }) as EventListener);
+      window.removeEventListener('collapseAllDescendants', handleCollapseAll as EventListener);
+      window.removeEventListener('expandAllDescendants', handleExpandAll as EventListener);
     };
   }, [collapseAllDescendants, expandAllDescendants]);
 
