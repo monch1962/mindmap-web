@@ -36,6 +36,8 @@ export default function MetadataPanel({
   const [cloudColor, setCloudColor] = useState(cloud?.color || '#f0f9ff');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Reset local state when metadata changes (component is keyed by nodeId in parent)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setUrl(metadata?.url || '');
     setDescription(metadata?.description || '');

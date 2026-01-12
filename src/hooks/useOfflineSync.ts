@@ -73,34 +73,6 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
   }, [options]);
 
   /**
-   * Monitor online/offline status
-   */
-  useEffect(() => {
-    const handleOnline = () => {
-      console.log('[PWA] Online');
-      setIsOnline(true);
-      setIsOfflineMode(false);
-      syncOfflineRequestsNow();
-      options.onOnline?.();
-    };
-
-    const handleOffline = () => {
-      console.log('[PWA] Offline');
-      setIsOnline(false);
-      setIsOfflineMode(true);
-      options.onOffline?.();
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [options]);
-
-  /**
    * Check for pending sync
    */
   const checkPendingSync = useCallback(async () => {
@@ -127,6 +99,55 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
       return 0;
     }
   }, [swRegistration]);
+
+  /**
+   * Sync offline requests now
+   */
+  const syncOfflineRequestsNow = useCallback(async () => {
+    if (!swRegistration || !isOnline) return false;
+
+    try {
+      // sync API might not be available in all browsers
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ('sync' in swRegistration) {
+        await (swRegistration as any).sync.register('sync-offline-requests');
+      }
+      const count = await checkPendingSync();
+      console.log('[PWA] Synced offline requests');
+      return count === 0;
+    } catch (error) {
+      console.error('[PWA] Failed to sync:', error);
+      return false;
+    }
+  }, [swRegistration, isOnline, checkPendingSync]);
+
+  /**
+   * Monitor online/offline status
+   */
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('[PWA] Online');
+      setIsOnline(true);
+      setIsOfflineMode(false);
+      syncOfflineRequestsNow();
+      options.onOnline?.();
+    };
+
+    const handleOffline = () => {
+      console.log('[PWA] Offline');
+      setIsOnline(false);
+      setIsOfflineMode(true);
+      options.onOffline?.();
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [options, syncOfflineRequestsNow]);
 
   /**
    * Periodic sync check
@@ -172,27 +193,6 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
       return 0;
     }
   }, [swRegistration]);
-
-  /**
-   * Sync offline requests now
-   */
-  const syncOfflineRequestsNow = useCallback(async () => {
-    if (!swRegistration || !isOnline) return false;
-
-    try {
-      // sync API might not be available in all browsers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ('sync' in swRegistration) {
-        await (swRegistration as any).sync.register('sync-offline-requests');
-      }
-      const count = await checkPendingSync();
-      console.log('[PWA] Synced offline requests');
-      return count === 0;
-    } catch (error) {
-      console.error('[PWA] Failed to sync:', error);
-      return false;
-    }
-  }, [swRegistration, isOnline, checkPendingSync]);
 
   /**
    * Clear all caches
@@ -348,7 +348,8 @@ export function usePWAInstall() {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check if already installed
+    // Check if already installed on mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
     }

@@ -123,3 +123,24 @@ export interface FileOperationResult {
   message?: string;
   data?: string;
 }
+
+/**
+ * User type for collaborative features
+ */
+export interface User {
+  id: string;
+  name: string;
+  color: string;
+}
+
+/**
+ * Comment type for node comments
+ */
+export interface Comment {
+  id: string;
+  nodeId: string;
+  userId: string;
+  userName: string;
+  content: string;
+  timestamp: number;
+}

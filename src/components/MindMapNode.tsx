@@ -87,8 +87,8 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
     };
 
     const handleTriggerEdit = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if ((customEvent.detail as any)?.nodeId === id) {
+      const customEvent = e as CustomEvent<{ nodeId: string }>;
+      if (customEvent.detail?.nodeId === id) {
         setIsEditing(true);
       }
     };

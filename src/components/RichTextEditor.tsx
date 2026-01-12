@@ -22,6 +22,8 @@ export default function RichTextEditor({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
 
+  // Sync local state with props when content changes
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     // Sanitize content on initialization
     const sanitizedContent = sanitizeHtml(content);

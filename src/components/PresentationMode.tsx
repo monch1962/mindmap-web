@@ -26,6 +26,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
   const [isAnimating, setIsAnimating] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
+  // Reset slides when tree changes
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (tree) {
       const generatedSlides = generateSlides(tree);
@@ -33,6 +35,27 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
       setCurrentSlideIndex(0);
     }
   }, [tree]);
+
+  // Navigation callbacks (must be declared before the keyboard effect)
+  const nextSlide = useCallback(() => {
+    if (isAnimating || currentSlideIndex >= slides.length - 1) return;
+    setIsAnimating(true);
+    setDirection('next');
+    setTimeout(() => {
+      setCurrentSlideIndex(prev => prev + 1);
+      setIsAnimating(false);
+    }, 300);
+  }, [currentSlideIndex, slides.length, isAnimating]);
+
+  const prevSlide = useCallback(() => {
+    if (isAnimating || currentSlideIndex <= 0) return;
+    setIsAnimating(true);
+    setDirection('prev');
+    setTimeout(() => {
+      setCurrentSlideIndex(prev => prev - 1);
+      setIsAnimating(false);
+    }, 300);
+  }, [currentSlideIndex, isAnimating]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -65,27 +88,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [visible, currentSlideIndex, slides.length, showNotes]);
-
-  const nextSlide = useCallback(() => {
-    if (isAnimating || currentSlideIndex >= slides.length - 1) return;
-    setIsAnimating(true);
-    setDirection('next');
-    setTimeout(() => {
-      setCurrentSlideIndex(prev => prev + 1);
-      setIsAnimating(false);
-    }, 300);
-  }, [currentSlideIndex, slides.length, isAnimating]);
-
-  const prevSlide = useCallback(() => {
-    if (isAnimating || currentSlideIndex <= 0) return;
-    setIsAnimating(true);
-    setDirection('prev');
-    setTimeout(() => {
-      setCurrentSlideIndex(prev => prev - 1);
-      setIsAnimating(false);
-    }, 300);
-  }, [currentSlideIndex, isAnimating]);
+  }, [visible, currentSlideIndex, slides.length, showNotes, nextSlide, prevSlide, onClose]);
 
   const goToSlide = (index: number) => {
     if (isAnimating || index === currentSlideIndex) return;

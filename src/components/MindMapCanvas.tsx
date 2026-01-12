@@ -36,7 +36,7 @@ import PresentationMode from './PresentationMode';
 import ThreeDView from './ThreeDView';
 import TemplatesPanel from './TemplatesPanel';
 import ThemeSettingsPanel from './ThemeSettingsPanel';
-import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
+import type { MindMapNodeData, MindMapTree, NodeMetadata, User, Comment } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
 import { parseAITextToMindMap } from '../utils/aiParser';
@@ -75,7 +75,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [showSearch, setShowSearch] = useState(false);
-  const [_searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
   const [showSaveHistory, setShowSaveHistory] = useState(false);
@@ -86,7 +86,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showCommentsPanel, setShowCommentsPanel] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [showWebhookPanel, setShowWebhookPanel] = useState(false);
   const [showCalendarPanel, setShowCalendarPanel] = useState(false);
   const [showEmailPanel, setShowEmailPanel] = useState(false);
@@ -100,7 +100,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     const color = localStorage.getItem('user_color') || '#3b82f6';
     return { id: Date.now().toString(), name, color };
   });
-  const [onlineUsers, setOnlineUsers] = useState<any[]>([currentUser]);
+  const [onlineUsers] = useState<User[]>([currentUser]);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -136,7 +136,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         return node;
       });
     });
-  }, [edges]);
+  }, [edges, setNodes]);
 
   const expandAllDescendants = useCallback((nodeId: string) => {
     setNodes((nds) => {
@@ -168,15 +168,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         return node;
       });
     });
-  }, [edges]);
-
-  // Update onlineUsers when currentUser changes
-  useEffect(() => {
-    setOnlineUsers((prev) => {
-      const filtered = prev.filter((u) => u.id !== currentUser.id);
-      return [...filtered, currentUser];
-    });
-  }, [currentUser]);
+  }, [edges, setNodes]);
 
   // Transform nodes to add multi-selection state
   const transformedNodes = useMemo(() => {
@@ -195,7 +187,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   });
 
   // Undo/Redo hook
-  const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
+  const { canUndo, canRedo, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
 
   // Offline sync hook - runs for side effects
   useOfflineSync({
@@ -279,7 +271,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       window.removeEventListener('collapseAllDescendants', handleCollapseAll as EventListener);
       window.removeEventListener('expandAllDescendants', handleExpandAll as EventListener);
     };
-  }, [collapseAllDescendants, expandAllDescendants]);
+  }, [collapseAllDescendants, expandAllDescendants, setNodes]);
 
   // Node manipulation functions (must be declared before keyboard handler useEffect)
   const createChildNode = useCallback((parentId: string) => {
@@ -315,7 +307,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       });
       window.dispatchEvent(event);
     }, 100);
-  }, [nodes]);
+  }, [nodes, setNodes, setEdges, setSelectedNodeId]);
 
   const createSiblingNode = useCallback((siblingId: string) => {
     const sibling = nodes.find((n) => n.id === siblingId);
@@ -377,7 +369,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       });
       window.dispatchEvent(event);
     }, 100);
-  }, [nodes, edges]);
+  }, [nodes, edges, setNodes, setEdges, setSelectedNodeId]);
 
   const deleteNode = useCallback((nodeId: string) => {
     // Don't delete if it's the only node
@@ -406,7 +398,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     if (selectedNodeId === nodeId || nodesToDelete.has(selectedNodeId || '')) {
       setSelectedNodeId(null);
     }
-  }, [nodes, edges, selectedNodeId]);
+  }, [nodes, edges, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
 
   const editNode = useCallback((nodeId: string) => {
     const nodeElement = document.querySelector(`[data-nodeid="${nodeId}"] .node-content`) as HTMLElement;
@@ -436,7 +428,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         return node;
       })
     );
-  }, []);
+  }, [setNodes]);
 
   // Detect mobile screen size
   useEffect(() => {

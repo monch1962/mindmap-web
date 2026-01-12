@@ -51,8 +51,8 @@ export default function AIAssistantPanel({
       if (mindMapText) {
         onGenerateMindMap(mindMapText);
       }
-    } catch (error: any) {
-      setAiResponse(`Error: ${error.message}`);
+    } catch (error) {
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +72,8 @@ export default function AIAssistantPanel({
       );
       setAiResponse(response);
       onSuggestIdeas(selectedNodeId);
-    } catch (error: any) {
-      setAiResponse(`Error: ${error.message}`);
+    } catch (error) {
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +93,8 @@ export default function AIAssistantPanel({
       );
       setAiResponse(response);
       onSummarizeBranch(selectedNodeId);
-    } catch (error: any) {
-      setAiResponse(`Error: ${error.message}`);
+    } catch (error) {
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
