@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import type { MindMapNodeData } from '../types';
+import { getIconEmoji } from '../utils/icons';
 
 const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
   const defaultStyle = {
@@ -20,26 +21,7 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
   );
 
   const hasLink = data.link || data.metadata?.url;
-
-  // FreeMind icon mapping
-  const iconMap: Record<string, string> = {
-    'yes': '✅',
-    'no': '❌',
-    'help': '❓',
-    'idea': '💡',
-    'important': '⭐',
-    'wizard': '🧙',
-    'time': '⏰',
-    'warning': '⚠️',
-    'flag': '🚩',
-    'clanbomber': '💣',
-    'desktopnew': '🖥️',
-    'kde': '🐧',
-    'gnome': '🐭',
-    'linux': '🐧',
-    'button_ok': '🆗',
-    'button_cancel': '🚫',
-  };
+  const iconEmoji = data.icon ? getIconEmoji(data.icon) : null;
 
   return (
     <div
@@ -63,7 +45,7 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
       />
 
       {/* Icon (if present) */}
-      {data.icon && iconMap[data.icon] && (
+      {iconEmoji && (
         <div
           style={{
             position: 'absolute',
@@ -73,7 +55,7 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
           }}
           title={`Icon: ${data.icon}`}
         >
-          {iconMap[data.icon]}
+          {iconEmoji}
         </div>
       )}
 

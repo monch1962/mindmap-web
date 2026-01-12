@@ -28,13 +28,14 @@ function parseNode(element: Element): MindMapTree {
     }
   }
 
-  // Parse child elements like <icon>, <edge>, <font>
+  // Parse child elements like <icon>, <edge>, <font>, <cloud>
   let icon: string | undefined;
   let edgeStyle: MindMapTree['edgeStyle'] | undefined;
   let fontName: string | undefined;
   let fontSize: number | undefined;
   let bold: boolean | undefined;
   let italic: boolean | undefined;
+  let cloud: MindMapTree['cloud'] | undefined;
 
   for (let i = 0; i < childNodes.length; i++) {
     const child = childNodes[i];
@@ -51,6 +52,10 @@ function parseNode(element: Element): MindMapTree {
       fontSize = child.getAttribute('SIZE') ? parseInt(child.getAttribute('SIZE')!, 10) : undefined;
       bold = child.getAttribute('BOLD') === 'true';
       italic = child.getAttribute('ITALIC') === 'true';
+    } else if (child.tagName === 'cloud') {
+      cloud = {
+        color: child.getAttribute('COLOR') || undefined,
+      };
     }
   }
 
@@ -72,6 +77,7 @@ function parseNode(element: Element): MindMapTree {
     modified: element.getAttribute('MODIFIED') ? parseInt(element.getAttribute('MODIFIED')!, 10) : undefined,
     icon,
     edgeStyle,
+    cloud,
   };
 }
 
@@ -123,6 +129,14 @@ export function toFreeMind(tree: MindMapTree): string {
       if (fontAttrs) {
         xml += `${indent}  <font ${fontAttrs}/>\n`;
       }
+    }
+
+    // Add cloud element
+    if (node.cloud) {
+      const cloudAttrs = [
+        node.cloud.color ? `COLOR="${node.cloud.color}"` : '',
+      ].filter(Boolean).join(' ');
+      xml += `${indent}  <cloud ${cloudAttrs}/>\n`;
     }
 
     // Add child nodes

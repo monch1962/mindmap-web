@@ -1,18 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import type { NodeMetadata, FileAttachment } from '../types';
+import IconPicker from './IconPicker';
+import { getIconEmoji } from '../utils/icons';
 
 interface MetadataPanelProps {
   nodeId: string | null;
   nodeLabel: string;
   metadata?: NodeMetadata;
+  icon?: string;
+  cloud?: { color?: string };
   onUpdateMetadata: (metadata: NodeMetadata) => void;
+  onUpdateIcon?: (icon: string | null) => void;
+  onUpdateCloud?: (cloud: { color?: string } | null) => void;
 }
 
 export default function MetadataPanel({
   nodeId,
   nodeLabel,
   metadata,
+  icon,
+  cloud,
   onUpdateMetadata,
+  onUpdateIcon,
+  onUpdateCloud,
 }: MetadataPanelProps) {
   const [url, setUrl] = useState(metadata?.url || '');
   const [description, setDescription] = useState(metadata?.description || '');
@@ -22,6 +32,8 @@ export default function MetadataPanel({
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [codeInput, setCodeInput] = useState('');
   const [codeLanguage, setCodeLanguage] = useState('javascript');
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [cloudColor, setCloudColor] = useState(cloud?.color || '#f0f9ff');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -30,7 +42,8 @@ export default function MetadataPanel({
     setNotes(metadata?.notes || '');
     setTags(metadata?.tags?.join(', ') || '');
     setAttachments(metadata?.attachments || []);
-  }, [metadata]);
+    setCloudColor(cloud?.color || '#f0f9ff');
+  }, [metadata, cloud]);
 
   const handleSave = () => {
     const updatedMetadata: NodeMetadata = {};
@@ -244,6 +257,94 @@ export default function MetadataPanel({
             }}
           />
         </div>
+
+        {/* Icon */}
+        {onUpdateIcon && (
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+              Icon
+            </label>
+            <button
+              onClick={() => setShowIconPicker(true)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '16px',
+                background: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              {icon ? (
+                <>
+                  {getIconEmoji(icon)}
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                    (change)
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>Choose icon...</span>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Cloud */}
+        {onUpdateCloud && (
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+              Cloud (Visual Group)
+            </label>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <input
+                type="color"
+                value={cloudColor}
+                onChange={(e) => setCloudColor(e.target.value)}
+                style={{
+                  width: '40px',
+                  height: '32px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              />
+              <button
+                onClick={() => onUpdateCloud({ color: cloudColor })}
+                style={{
+                  flex: 1,
+                  padding: '6px 12px',
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Apply Cloud
+              </button>
+              <button
+                onClick={() => onUpdateCloud(null)}
+                style={{
+                  padding: '6px 12px',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Attachments */}
         <div>
@@ -489,6 +590,33 @@ export default function MetadataPanel({
           </button>
         </div>
       </div>
+
+      {/* Icon Picker Modal */}
+      {showIconPicker && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowIconPicker(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 9998,
+            }}
+          />
+          <IconPicker
+            currentIcon={icon}
+            onSelect={(iconId) => {
+              onUpdateIcon?.(iconId);
+              setShowIconPicker(false);
+            }}
+            onClose={() => setShowIconPicker(false)}
+          />
+        </>
+      )}
     </div>
   );
 }

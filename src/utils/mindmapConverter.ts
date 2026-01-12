@@ -25,6 +25,7 @@ export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: Mi
         icon: node.icon,
         link: node.link,
         metadata: node.metadata,
+        cloud: node.cloud,
       },
     });
 
@@ -105,6 +106,7 @@ export function flowToTree(nodes: MindMapNode[], edges: MindMapEdge[]): MindMapT
       metadata: node.data.metadata,
       icon: node.data.icon,
       link: node.data.link,
+      cloud: node.data.cloud,
       edgeStyle: edgeToThisNode?.style
         ? {
             color: edgeToThisNode.style.stroke as string,

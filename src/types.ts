@@ -25,6 +25,17 @@ export interface NodeMetadata {
 }
 
 /**
+ * Cloud - visual grouping for nodes (FreeMind-style)
+ */
+export interface Cloud {
+  id: string;
+  nodeId: string; // The root node of this cloud
+  color?: string;
+  width?: number;
+  height?: number;
+}
+
+/**
  * Mind map node data structure
  */
 export interface MindMapNodeData {
@@ -39,6 +50,9 @@ export interface MindMapNodeData {
   icon?: string;
   link?: string;
   metadata?: NodeMetadata;
+  cloud?: {
+    color?: string;
+  };
 }
 
 /**
@@ -49,7 +63,7 @@ export type MindMapNode = Node<MindMapNodeData>;
 /**
  * Extended mind map edge type
  */
-export type MindMapEdge = Edge;
+export type MindMapEdge = Edge<{ isCrossLink?: boolean }>;
 
 /**
  * Tree structure for serialization and hierarchical operations
@@ -78,6 +92,9 @@ export interface MindMapTree {
     color?: string;
     width?: number;
     style?: 'bezier' | 'linear' | 'sharp_linear' | 'sharp_bezier';
+  };
+  cloud?: {
+    color?: string;
   };
 }
 

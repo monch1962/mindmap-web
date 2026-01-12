@@ -8,18 +8,27 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
   Panel,
+  useReactFlow,
 } from 'reactflow';
 import type { Connection, OnConnect, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import MindMapNode from './MindMapNode';
 import MetadataPanel from './MetadataPanel';
+import NotesPanel from './NotesPanel';
+import CloudBackground from './CloudBackground';
+import CrossLinkEdge from './CrossLinkEdge';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
-import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown } from '../utils/formats';
+import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2 } from '../utils/formats';
 
 const nodeTypes = {
   mindmap: MindMapNode,
+};
+
+const edgeTypes = {
+  crosslink: CrossLinkEdge,
+  default: CrossLinkEdge,
 };
 
 interface MindMapCanvasProps {
@@ -34,8 +43,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<MindMapNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+  const [crossLinkMode, setCrossLinkMode] = useState(false);
+  const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
 
   const handleUpdateMetadata = (metadata: NodeMetadata) => {
     if (!selectedNodeId) return;
@@ -56,10 +69,93 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     );
   };
 
+  const handleUpdateIcon = (icon: string | null) => {
+    if (!selectedNodeId) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              icon: icon || undefined,
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
+  const handleUpdateCloud = (cloud: { color?: string } | null) => {
+    if (!selectedNodeId) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              cloud: cloud || undefined,
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
   const onConnect: OnConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    (params: Connection) => {
+      const newEdge = {
+        ...params,
+        type: 'crosslink',
+        data: { isCrossLink: crossLinkMode },
+        style: crossLinkMode
+          ? { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5,5' }
+          : undefined,
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+      if (crossLinkMode) {
+        setCrossLinkMode(false);
+        setCrossLinkSource(null);
+      }
+    },
+    [setEdges, crossLinkMode]
   );
+
+  // Handle cross-link creation via node clicks
+  const handleNodeClickForCrossLink = (nodeId: string) => {
+    if (crossLinkMode) {
+      if (crossLinkSource === null) {
+        // First click - set as source
+        setCrossLinkSource(nodeId);
+      } else if (crossLinkSource !== nodeId) {
+        // Second click - create cross-link
+        const existingEdge = edges.find(
+          (e) => e.source === crossLinkSource && e.target === nodeId
+        );
+
+        if (!existingEdge) {
+          const newEdge = {
+            id: `${crossLinkSource}-${nodeId}`,
+            source: crossLinkSource,
+            target: nodeId,
+            type: 'crosslink' as const,
+            data: { isCrossLink: true },
+            style: { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5,5' },
+          };
+          setEdges((eds) => [...eds, newEdge]);
+        }
+
+        // Reset cross-link mode
+        setCrossLinkMode(false);
+        setCrossLinkSource(null);
+      }
+    }
+  };
 
   // Keyboard shortcuts for mind map operations
   useEffect(() => {
@@ -98,11 +194,51 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         event.preventDefault();
         toggleCollapse(selectedNodeId);
       }
+
+      // Ctrl + or = - Zoom in
+      if (event.key === '=' || event.key === '+') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          zoomIn();
+        }
+      }
+
+      // Ctrl - or _ - Zoom out
+      if (event.key === '-' || event.key === '_') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          zoomOut();
+        }
+      }
+
+      // Ctrl 0 - Fit view
+      if (event.key === '0') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          fitView();
+        }
+      }
+
+      // Ctrl N - Toggle notes panel
+      if (event.key === 'n' || event.key === 'N') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          if (selectedNode) {
+            setShowNotesPanel(!showNotesPanel);
+          }
+        }
+      }
+
+      // F3 - Toggle notes panel (when node selected)
+      if (event.key === 'F3' && selectedNodeId) {
+        event.preventDefault();
+        setShowNotesPanel(!showNotesPanel);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, nodes, edges]);
+  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -229,7 +365,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     );
   };
 
-  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown') => {
+  const saveToFile = (format: 'json' | 'freemind' | 'opml' | 'markdown' | 'd2') => {
     const tree = flowToTree(nodes, edges);
     if (!tree) return;
 
@@ -257,6 +393,11 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         content = toMarkdown(tree);
         filename = 'mindmap.md';
         mimeType = 'text/markdown';
+        break;
+      case 'd2':
+        content = toD2(tree);
+        filename = 'mindmap.d2';
+        mimeType = 'text/plain';
         break;
     }
 
@@ -315,6 +456,69 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     input.click();
   };
 
+  const exportAsPNG = () => {
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = 1920;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Draw white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // For simplicity, we'll create an SVG first and then draw it to canvas
+    // This is a basic implementation - a more robust solution would use html2canvas
+    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement;
+    if (!svgElement) return;
+
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      // Download the image
+      const pngUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = pngUrl;
+      a.download = 'mindmap.png';
+      a.click();
+    };
+
+    img.src = url;
+  };
+
+  const exportAsSVG = () => {
+    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement;
+    if (!svgElement) return;
+
+    const serializer = new XMLSerializer();
+    let source = serializer.serializeToString(svgElement);
+
+    // Add namespaces
+    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if (!source.match(/^<svg[^>]+xmlns:xlink="http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+      source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+
+    // Add XML declaration
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    // Create blob and download
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mindmap.svg';
+    a.click();
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
@@ -324,13 +528,84 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-        onPaneClick={() => setSelectedNodeId(null)}
+        edgeTypes={edgeTypes}
+        onNodeClick={(_, node) => {
+          if (crossLinkMode) {
+            handleNodeClickForCrossLink(node.id);
+          } else {
+            setSelectedNodeId(node.id);
+          }
+        }}
+        onPaneClick={() => {
+          setSelectedNodeId(null);
+          if (crossLinkMode) {
+            setCrossLinkMode(false);
+            setCrossLinkSource(null);
+          }
+        }}
         fitView
       >
         <Background />
+        <CloudBackground nodes={nodes} />
         <Controls />
         <MiniMap />
+
+        <Panel position="bottom-right" style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => zoomIn()}
+            title="Zoom In (Ctrl +)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: 'pointer',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => zoomOut()}
+            title="Zoom Out (Ctrl -)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: 'pointer',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            -
+          </button>
+          <button
+            onClick={() => fitView()}
+            title="Fit View (Ctrl 0)"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ⤢
+          </button>
+        </Panel>
 
         <Panel position="top-right" className="controls-panel">
           <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
@@ -345,6 +620,13 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => saveToFile('freemind')}>FreeMind (.mm)</button>
             <button onClick={() => saveToFile('opml')}>OPML</button>
             <button onClick={() => saveToFile('markdown')}>Markdown</button>
+            <button onClick={() => saveToFile('d2')}>D2</button>
+            <hr />
+            <div>
+              <strong>Export As Image:</strong>
+            </div>
+            <button onClick={exportAsSVG}>SVG</button>
+            <button onClick={exportAsPNG}>PNG</button>
             <hr />
             <div>
               <strong>Load From:</strong>
@@ -353,6 +635,26 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => loadFromFile('freemind')}>FreeMind (.mm)</button>
             <button onClick={() => loadFromFile('opml')}>OPML</button>
             <button onClick={() => loadFromFile('markdown')}>Markdown</button>
+            <hr />
+            <div>
+              <strong>Cross-Links:</strong>
+            </div>
+            <button
+              onClick={() => setCrossLinkMode(!crossLinkMode)}
+              style={{
+                background: crossLinkMode ? '#f59e0b' : '#f3f4f6',
+                color: crossLinkMode ? 'white' : '#374151',
+              }}
+            >
+              {crossLinkMode ? 'Cancel Link Mode' : 'Add Cross-Link'}
+            </button>
+            {crossLinkMode && (
+              <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                {crossLinkSource
+                  ? `Source selected. Click target node.`
+                  : 'Click source node first.'}
+              </div>
+            )}
           </div>
         </Panel>
 
@@ -363,7 +665,26 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             Enter - Create sibling<br />
             Delete - Remove node<br />
             F2 - Edit text<br />
-            Space - Toggle collapse
+            Space - Toggle collapse<br />
+            <strong>Zoom:</strong> Ctrl +/-/0<br />
+            <strong>Notes:</strong> F3 / Ctrl+N
+            {selectedNodeId && (
+              <button
+                onClick={() => setShowNotesPanel(!showNotesPanel)}
+                style={{
+                  marginTop: '8px',
+                  padding: '4px 8px',
+                  background: showNotesPanel ? '#3b82f6' : '#f3f4f6',
+                  color: showNotesPanel ? 'white' : '#374151',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                {showNotesPanel ? 'Hide Notes' : 'Show Notes'}
+              </button>
+            )}
           </div>
         </Panel>
 
@@ -372,10 +693,29 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             nodeId={selectedNodeId}
             nodeLabel={selectedNode?.data.label || ''}
             metadata={selectedNode?.data.metadata}
+            icon={selectedNode?.data.icon}
+            cloud={selectedNode?.data.cloud}
             onUpdateMetadata={handleUpdateMetadata}
+            onUpdateIcon={handleUpdateIcon}
+            onUpdateCloud={handleUpdateCloud}
           />
         </Panel>
       </ReactFlow>
+
+      {/* Notes Panel */}
+      <NotesPanel
+        visible={showNotesPanel}
+        onClose={() => setShowNotesPanel(false)}
+        notes={selectedNode?.data.metadata?.notes || ''}
+        onSave={(notes) => {
+          if (selectedNodeId) {
+            handleUpdateMetadata({
+              ...(selectedNode?.data.metadata || {}),
+              notes: notes || undefined,
+            });
+          }
+        }}
+      />
     </div>
   );
 }
