@@ -66,3 +66,70 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  body {
+    min-width: 100vw;
+    overflow: hidden;
+  }
+
+  /* Hide bottom-left shortcuts panel on mobile */
+  .react-flow__panel-bottom-left {
+    display: none !important;
+  }
+
+  /* Make panels fullscreen on mobile */
+  .react-flow__panel {
+    max-width: 90vw !important;
+  }
+
+  /* Adjust control panel for mobile */
+  .controls-panel {
+    max-width: 85vw !important;
+    font-size: 12px !important;
+  }
+
+  .controls-panel button {
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+  }
+
+  /* Make modals fullscreen on mobile */
+  [style*="position: fixed"][style*="z-index: 1000"] {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+  }
+
+  /* Improve touch targets */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Make ReactFlow controls larger on mobile */
+  .react-flow__controls-button {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Hide minimap on mobile to save space */
+  .react-flow__minimap {
+    display: none;
+  }
+}
+
+/* Touch optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable double-tap zoom on buttons */
+button,
+[role="button"],
+input {
+  touch-action: manipulation;
+}

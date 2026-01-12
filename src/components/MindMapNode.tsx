@@ -1,9 +1,13 @@
-import { memo } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import type { MindMapNodeData } from '../types';
 import { getIconEmoji } from '../utils/icons';
+import RichTextEditor from './RichTextEditor';
 
-const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
+const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const defaultStyle = {
     fontSize: data.fontSize || 14,
     color: data.color || '#333',
@@ -23,6 +27,50 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
   const hasLink = data.link || data.metadata?.url;
   const iconEmoji = data.icon ? getIconEmoji(data.icon) : null;
 
+  // Check if label contains HTML (rich text)
+  const isRichText = data.label.includes('<') && data.label.includes('>');
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = (newContent: string) => {
+    // Trigger update via a custom event that the canvas will handle
+    const event = new CustomEvent('nodeLabelChange', {
+      detail: { nodeId: id, label: newContent },
+    });
+    window.dispatchEvent(event);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  // Listen for F2 key to edit and triggerNodeEdit event
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2' && selected) {
+        e.preventDefault();
+        setIsEditing(true);
+      }
+    };
+
+    const handleTriggerEdit = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if ((customEvent.detail as any)?.nodeId === id) {
+        setIsEditing(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('triggerNodeEdit', handleTriggerEdit);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('triggerNodeEdit', handleTriggerEdit);
+    };
+  }, [selected, id]);
+
   return (
     <div
       className={`mindmap-node ${selected ? 'selected' : ''}`}
@@ -35,7 +83,9 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         maxWidth: '300px',
         boxShadow: selected ? '0 4px 12px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
         transition: 'all 0.2s ease',
+        position: 'relative',
       }}
+      onDoubleClick={handleDoubleClick}
     >
       {/* Input handle (for connections from parents) */}
       <Handle
@@ -59,9 +109,23 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         </div>
       )}
 
+      {/* Rich Text Editor */}
+      {isEditing && (
+        <div style={{ position: 'absolute', zIndex: 1000, top: '-140px', left: 0 }}>
+          <RichTextEditor
+            content={data.label}
+            onChange={() => {}}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            placeholder="Enter node text..."
+          />
+        </div>
+      )}
+
       {/* Node content */}
       <div
-        contentEditable
+        ref={contentRef}
+        contentEditable={!isRichText}
         suppressContentEditableWarning
         style={{
           ...defaultStyle,
@@ -71,8 +135,9 @@ const MindMapNode = memo(({ data, selected }: NodeProps<MindMapNodeData>) => {
         }}
         className="node-content"
         title={hasLink ? data.link || data.metadata?.url : undefined}
+        dangerouslySetInnerHTML={isRichText ? { __html: data.label } : undefined}
       >
-        {data.label}
+        {!isRichText && data.label}
       </div>
 
       {/* Metadata indicators */}

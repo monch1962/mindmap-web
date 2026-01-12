@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -23,6 +23,9 @@ import SaveHistoryPanel from './SaveHistoryPanel';
 import ConflictResolutionModal from './ConflictResolutionModal';
 import HistoryPanel from './HistoryPanel';
 import StatisticsPanel from './StatisticsPanel';
+import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import BulkOperationsPanel from './BulkOperationsPanel';
+import MobileToolbar from './MobileToolbar';
 import type { MindMapNodeData, MindMapTree, NodeMetadata } from '../types';
 import { flowToTree, treeToFlow, generateId } from '../utils/mindmapConverter';
 import { parseJSON, stringifyJSON, parseFreeMind, toFreeMind, parseOPML, toOPML, parseMarkdown, toMarkdown, toD2, toYaml, parseYaml } from '../utils/formats';
@@ -50,13 +53,15 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<MindMapNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [showBulkOperations, setShowBulkOperations] = useState(false);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
   const [crossLinkMode, setCrossLinkMode] = useState(false);
   const [crossLinkSource, setCrossLinkSource] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [showSearch, setShowSearch] = useState(false);
   const [_searchQuery, setSearchQuery] = useState('');
-  const [searchOptions, setSearchOptions] = useState<SearchOptions>({
+  const [searchOptions] = useState<SearchOptions>({
     caseSensitive: false,
     wholeWord: false,
     useRegex: false,
@@ -68,9 +73,19 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [conflictSlot, setConflictSlot] = useState<any>(null);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  // Transform nodes to add multi-selection state
+  const transformedNodes = useMemo(() => {
+    return nodes.map((node) => ({
+      ...node,
+      selected: node.id === selectedNodeId || selectedNodeIds.has(node.id),
+    }));
+  }, [nodes, selectedNodeId, selectedNodeIds]);
 
   // Auto-save hook with history
   const { saveNow, saveHistory, restoreFromHistory, deleteHistorySlot } = useAutoSave({
@@ -82,6 +97,42 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
   // Undo/Redo hook
   const { canUndo, canRedo, addToHistory: _addToHistory, undo, redo, getFullHistory, jumpToHistory } = useUndoRedo();
+
+  // Handle node label changes from rich text editor
+  useEffect(() => {
+    const handleNodeLabelChange = (e: CustomEvent) => {
+      const { nodeId, label } = e.detail;
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                label,
+                lastModified: Date.now(),
+              },
+            };
+          }
+          return node;
+        })
+      );
+    };
+
+    window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
+    return () => window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
+  }, []);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleUndo = () => {
     if (!canUndo) return;
@@ -105,12 +156,6 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
   // Search handlers
   const handleSearch = (query: string, options: SearchOptions) => {
-    setSearchOptions(options);
-
-    // Get unique icons and clouds from nodes
-    const uniqueIcons = Array.from(new Set(nodes.map(n => n.data.icon).filter(Boolean)));
-    const uniqueClouds = Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter(Boolean)));
-
     // If no query and no filters, clear results
     if (!query.trim() && !options.filterIcon && !options.filterCloud && !options.filterDate) {
       setSearchResults([]);
@@ -262,6 +307,125 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             data: {
               ...node.data,
               cloud: cloud || undefined,
+              lastModified: Date.now(),
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
+  // Multi-selection handlers
+  const handleMultiSelectToggle = (nodeId: string, addToSelection: boolean) => {
+    if (addToSelection) {
+      setSelectedNodeIds((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(nodeId)) {
+          newSet.delete(nodeId);
+        } else {
+          newSet.add(nodeId);
+        }
+        // Show bulk operations panel if we have more than one node selected
+        setShowBulkOperations(newSet.size > 1);
+        return newSet;
+      });
+    } else {
+      setSelectedNodeIds(new Set());
+      setSelectedNodeId(nodeId);
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedNodeIds(new Set());
+    setSelectedNodeId(null);
+    setShowBulkOperations(false);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedNodeIds(new Set(nodes.map((n) => n.id)));
+    setShowBulkOperations(true);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedNodeIds.size === 0) return;
+
+    // Don't delete if it would delete all nodes
+    if (selectedNodeIds.size >= nodes.length) {
+      alert('Cannot delete all nodes');
+      return;
+    }
+
+    // Find all descendants of selected nodes
+    const allToDelete = new Set<string>(selectedNodeIds);
+    let added = true;
+
+    while (added) {
+      added = false;
+      edges.forEach((edge) => {
+        if (allToDelete.has(edge.source) && !allToDelete.has(edge.target)) {
+          allToDelete.add(edge.target);
+          added = true;
+        }
+      });
+    }
+
+    setNodes((nds) => nds.filter((n) => !allToDelete.has(n.id)));
+    setEdges((eds) => eds.filter((e) => !allToDelete.has(e.source) && !allToDelete.has(e.target)));
+    handleClearSelection();
+  };
+
+  const handleBulkIconChange = (icon: string | null) => {
+    if (selectedNodeIds.size === 0) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (selectedNodeIds.has(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              icon: icon || undefined,
+              lastModified: Date.now(),
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
+  const handleBulkCloudChange = (cloud: { color: string } | null) => {
+    if (selectedNodeIds.size === 0) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (selectedNodeIds.has(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              cloud: cloud || undefined,
+              lastModified: Date.now(),
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
+  const handleBulkColorChange = (backgroundColor: string) => {
+    if (selectedNodeIds.size === 0) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (selectedNodeIds.has(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              backgroundColor,
               lastModified: Date.now(),
             },
           };
@@ -457,10 +621,22 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         if (showStatistics) {
           setShowStatistics(false);
         }
+        if (showShortcuts) {
+          setShowShortcuts(false);
+        }
         if (crossLinkMode) {
           setCrossLinkMode(false);
           setCrossLinkSource(null);
         }
+        if (showBulkOperations || selectedNodeIds.size > 0) {
+          handleClearSelection();
+        }
+      }
+
+      // ? - Show keyboard shortcuts
+      if (event.key === '?') {
+        event.preventDefault();
+        setShowShortcuts(!showShortcuts);
       }
 
       // Ctrl S - Manual save
@@ -493,11 +669,25 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           setShowStatistics(!showStatistics);
         }
       }
+
+      // Ctrl A - Select all nodes
+      if (event.key === 'a' || event.key === 'A') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          handleSelectAll();
+        }
+      }
+
+      // Delete/Backspace - Bulk delete if multiple selected
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeIds.size > 1) {
+        event.preventDefault();
+        handleBulkDelete();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, crossLinkMode, searchResults, currentResultIndex, saveNow]);
+  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
 
   const createChildNode = (parentId: string) => {
     const parent = nodes.find((n) => n.id === parentId);
@@ -524,6 +714,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       },
     ]);
     setSelectedNodeId(newNode.id);
+
+    // Trigger edit mode for the new node
+    setTimeout(() => {
+      const event = new CustomEvent('triggerNodeEdit', {
+        detail: { nodeId: newNode.id },
+      });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   const createSiblingNode = (siblingId: string) => {
@@ -545,6 +743,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       };
       setNodes((nds) => [...nds, newNode]);
       setSelectedNodeId(newNode.id);
+
+      // Trigger edit mode for the new node
+      setTimeout(() => {
+        const event = new CustomEvent('triggerNodeEdit', {
+          detail: { nodeId: newNode.id },
+        });
+        window.dispatchEvent(event);
+      }, 100);
       return;
     }
 
@@ -569,6 +775,14 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       },
     ]);
     setSelectedNodeId(newNode.id);
+
+    // Trigger edit mode for the new node
+    setTimeout(() => {
+      const event = new CustomEvent('triggerNodeEdit', {
+        detail: { nodeId: newNode.id },
+      });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   const deleteNode = (nodeId: string) => {
@@ -816,22 +1030,30 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
-        nodes={nodes}
+        nodes={transformedNodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onNodeClick={(_, node) => {
+        onNodeClick={(event, node) => {
           if (crossLinkMode) {
             handleNodeClickForCrossLink(node.id);
+          } else if (event.shiftKey) {
+            // Shift+click - Toggle node in multi-selection
+            handleMultiSelectToggle(node.id, true);
           } else {
+            // Regular click - Clear multi-selection and select single node
+            if (selectedNodeIds.size > 0) {
+              handleClearSelection();
+            }
             setSelectedNodeId(node.id);
           }
         }}
         onPaneClick={() => {
           setSelectedNodeId(null);
+          handleClearSelection();
           if (crossLinkMode) {
             setCrossLinkMode(false);
             setCrossLinkSource(null);
@@ -923,8 +1145,8 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               onPrevious={handlePreviousResult}
               resultCount={searchResults.length}
               currentResult={currentResultIndex}
-              availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter(Boolean)))}
-              availableClouds={Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter(Boolean)))}
+              availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i))))}
+              availableClouds={Array.from(new Set(nodes.map(n => n.data.cloud?.color).filter((c): c is string => Boolean(c))))}
             />
           </Panel>
         )}
@@ -1105,9 +1327,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             Delete - Remove node<br />
             F2 - Edit text<br />
             Space - Toggle collapse<br />
+            <strong>Multi-Select:</strong> Shift+Click<br />
+            <strong>Select All:</strong> Ctrl+A<br />
             <strong>Zoom:</strong> Ctrl +/-/0<br />
             <strong>Notes:</strong> F3 / Ctrl+N<br />
-            <strong>Stats:</strong> Ctrl+I
+            <strong>Stats:</strong> Ctrl+I<br />
+            <strong>Help:</strong> ?
             {selectedNodeId && (
               <button
                 onClick={() => setShowNotesPanel(!showNotesPanel)}
@@ -1139,6 +1364,21 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               }}
             >
               📊 Statistics
+            </button>
+            <button
+              onClick={() => setShowShortcuts(true)}
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: '#f3f4f6',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+              }}
+            >
+              ⌨️ Shortcuts
             </button>
           </div>
         </Panel>
@@ -1211,6 +1451,42 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           edges={edges}
           selectedNodeId={selectedNodeId}
           onClose={() => setShowStatistics(false)}
+        />
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcuts && (
+        <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />
+      )}
+
+      {/* Bulk Operations Panel */}
+      {showBulkOperations && selectedNodeIds.size > 1 && (
+        <BulkOperationsPanel
+          selectedCount={selectedNodeIds.size}
+          onBulkDelete={handleBulkDelete}
+          onBulkIconChange={handleBulkIconChange}
+          onBulkCloudChange={handleBulkCloudChange}
+          onBulkColorChange={handleBulkColorChange}
+          availableIcons={Array.from(new Set(nodes.map(n => n.data.icon).filter((i): i is string => Boolean(i))))}
+          onClearSelection={handleClearSelection}
+          onClose={() => setShowBulkOperations(false)}
+        />
+      )}
+
+      {/* Mobile Toolbar */}
+      {isMobile && (
+        <MobileToolbar
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onFitView={fitView}
+          onAddNode={() => nodes[0] && createChildNode(nodes[0].id)}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onToggleNotes={() => setShowNotesPanel(!showNotesPanel)}
+          onToggleSearch={() => setShowSearch(!showSearch)}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          hasSelection={!!selectedNodeId}
         />
       )}
     </div>
