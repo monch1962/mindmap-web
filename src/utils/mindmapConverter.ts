@@ -1,9 +1,148 @@
 import type { MindMapNode, MindMapEdge, MindMapTree } from '../types';
 
 /**
+ * Auto-layout nodes in a hierarchical tree structure
+ * Uses a left/right balanced layout to prevent edge overlap
+ */
+export function autoLayoutNodes(
+  nodes: MindMapNode[],
+  edges: MindMapEdge[],
+): MindMapNode[] {
+  // Build adjacency map and tree structure
+  const childrenMap = new Map<string, string[]>();
+  const nodeMap = new Map<string, MindMapNode>();
+
+  edges.forEach((edge) => {
+    const children = childrenMap.get(edge.source) || [];
+    children.push(edge.target);
+    childrenMap.set(edge.source, children);
+  });
+
+  nodes.forEach((node) => {
+    nodeMap.set(node.id, node);
+  });
+
+  // Find root (node with no incoming edges)
+  const targetIds = new Set(edges.map((e) => e.target));
+  const rootNode = nodes.find((n) => !targetIds.has(n.id));
+
+  if (!rootNode) return nodes;
+
+  // Layout constants
+  const LEVEL_WIDTH = 300; // Horizontal spacing between levels
+  const NODE_HEIGHT = 80; // Vertical spacing between nodes
+  const ROOT_X = 400; // Center X position for root
+  const ROOT_Y = 300; // Center Y position for root
+
+  const positionedNodes = new Map<string, { x: number; y: number }>();
+
+  // Calculate subtree height for each node
+  function getSubtreeHeight(nodeId: string): number {
+    const children = childrenMap.get(nodeId) || [];
+    if (children.length === 0) return NODE_HEIGHT;
+
+    let totalHeight = 0;
+    children.forEach((childId) => {
+      totalHeight += getSubtreeHeight(childId);
+    });
+
+    return totalHeight;
+  }
+
+  // Layout nodes with left/right balancing
+  function layoutNode(
+    nodeId: string,
+    x: number,
+    yStart: number,
+    side: 'left' | 'right' | 'root',
+  ): number {
+    // Position current node
+    positionedNodes.set(nodeId, { x, y: yStart });
+
+    // Get children
+    const children = childrenMap.get(nodeId) || [];
+    if (children.length === 0) return NODE_HEIGHT;
+
+    // Calculate total height needed for all children
+    const totalHeight = children.reduce((sum, childId) => sum + getSubtreeHeight(childId), 0);
+
+    // Split children between left and right sides
+    const leftChildren = side === 'root'
+      ? children.filter((_, i) => i < children.length / 2)
+      : [];
+    const rightChildren = side === 'root'
+      ? children.filter((_, i) => i >= children.length / 2)
+      : children;
+    const currentSideChildren = side === 'root' ? [] : children;
+
+    let currentY = yStart - totalHeight / 2; // Start from top of available space
+
+    // Layout left children (for root node)
+    if (leftChildren.length > 0) {
+      const leftTotalHeight = leftChildren.reduce((sum, id) => sum + getSubtreeHeight(id), 0);
+      let leftY = yStart - leftTotalHeight / 2;
+
+      leftChildren.forEach((childId) => {
+        const childHeight = layoutNode(
+          childId,
+          x - LEVEL_WIDTH,
+          leftY,
+          'left'
+        );
+        leftY += childHeight;
+      });
+    }
+
+    // Layout right children (for root node)
+    if (rightChildren.length > 0) {
+      const rightTotalHeight = rightChildren.reduce((sum, id) => sum + getSubtreeHeight(id), 0);
+      let rightY = yStart - rightTotalHeight / 2;
+
+      rightChildren.forEach((childId) => {
+        const childHeight = layoutNode(
+          childId,
+          x + LEVEL_WIDTH,
+          rightY,
+          'right'
+        );
+        rightY += childHeight;
+      });
+    }
+
+    // Layout children on current side (for non-root nodes)
+    if (currentSideChildren.length > 0) {
+      const direction = side === 'left' ? -1 : 1;
+      currentSideChildren.forEach((childId) => {
+        const childHeight = layoutNode(
+          childId,
+          x + direction * LEVEL_WIDTH,
+          currentY,
+          side
+        );
+        currentY += childHeight;
+      });
+    }
+
+    return totalHeight;
+  }
+
+  // Start layout from root
+  layoutNode(rootNode.id, ROOT_X, ROOT_Y, 'root');
+
+  // Apply new positions to nodes
+  return nodes.map((node) => {
+    const newPos = positionedNodes.get(node.id);
+    return {
+      ...node,
+      position: newPos || node.position,
+    };
+  });
+}
+
+/**
  * Converts a tree structure to React Flow nodes and edges
  */
-export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: MindMapEdge[] } {
+export function treeToFlow(tree: MindMapTree, autoLayout = false): { nodes: MindMapNode[]; edges: MindMapEdge[] } {
   const nodes: MindMapNode[] = [];
   const edges: MindMapEdge[] = [];
 
@@ -26,6 +165,7 @@ export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: Mi
         link: node.link,
         metadata: node.metadata,
         cloud: node.cloud,
+        isRoot: parentId === null, // Mark root node
       },
     });
 
@@ -54,6 +194,12 @@ export function treeToFlow(tree: MindMapTree): { nodes: MindMapNode[]; edges: Mi
   }
 
   traverse(tree);
+
+  // Apply auto-layout if requested
+  if (autoLayout) {
+    return { nodes: autoLayoutNodes(nodes, edges), edges };
+  }
+
   return { nodes, edges };
 }
 

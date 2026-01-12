@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import type { MindMapTree } from '../types';
 import {
   exportToICS,
@@ -16,20 +16,23 @@ interface CalendarExportPanelProps {
 }
 
 export default function CalendarExportPanel({ visible, onClose, tree }: CalendarExportPanelProps) {
-  const [summary, setSummary] = useState({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    overdue: 0,
-    upcoming: 0,
-  });
-  const [heatmap, setHeatmap] = useState<Array<{ date: string; count: number }>>([]);
-
-  useEffect(() => {
-    if (tree) {
-      setSummary(generateTaskSummary(tree));
-      setHeatmap(generateCalendarHeatmap(tree));
+  // Use useMemo to derive state from tree prop instead of setState in useEffect
+  const summary = useMemo(() => {
+    if (!tree) {
+      return {
+        total: 0,
+        completed: 0,
+        pending: 0,
+        overdue: 0,
+        upcoming: 0,
+      };
     }
+    return generateTaskSummary(tree);
+  }, [tree]);
+
+  const heatmap = useMemo(() => {
+    if (!tree) return [];
+    return generateCalendarHeatmap(tree);
   }, [tree]);
 
   const handleExportICS = () => {

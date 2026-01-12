@@ -12,7 +12,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['Tab'], action: 'Create child node', category: 'Node Operations' },
   { keys: ['Enter'], action: 'Create sibling node', category: 'Node Operations' },
   { keys: ['Delete', 'Backspace'], action: 'Delete selected node', category: 'Node Operations' },
-  { keys: ['F2'], action: 'Edit node text', category: 'Node Operations' },
+  { keys: ['E'], action: 'Edit node text', category: 'Node Operations' },
   { keys: ['Space'], action: 'Toggle collapse state', category: 'Node Operations' },
   { keys: ['Shift', 'Click'], action: 'Multi-select nodes', category: 'Node Operations' },
   { keys: ['Ctrl', 'A'], action: 'Select all nodes', category: 'Node Operations' },
@@ -30,12 +30,11 @@ const SHORTCUTS: Shortcut[] = [
 
   // Search & Navigation
   { keys: ['Ctrl', 'F'], action: 'Open search panel', category: 'Search & Navigation' },
-  { keys: ['F3'], action: 'Next search result', category: 'Search & Navigation' },
-  { keys: ['Shift', 'F3'], action: 'Previous search result', category: 'Search & Navigation' },
+  { keys: ['Ctrl', 'G'], action: 'Next search result', category: 'Search & Navigation' },
+  { keys: ['Ctrl', 'Shift', 'G'], action: 'Previous search result', category: 'Search & Navigation' },
 
   // Panels
   { keys: ['Ctrl', 'N'], action: 'Toggle notes panel', category: 'Panels' },
-  { keys: ['F3'], action: 'Toggle notes (when node selected)', category: 'Panels' },
   { keys: ['Ctrl', 'H'], action: 'Toggle save history', category: 'Panels' },
   { keys: ['Ctrl', 'Shift', 'H'], action: 'Toggle undo/redo history', category: 'Panels' },
   { keys: ['Ctrl', 'I'], action: 'Toggle statistics', category: 'Panels' },

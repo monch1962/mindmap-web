@@ -3,7 +3,6 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath } from 'reactflow';
 import type { EdgeProps } from 'reactflow';
 
 const CrossLinkEdge = memo(({
-  id: _id,
   sourceX,
   sourceY,
   targetX,

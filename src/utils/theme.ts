@@ -227,6 +227,26 @@ export function setThemeMode(mode: ThemeMode): void {
 }
 
 /**
+ * Toggle between light and dark mode
+ */
+export function toggleDarkMode(): void {
+  const current = getThemeMode();
+  const newMode: ThemeMode = current === 'dark' ? 'light' : 'dark';
+  setThemeMode(newMode);
+}
+
+/**
+ * Get current effective theme (resolves 'auto' to actual mode)
+ */
+export function getEffectiveTheme(): 'light' | 'dark' {
+  const mode = getThemeMode();
+  if (mode === 'auto') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return mode;
+}
+
+/**
  * Get current color scheme
  */
 export function getColorScheme(): ColorScheme {

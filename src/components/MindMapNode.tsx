@@ -2,6 +2,7 @@ import { memo, useState, useRef, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import type { MindMapNodeData } from '../types';
 import { getIconEmoji } from '../utils/icons';
+import { sanitizeHtml } from '../utils/sanitize';
 import RichTextEditor from './RichTextEditor';
 
 const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) => {
@@ -9,10 +10,12 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
   const [localChecked, setLocalChecked] = useState(data.checked || false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const isRoot = data.isRoot || false;
+
   const defaultStyle = {
-    fontSize: data.fontSize || 14,
-    color: data.color || '#333',
-    fontWeight: data.bold ? 'bold' as const : 'normal' as const,
+    fontSize: data.fontSize || (isRoot ? 18 : 14),
+    color: data.color || (isRoot ? '#1e40af' : '#333'),
+    fontWeight: data.bold ? 'bold' as const : (isRoot ? 'bold' as const : 'normal' as const),
     fontStyle: data.italic ? 'italic' as const : 'normal' as const,
     fontFamily: data.fontName || 'inherit',
   };
@@ -57,10 +60,27 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
     window.dispatchEvent(event);
   };
 
-  // Listen for F2 key to edit and triggerNodeEdit event
+  const handleCollapseAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const event = new CustomEvent('collapseAllDescendants', {
+      detail: { nodeId: id },
+    });
+    window.dispatchEvent(event);
+  };
+
+  const handleExpandAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const event = new CustomEvent('expandAllDescendants', {
+      detail: { nodeId: id },
+    });
+    window.dispatchEvent(event);
+  };
+
+  // Listen for E key to edit and triggerNodeEdit event
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F2' && selected) {
+      // Use E key instead of F2 for better cross-platform compatibility
+      if (e.key === 'e' && selected && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         setIsEditing(true);
       }
@@ -83,15 +103,17 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
 
   return (
     <div
-      className={`mindmap-node ${selected ? 'selected' : ''}`}
+      className={`mindmap-node ${selected ? 'selected' : ''} ${isRoot ? 'root-node' : ''}`}
       style={{
-        padding: '12px 16px',
-        borderRadius: '8px',
-        border: '2px solid ' + (selected ? '#3b82f6' : '#e5e7eb'),
-        background: data.backgroundColor || 'white',
-        minWidth: '100px',
-        maxWidth: '300px',
-        boxShadow: selected ? '0 4px 12px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+        padding: isRoot ? '16px 20px' : '12px 16px',
+        borderRadius: isRoot ? '12px' : '8px',
+        border: '2px solid ' + (selected ? '#3b82f6' : (isRoot ? '#3b82f6' : '#e5e7eb')),
+        background: data.backgroundColor || (isRoot ? '#eff6ff' : 'white'),
+        minWidth: isRoot ? '150px' : '100px',
+        maxWidth: isRoot ? '400px' : '300px',
+        boxShadow: selected
+          ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+          : (isRoot ? '0 6px 16px rgba(59, 130, 246, 0.25)' : '0 2px 8px rgba(0,0,0,0.1)'),
         transition: 'all 0.2s ease',
         position: 'relative',
       }}
@@ -172,7 +194,7 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           }}
           className="node-content"
           title={hasLink ? data.link || data.metadata?.url : undefined}
-          dangerouslySetInnerHTML={isRichText ? { __html: data.label } : undefined}
+          dangerouslySetInnerHTML={isRichText ? { __html: sanitizeHtml(data.label) } : undefined}
         >
           {!isRichText && data.label}
         </div>
@@ -324,6 +346,64 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
         position={Position.Right}
         style={{ background: '#3b82f6', width: 8, height: 8 }}
       />
+
+      {/* Collapse/Expand All buttons - visible on hover/select */}
+      {selected && (
+        <div
+          style={{
+            position: 'absolute',
+            right: -45,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          <button
+            onMouseDown={handleExpandAll}
+            title="Expand all descendants"
+            style={{
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            +
+          </button>
+          <button
+            onMouseDown={handleCollapseAll}
+            title="Collapse all descendants"
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            -
+          </button>
+        </div>
+      )}
 
       {/* Collapse indicator */}
       {data.collapsed && (

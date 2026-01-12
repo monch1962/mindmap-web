@@ -142,6 +142,7 @@ export default function MetadataPanel({
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           width: '320px',
+          maxWidth: '320px',
         }}
       >
         <div style={{ fontSize: '14px', color: '#6b7280', textAlign: 'center' }}>
@@ -159,8 +160,14 @@ export default function MetadataPanel({
         borderRadius: '8px',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         width: '320px',
+        maxWidth: '320px',
         maxHeight: 'calc(100vh - 100px)',
         overflowY: 'auto',
+        overflowX: 'hidden',
+        boxSizing: 'border-box',
+        // Custom scrollbar styling for better UX
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#cbd5e1 #f1f5f9',
       }}
     >
       <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 'bold' }}>

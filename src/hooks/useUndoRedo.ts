@@ -122,7 +122,7 @@ export function useUndoRedo({ maxHistory = 50 }: UseUndoRedoOptions = {}) {
   const addToHistory = useCallback((nodes: Node<MindMapNodeData>[], edges: Edge[]) => {
     setPast((prevPast) => {
       let label = 'Action';
-      let timestamp = Date.now();
+      const timestamp = Date.now();
 
       // Try to determine action label if we have previous state
       if (lastState) {

@@ -21,6 +21,7 @@ export interface NodeMetadata {
   notes?: string;
   tags?: string[];
   attachments?: FileAttachment[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; // Allow custom metadata fields
 }
 
@@ -63,6 +64,7 @@ export interface MindMapNodeData {
   code?: string;
   codeLanguage?: string;
   math?: string; // LaTeX formula
+  isRoot?: boolean; // Root node indicator
 }
 
 /**

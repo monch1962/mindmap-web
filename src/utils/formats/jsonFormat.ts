@@ -7,7 +7,7 @@ export function parseJSON(jsonString: string): MindMapTree {
   try {
     const data = JSON.parse(jsonString);
     return data as MindMapTree;
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format');
   }
 }

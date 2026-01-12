@@ -10,7 +10,7 @@ import ReactFlow, {
   Panel,
   useReactFlow,
 } from 'reactflow';
-import type { Connection, OnConnect, Node } from 'reactflow';
+import type { Connection, OnConnect, Node, Edge } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import MindMapNode from './MindMapNode';
@@ -45,7 +45,7 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import { useGestureNavigation } from '../hooks/useGestureNavigation';
-import { initializeTheme } from '../utils/theme';
+import { initializeTheme, toggleDarkMode, getEffectiveTheme } from '../utils/theme';
 
 const nodeTypes = {
   mindmap: MindMapNode,
@@ -76,16 +76,10 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [showSearch, setShowSearch] = useState(false);
   const [_searchQuery, setSearchQuery] = useState('');
-  const [_searchOptions] = useState<SearchOptions>({
-    caseSensitive: false,
-    wholeWord: false,
-    useRegex: false,
-    searchInNotes: false,
-  });
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
   const [showSaveHistory, setShowSaveHistory] = useState(false);
-  const [conflictSlot, setConflictSlot] = useState<any>(null);
+  const [conflictSlot, setConflictSlot] = useState<{ nodes: Node<MindMapNodeData>[]; edges: Edge[]; tree: MindMapTree; timestamp: number; label: string } | null>(null);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -100,6 +94,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   const [show3DView, setShow3DView] = useState(false);
   const [showTemplatesPanel, setShowTemplatesPanel] = useState(false);
   const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(getEffectiveTheme);
   const [currentUser] = useState(() => {
     const name = localStorage.getItem('user_name') || `User ${Math.floor(Math.random() * 1000)}`;
     const color = localStorage.getItem('user_color') || '#3b82f6';
@@ -109,6 +104,71 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  // Helper functions for collapsing/expanding descendants
+  const collapseAllDescendants = useCallback((nodeId: string) => {
+    setNodes((nds) => {
+      // Find all descendant nodes
+      const descendantIds = new Set<string>();
+      const queue = [nodeId];
+
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        // Find all children (edges where source is currentId)
+        const children = edges.filter((e) => e.source === currentId);
+        children.forEach((edge) => {
+          descendantIds.add(edge.target);
+          queue.push(edge.target);
+        });
+      }
+
+      // Set collapsed=true for all descendants
+      return nds.map((node) => {
+        if (descendantIds.has(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              collapsed: true,
+            },
+          };
+        }
+        return node;
+      });
+    });
+  }, [edges]);
+
+  const expandAllDescendants = useCallback((nodeId: string) => {
+    setNodes((nds) => {
+      // Find all descendant nodes
+      const descendantIds = new Set<string>();
+      const queue = [nodeId];
+
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        // Find all children (edges where source is currentId)
+        const children = edges.filter((e) => e.source === currentId);
+        children.forEach((edge) => {
+          descendantIds.add(edge.target);
+          queue.push(edge.target);
+        });
+      }
+
+      // Set collapsed=false for all descendants
+      return nds.map((node) => {
+        if (descendantIds.has(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              collapsed: false,
+            },
+          };
+        }
+        return node;
+      });
+    });
+  }, [edges]);
 
   // Update onlineUsers when currentUser changes
   useEffect(() => {
@@ -201,10 +261,179 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
     window.addEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
     window.addEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
+    window.addEventListener('collapseAllDescendants', ((e: CustomEvent) => {
+      collapseAllDescendants(e.detail.nodeId);
+    }) as EventListener);
+    window.addEventListener('expandAllDescendants', ((e: CustomEvent) => {
+      expandAllDescendants(e.detail.nodeId);
+    }) as EventListener);
     return () => {
       window.removeEventListener('nodeLabelChange', handleNodeLabelChange as EventListener);
       window.removeEventListener('nodeCheckboxChange', handleNodeCheckboxChange as EventListener);
+      window.removeEventListener('collapseAllDescendants', ((e: CustomEvent) => {
+        collapseAllDescendants(e.detail.nodeId);
+      }) as EventListener);
+      window.removeEventListener('expandAllDescendants', ((e: CustomEvent) => {
+        expandAllDescendants(e.detail.nodeId);
+      }) as EventListener);
     };
+  }, [collapseAllDescendants, expandAllDescendants]);
+
+  // Node manipulation functions (must be declared before keyboard handler useEffect)
+  const createChildNode = useCallback((parentId: string) => {
+    const parent = nodes.find((n) => n.id === parentId);
+    if (!parent) return;
+
+    const newNode: Node<MindMapNodeData> = {
+      id: generateId(),
+      type: 'mindmap',
+      position: {
+        x: parent.position.x + 250,
+        y: parent.position.y + Math.random() * 50,
+      },
+      data: { label: 'New Node', lastModified: Date.now() },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+    setEdges((eds) => [
+      ...eds,
+      {
+        id: `${parentId}-${newNode.id}`,
+        source: parentId,
+        target: newNode.id,
+        type: 'smoothstep',
+      },
+    ]);
+    setSelectedNodeId(newNode.id);
+
+    // Trigger edit mode for the new node
+    setTimeout(() => {
+      const event = new CustomEvent('triggerNodeEdit', {
+        detail: { nodeId: newNode.id },
+      });
+      window.dispatchEvent(event);
+    }, 100);
+  }, [nodes]);
+
+  const createSiblingNode = useCallback((siblingId: string) => {
+    const sibling = nodes.find((n) => n.id === siblingId);
+    if (!sibling) return;
+
+    // Find parent edge
+    const parentEdge = edges.find((e) => e.target === siblingId);
+    if (!parentEdge) {
+      // Root node - create a new root sibling
+      const newNode: Node<MindMapNodeData> = {
+        id: generateId(),
+        type: 'mindmap',
+        position: {
+          x: sibling.position.x,
+          y: sibling.position.y + 100,
+        },
+        data: { label: 'New Sibling', lastModified: Date.now() },
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      setSelectedNodeId(newNode.id);
+
+      setTimeout(() => {
+        const event = new CustomEvent('triggerNodeEdit', {
+          detail: { nodeId: newNode.id },
+        });
+        window.dispatchEvent(event);
+      }, 100);
+
+      return;
+    }
+
+    const parentId = parentEdge.source;
+    const newNode: Node<MindMapNodeData> = {
+      id: generateId(),
+      type: 'mindmap',
+      position: {
+        x: sibling.position.x,
+        y: sibling.position.y + 100,
+      },
+      data: { label: 'New Sibling', lastModified: Date.now() },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+    setEdges((eds) => [
+      ...eds,
+      {
+        id: `${parentId}-${newNode.id}`,
+        source: parentId,
+        target: newNode.id,
+        type: 'smoothstep',
+      },
+    ]);
+    setSelectedNodeId(newNode.id);
+
+    setTimeout(() => {
+      const event = new CustomEvent('triggerNodeEdit', {
+        detail: { nodeId: newNode.id },
+      });
+      window.dispatchEvent(event);
+    }, 100);
+  }, [nodes, edges]);
+
+  const deleteNode = useCallback((nodeId: string) => {
+    // Don't delete if it's the only node
+    if (nodes.length === 1) return;
+
+    // Find all descendants
+    const nodesToDelete = new Set<string>([nodeId]);
+    const queue = [nodeId];
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      const children = edges.filter((e) => e.source === currentId);
+      children.forEach((edge) => {
+        nodesToDelete.add(edge.target);
+        queue.push(edge.target);
+      });
+    }
+
+    // Remove nodes and edges
+    setNodes((nds) => nds.filter((n) => !nodesToDelete.has(n.id)));
+    setEdges((eds) =>
+      eds.filter((e) => !nodesToDelete.has(e.source) && !nodesToDelete.has(e.target))
+    );
+
+    // Clear selection if deleted node was selected
+    if (selectedNodeId === nodeId || nodesToDelete.has(selectedNodeId || '')) {
+      setSelectedNodeId(null);
+    }
+  }, [nodes, edges, selectedNodeId]);
+
+  const editNode = useCallback((nodeId: string) => {
+    const nodeElement = document.querySelector(`[data-nodeid="${nodeId}"] .node-content`) as HTMLElement;
+    if (nodeElement) {
+      nodeElement.focus();
+      // Select all text
+      const range = document.createRange();
+      range.selectNodeContents(nodeElement);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, []);
+
+  const toggleCollapse = useCallback((nodeId: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              collapsed: !node.data.collapsed,
+            },
+          };
+        }
+        return node;
+      })
+    );
   }, []);
 
   // Detect mobile screen size
@@ -216,6 +445,24 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Listen for theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setCurrentTheme(getEffectiveTheme());
+    };
+
+    // Listen for storage events (theme changes from other tabs)
+    window.addEventListener('storage', handleThemeChange);
+
+    // Listen for custom theme change events
+    window.addEventListener('themeChange', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChange', handleThemeChange);
+    };
   }, []);
 
   const handleUndo = () => {
@@ -704,10 +951,13 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         deleteNode(selectedNodeId);
       }
 
-      // F2 - Edit node content
-      if (event.key === 'F2' && selectedNodeId) {
-        event.preventDefault();
-        editNode(selectedNodeId);
+      // E - Edit node content (accessible on all platforms)
+      if (event.key === 'e' && selectedNodeId) {
+        // Only trigger if no modifier keys are pressed (to avoid conflict with Ctrl+E browser shortcuts)
+        if (!event.ctrlKey && !event.metaKey && !event.altKey) {
+          event.preventDefault();
+          editNode(selectedNodeId);
+        }
       }
 
       // Space - Toggle collapse
@@ -750,12 +1000,6 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
-      // F3 - Toggle notes panel (when node selected)
-      if (event.key === 'F3' && selectedNodeId) {
-        event.preventDefault();
-        setShowNotesPanel(!showNotesPanel);
-      }
-
       // Ctrl Z - Undo
       if (event.key === 'z' || event.key === 'Z') {
         if (event.ctrlKey || event.metaKey) {
@@ -787,13 +1031,15 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
-      // F3 - Next search result
-      if (event.key === 'F3') {
-        event.preventDefault();
-        if (event.shiftKey) {
-          handlePreviousResult();
-        } else {
-          handleNextResult();
+      // Ctrl G - Next search result (standard "find next" shortcut)
+      if (event.key === 'g' || event.key === 'G') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          if (event.shiftKey) {
+            handlePreviousResult();
+          } else {
+            handleNextResult();
+          }
         }
       }
 
@@ -962,6 +1208,15 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
         }
       }
 
+      // Ctrl Shift D - Toggle dark mode
+      if (event.key === 'D' || event.key === 'd') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault();
+          toggleDarkMode();
+          setCurrentTheme(getEffectiveTheme());
+        }
+      }
+
       // Ctrl A - Select all nodes
       if (event.key === 'a' || event.key === 'A') {
         if (event.ctrlKey || event.metaKey) {
@@ -979,156 +1234,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showTemplatesPanel, showThemeSettings, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow]);
-
-  const createChildNode = (parentId: string) => {
-    const parent = nodes.find((n) => n.id === parentId);
-    if (!parent) return;
-
-    const newNode: Node<MindMapNodeData> = {
-      id: generateId(),
-      type: 'mindmap',
-      position: {
-        x: parent.position.x + 250,
-        y: parent.position.y + Math.random() * 50,
-      },
-      data: { label: 'New Node', lastModified: Date.now() },
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `${parentId}-${newNode.id}`,
-        source: parentId,
-        target: newNode.id,
-        type: 'smoothstep',
-      },
-    ]);
-    setSelectedNodeId(newNode.id);
-
-    // Trigger edit mode for the new node
-    setTimeout(() => {
-      const event = new CustomEvent('triggerNodeEdit', {
-        detail: { nodeId: newNode.id },
-      });
-      window.dispatchEvent(event);
-    }, 100);
-  };
-
-  const createSiblingNode = (siblingId: string) => {
-    const sibling = nodes.find((n) => n.id === siblingId);
-    if (!sibling) return;
-
-    // Find parent edge
-    const parentEdge = edges.find((e) => e.target === siblingId);
-    if (!parentEdge) {
-      // Root node - create a new root sibling
-      const newNode: Node<MindMapNodeData> = {
-        id: generateId(),
-        type: 'mindmap',
-        position: {
-          x: sibling.position.x,
-          y: sibling.position.y + 100,
-        },
-        data: { label: 'New Node', lastModified: Date.now() },
-      };
-      setNodes((nds) => [...nds, newNode]);
-      setSelectedNodeId(newNode.id);
-
-      // Trigger edit mode for the new node
-      setTimeout(() => {
-        const event = new CustomEvent('triggerNodeEdit', {
-          detail: { nodeId: newNode.id },
-        });
-        window.dispatchEvent(event);
-      }, 100);
-      return;
-    }
-
-    const newNode: Node<MindMapNodeData> = {
-      id: generateId(),
-      type: 'mindmap',
-      position: {
-        x: sibling.position.x,
-        y: sibling.position.y + 100,
-      },
-      data: { label: 'New Node', lastModified: Date.now() },
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `${parentEdge.source}-${newNode.id}`,
-        source: parentEdge.source,
-        target: newNode.id,
-        type: 'smoothstep',
-      },
-    ]);
-    setSelectedNodeId(newNode.id);
-
-    // Trigger edit mode for the new node
-    setTimeout(() => {
-      const event = new CustomEvent('triggerNodeEdit', {
-        detail: { nodeId: newNode.id },
-      });
-      window.dispatchEvent(event);
-    }, 100);
-  };
-
-  const deleteNode = (nodeId: string) => {
-    // Don't delete if it's the only node
-    if (nodes.length === 1) return;
-
-    // Find all descendants
-    const descendants = new Set<string>([nodeId]);
-    let added = true;
-
-    while (added) {
-      added = false;
-      edges.forEach((edge) => {
-        if (descendants.has(edge.source) && !descendants.has(edge.target)) {
-          descendants.add(edge.target);
-          added = true;
-        }
-      });
-    }
-
-    setNodes((nds) => nds.filter((n) => !descendants.has(n.id)));
-    setEdges((eds) => eds.filter((e) => !descendants.has(e.source) && !descendants.has(e.target)));
-    setSelectedNodeId(null);
-  };
-
-  const editNode = (nodeId: string) => {
-    const nodeElement = document.querySelector(`[data-nodeid="${nodeId}"] .node-content`) as HTMLElement;
-    if (nodeElement) {
-      nodeElement.focus();
-      // Select all text
-      const range = document.createRange();
-      range.selectNodeContents(nodeElement);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-  };
-
-  const toggleCollapse = (nodeId: string) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              collapsed: !node.data.collapsed,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  };
+  }, [selectedNodeId, selectedNodeIds, nodes, edges, zoomIn, zoomOut, fitView, showNotesPanel, canUndo, canRedo, showSearch, showSaveHistory, showHistoryPanel, showStatistics, showShortcuts, showAIAssistant, showCommentsPanel, showWebhookPanel, showCalendarPanel, showEmailPanel, showPresentation, show3DView, showTemplatesPanel, showThemeSettings, showBulkOperations, crossLinkMode, searchResults, currentResultIndex, saveNow, createChildNode, createSiblingNode, deleteNode, editNode, toggleCollapse]);
 
   const handleRestoreFromHistory = (index: number) => {
     const slot = restoreFromHistory(index);
@@ -1261,9 +1367,12 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             break;
         }
 
-        const { nodes: newNodes, edges: newEdges } = treeToFlow(tree);
+        const { nodes: newNodes, edges: newEdges } = treeToFlow(tree, true); // Use auto-layout for imports
         setNodes(newNodes);
         setEdges(newEdges);
+
+        // Fit view to show all nodes after a short delay to ensure rendering
+        setTimeout(() => fitView({ padding: 0.2 }), 100);
       } catch (error) {
         alert(`Error loading file: ${error}`);
       }
@@ -1576,6 +1685,31 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
         <Panel position="top-right" className="controls-panel">
           <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+            <button
+              onClick={() => {
+                toggleDarkMode();
+                setCurrentTheme(getEffectiveTheme());
+              }}
+              title="Toggle dark mode (Ctrl+Shift+D)"
+              style={{
+                padding: '8px 12px',
+                background: currentTheme === 'dark' ? '#1e293b' : '#f3f4f6',
+                color: currentTheme === 'dark' ? '#f1f5f9' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                fontWeight: 'bold',
+              }}
+            >
+              {currentTheme === 'dark' ? '☀️' : '🌙'}
+              {currentTheme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+            <hr />
             <button onClick={() => createChildNode(nodes[0]?.id || generateId())}>
               + New Root
             </button>
@@ -1828,6 +1962,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
         <Panel position="top-left">
           <MetadataPanel
+            key={selectedNodeId || 'no-selection'}
             nodeId={selectedNodeId}
             nodeLabel={selectedNode?.data.label || ''}
             metadata={selectedNode?.data.metadata}

@@ -1,4 +1,5 @@
 import MindMapCanvas from './components/MindMapCanvas';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './App.css';
 
 function App() {
@@ -10,7 +11,11 @@ function App() {
     position: { x: 400, y: 300 },
   };
 
-  return <MindMapCanvas initialData={initialData} />;
+  return (
+    <ErrorBoundary>
+      <MindMapCanvas initialData={initialData} />
+    </ErrorBoundary>
+  );
 }
 
 export default App;

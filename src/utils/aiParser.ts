@@ -67,8 +67,8 @@ export function parseBulletPointsToMindMap(text: string, rootLabel: string): Min
     const trimmed = line.trim();
 
     // Check for bullet points or numbered lists
-    if (/^[\-\*\+]\s/.test(trimmed) || /^\d+\.\s/.test(trimmed)) {
-      const content = trimmed.replace(/^[\-\*\+\d\.]+\s/, '');
+    if (/^[-*+]\s/.test(trimmed) || /^\d+\.\s/.test(trimmed)) {
+      const content = trimmed.replace(/^[-*+\d.]+\s/, '');
       root.children.push({
         id: generateId(),
         content,

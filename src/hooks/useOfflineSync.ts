@@ -101,23 +101,6 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
   }, [options]);
 
   /**
-   * Periodic sync check
-   */
-  useEffect(() => {
-    if (isOnline && swRegistration) {
-      syncIntervalRef.current = setInterval(() => {
-        checkPendingSync();
-      }, 30000); // Check every 30 seconds
-
-      return () => {
-        if (syncIntervalRef.current) {
-          clearInterval(syncIntervalRef.current);
-        }
-      };
-    }
-  }, [isOnline, swRegistration]);
-
-  /**
    * Check for pending sync
    */
   const checkPendingSync = useCallback(async () => {
@@ -144,6 +127,23 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
       return 0;
     }
   }, [swRegistration]);
+
+  /**
+   * Periodic sync check
+   */
+  useEffect(() => {
+    if (isOnline && swRegistration) {
+      syncIntervalRef.current = setInterval(() => {
+        checkPendingSync();
+      }, 30000); // Check every 30 seconds
+
+      return () => {
+        if (syncIntervalRef.current) {
+          clearInterval(syncIntervalRef.current);
+        }
+      };
+    }
+  }, [isOnline, swRegistration, checkPendingSync]);
 
   /**
    * Get cache size
@@ -181,6 +181,7 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
 
     try {
       // sync API might not be available in all browsers
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ('sync' in swRegistration) {
         await (swRegistration as any).sync.register('sync-offline-requests');
       }
@@ -239,6 +240,7 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
   /**
    * Store data for offline use
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const storeOfflineData = useCallback((key: string, data: any) => {
     try {
       const offlineData = {

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { sanitizeHtml } from '../utils/sanitize';
 
 interface RichTextEditorProps {
   content: string;
@@ -17,11 +18,22 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const [text, setText] = useState(content);
   const editorRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
 
   useEffect(() => {
-    setText(content);
+    // Sanitize content on initialization
+    const sanitizedContent = sanitizeHtml(content);
+
+    if (editorRef.current) {
+      // Only set innerHTML if content has actually changed
+      if (!initializedRef.current || editorRef.current.innerHTML !== sanitizedContent) {
+        editorRef.current.innerHTML = sanitizedContent;
+        initializedRef.current = true;
+      }
+      setText(sanitizedContent);
+    }
   }, [content]);
 
   const execCommand = (command: string, value: string = '') => {
@@ -31,8 +43,10 @@ export default function RichTextEditor({
 
   const handleInput = () => {
     if (editorRef.current) {
-      setText(editorRef.current.innerHTML);
-      onChange(editorRef.current.innerHTML);
+      const html = editorRef.current.innerHTML;
+      const sanitized = sanitizeHtml(html);
+      setText(sanitized);
+      onChange(sanitized);
     }
   };
 
@@ -41,7 +55,8 @@ export default function RichTextEditor({
       execCommand('createLink', linkUrl);
       setShowLinkModal(false);
       setLinkUrl('');
-      handleInput();
+      // Sanitize after adding link
+      setTimeout(handleInput, 0);
     }
   };
 
@@ -269,7 +284,6 @@ export default function RichTextEditor({
           lineHeight: '1.5',
         }}
         data-placeholder={placeholder}
-        dangerouslySetInnerHTML={{ __html: text }}
       />
 
       {/* Link Modal */}
