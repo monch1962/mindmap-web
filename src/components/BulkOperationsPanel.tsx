@@ -1,20 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 interface BulkOperationsPanelProps {
-  selectedCount: number;
-  onBulkDelete: () => void;
-  onBulkIconChange: (icon: string | null) => void;
-  onBulkCloudChange: (cloud: { color: string } | null) => void;
-  onBulkColorChange: (color: string) => void;
-  availableIcons: string[];
-  onClearSelection: () => void;
-  onClose: () => void;
+  selectedCount: number
+  onBulkDelete: () => void
+  onBulkIconChange: (icon: string | null) => void
+  onBulkCloudChange: (cloud: { color: string } | null) => void
+  onBulkColorChange: (color: string) => void
+  availableIcons: string[]
+  onClearSelection: () => void
+  onClose: () => void
 }
 
 const ICONS = [
-  'star', 'flag', 'heart', 'check', 'warning',
-  'idea', 'question', 'thumbs-up', 'thumbs-down', 'bookmark'
-];
+  'star',
+  'flag',
+  'heart',
+  'check',
+  'warning',
+  'idea',
+  'question',
+  'thumbs-up',
+  'thumbs-down',
+  'bookmark',
+]
 
 const CLOUD_COLORS = [
   { name: 'Red', value: '#fecaca' },
@@ -25,7 +33,7 @@ const CLOUD_COLORS = [
   { name: 'Pink', value: '#fbcfe8' },
   { name: 'Orange', value: '#fed7aa' },
   { name: 'Gray', value: '#e5e7eb' },
-];
+]
 
 const NODE_COLORS = [
   { name: 'White', value: 'white' },
@@ -34,7 +42,7 @@ const NODE_COLORS = [
   { name: 'Light Green', value: '#bbf7d0' },
   { name: 'Light Yellow', value: '#fef08a' },
   { name: 'Light Purple', value: '#e9d5ff' },
-];
+]
 
 export default function BulkOperationsPanel({
   selectedCount,
@@ -46,24 +54,26 @@ export default function BulkOperationsPanel({
   onClearSelection,
   onClose,
 }: BulkOperationsPanelProps) {
-  const [showIcons, setShowIcons] = useState(false);
-  const [showClouds, setShowClouds] = useState(false);
-  const [showColors, setShowColors] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [showIcons, setShowIcons] = useState(false)
+  const [showClouds, setShowClouds] = useState(false)
+  const [showColors, setShowColors] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   return (
     <div
+      role="region"
+      aria-label="Bulk operations panel"
       style={{
         position: 'fixed',
         bottom: isMobile ? '70px' : '20px',
@@ -87,11 +97,12 @@ export default function BulkOperationsPanel({
           alignItems: 'center',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
+        <h2 id="bulk-ops-title" style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
           📦 Bulk Operations ({selectedCount} nodes selected)
         </h2>
         <button
           onClick={onClose}
+          aria-label="Close bulk operations panel"
           style={{
             background: 'none',
             border: 'none',
@@ -106,10 +117,15 @@ export default function BulkOperationsPanel({
       </div>
 
       <div style={{ padding: '12px 16px' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        <div
+          role="group"
+          aria-label="Bulk actions"
+          style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}
+        >
           {/* Bulk Delete */}
           <button
             onClick={onBulkDelete}
+            aria-label={`Delete all ${selectedCount} selected nodes`}
             style={{
               padding: '6px 12px',
               background: '#fef2f2',
@@ -129,10 +145,12 @@ export default function BulkOperationsPanel({
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => {
-                setShowIcons(!showIcons);
-                setShowClouds(false);
-                setShowColors(false);
+                setShowIcons(!showIcons)
+                setShowClouds(false)
+                setShowColors(false)
               }}
+              aria-expanded={showIcons}
+              aria-haspopup="true"
               style={{
                 padding: '6px 12px',
                 background: showIcons ? '#3b82f6' : '#f3f4f6',
@@ -150,6 +168,8 @@ export default function BulkOperationsPanel({
             {/* Icon Dropdown */}
             {showIcons && (
               <div
+                role="menu"
+                aria-label="Select icon"
                 style={{
                   position: 'absolute',
                   bottom: '100%',
@@ -167,9 +187,10 @@ export default function BulkOperationsPanel({
                 }}
               >
                 <button
+                  role="menuitem"
                   onClick={() => {
-                    onBulkIconChange(null);
-                    setShowIcons(false);
+                    onBulkIconChange(null)
+                    setShowIcons(false)
                   }}
                   style={{
                     padding: '4px 8px',
@@ -183,15 +204,17 @@ export default function BulkOperationsPanel({
                 >
                   Clear Icons
                 </button>
-                {ICONS.map((icon) => {
-                  const hasIcon = availableIcons.includes(icon);
+                {ICONS.map(icon => {
+                  const hasIcon = availableIcons.includes(icon)
                   return (
                     <button
                       key={icon}
+                      role="menuitem"
                       onClick={() => {
-                        onBulkIconChange(icon);
-                        setShowIcons(false);
+                        onBulkIconChange(icon)
+                        setShowIcons(false)
                       }}
+                      aria-label={`Set ${icon} icon`}
                       style={{
                         padding: '4px',
                         background: hasIcon ? '#eff6ff' : 'white',
@@ -204,7 +227,7 @@ export default function BulkOperationsPanel({
                     >
                       {getIconEmoji(icon)}
                     </button>
-                  );
+                  )
                 })}
               </div>
             )}
@@ -214,10 +237,12 @@ export default function BulkOperationsPanel({
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => {
-                setShowClouds(!showClouds);
-                setShowIcons(false);
-                setShowColors(false);
+                setShowClouds(!showClouds)
+                setShowIcons(false)
+                setShowColors(false)
               }}
+              aria-expanded={showClouds}
+              aria-haspopup="true"
               style={{
                 padding: '6px 12px',
                 background: showClouds ? '#3b82f6' : '#f3f4f6',
@@ -235,6 +260,8 @@ export default function BulkOperationsPanel({
             {/* Cloud Dropdown */}
             {showClouds && (
               <div
+                role="menu"
+                aria-label="Select cloud color"
                 style={{
                   position: 'absolute',
                   bottom: '100%',
@@ -252,9 +279,10 @@ export default function BulkOperationsPanel({
                 }}
               >
                 <button
+                  role="menuitem"
                   onClick={() => {
-                    onBulkCloudChange(null);
-                    setShowClouds(false);
+                    onBulkCloudChange(null)
+                    setShowClouds(false)
                   }}
                   style={{
                     padding: '4px 8px',
@@ -267,13 +295,15 @@ export default function BulkOperationsPanel({
                 >
                   Clear Clouds
                 </button>
-                {CLOUD_COLORS.map((color) => (
+                {CLOUD_COLORS.map(color => (
                   <button
                     key={color.value}
+                    role="menuitem"
                     onClick={() => {
-                      onBulkCloudChange({ color: color.value });
-                      setShowClouds(false);
+                      onBulkCloudChange({ color: color.value })
+                      setShowClouds(false)
                     }}
+                    aria-label={`Set ${color.name} cloud`}
                     style={{
                       padding: '4px 8px',
                       background: color.value,
@@ -295,10 +325,12 @@ export default function BulkOperationsPanel({
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => {
-                setShowColors(!showColors);
-                setShowIcons(false);
-                setShowClouds(false);
+                setShowColors(!showColors)
+                setShowIcons(false)
+                setShowClouds(false)
               }}
+              aria-expanded={showColors}
+              aria-haspopup="true"
               style={{
                 padding: '6px 12px',
                 background: showColors ? '#3b82f6' : '#f3f4f6',
@@ -316,6 +348,8 @@ export default function BulkOperationsPanel({
             {/* Color Dropdown */}
             {showColors && (
               <div
+                role="menu"
+                aria-label="Select node color"
                 style={{
                   position: 'absolute',
                   bottom: '100%',
@@ -332,13 +366,15 @@ export default function BulkOperationsPanel({
                   minWidth: '150px',
                 }}
               >
-                {NODE_COLORS.map((color) => (
+                {NODE_COLORS.map(color => (
                   <button
                     key={color.value}
+                    role="menuitem"
                     onClick={() => {
-                      onBulkColorChange(color.value);
-                      setShowColors(false);
+                      onBulkColorChange(color.value)
+                      setShowColors(false)
                     }}
+                    aria-label={`Set ${color.name} color`}
                     style={{
                       padding: '4px 8px',
                       background: color.value,
@@ -359,6 +395,7 @@ export default function BulkOperationsPanel({
           {/* Clear Selection */}
           <button
             onClick={onClearSelection}
+            aria-label="Clear all selections"
             style={{
               padding: '6px 12px',
               background: '#f3f4f6',
@@ -375,6 +412,8 @@ export default function BulkOperationsPanel({
         </div>
 
         <div
+          role="note"
+          aria-label="Usage tip"
           style={{
             fontSize: '11px',
             color: '#6b7280',
@@ -387,22 +426,22 @@ export default function BulkOperationsPanel({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 // Helper function to get icon emoji
 function getIconEmoji(iconName: string): string {
   const iconMap: Record<string, string> = {
-    'star': '⭐',
-    'flag': '🚩',
-    'heart': '❤️',
-    'check': '✅',
-    'warning': '⚠️',
-    'idea': '💡',
-    'question': '❓',
+    star: '⭐',
+    flag: '🚩',
+    heart: '❤️',
+    check: '✅',
+    warning: '⚠️',
+    idea: '💡',
+    question: '❓',
     'thumbs-up': '👍',
     'thumbs-down': '👎',
-    'bookmark': '🔖',
-  };
-  return iconMap[iconName] || '📌';
+    bookmark: '🔖',
+  }
+  return iconMap[iconName] || '📌'
 }

@@ -1,10 +1,10 @@
-import { type SaveSlot } from '../hooks/useAutoSave';
+import { type SaveSlot } from '../hooks/useAutoSave'
 
 interface SaveHistoryPanelProps {
-  saveHistory: SaveSlot[];
-  onRestore: (index: number) => void;
-  onDelete: (index: number) => void;
-  onClose: () => void;
+  saveHistory: SaveSlot[]
+  onRestore: (index: number) => void
+  onDelete: (index: number) => void
+  onClose: () => void
 }
 
 export default function SaveHistoryPanel({
@@ -15,6 +15,9 @@ export default function SaveHistoryPanel({
 }: SaveHistoryPanelProps) {
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="save-history-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -38,11 +41,12 @@ export default function SaveHistoryPanel({
           alignItems: 'center',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+        <h2 id="save-history-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
           Save History
         </h2>
         <button
           onClick={onClose}
+          aria-label="Close save history panel"
           style={{
             background: 'none',
             border: 'none',
@@ -56,9 +60,15 @@ export default function SaveHistoryPanel({
         </button>
       </div>
 
-      <div style={{ padding: '8px', maxHeight: '400px', overflowY: 'auto' }}>
+      <div
+        role="list"
+        aria-label="Auto-save slots"
+        style={{ padding: '8px', maxHeight: '400px', overflowY: 'auto' }}
+      >
         {saveHistory.length === 0 ? (
           <div
+            role="status"
+            aria-live="polite"
             style={{
               padding: '24px',
               textAlign: 'center',
@@ -72,6 +82,8 @@ export default function SaveHistoryPanel({
           saveHistory.map((slot, index) => (
             <div
               key={slot.timestamp}
+              role="listitem"
+              aria-label={`${slot.label}, ${slot.nodes.length} nodes`}
               style={{
                 padding: '12px',
                 marginBottom: '8px',
@@ -87,13 +99,12 @@ export default function SaveHistoryPanel({
                 <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
                   {slot.label}
                 </div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>
-                  {slot.nodes.length} nodes
-                </div>
+                <div style={{ fontSize: '11px', color: '#6b7280' }}>{slot.nodes.length} nodes</div>
               </div>
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button
                   onClick={() => onRestore(index)}
+                  aria-label={`Restore ${slot.label}`}
                   style={{
                     padding: '6px 12px',
                     background: '#3b82f6',
@@ -109,6 +120,7 @@ export default function SaveHistoryPanel({
                 </button>
                 <button
                   onClick={() => onDelete(index)}
+                  aria-label={`Delete ${slot.label}`}
                   style={{
                     padding: '6px 12px',
                     background: '#ef4444',
@@ -128,6 +140,8 @@ export default function SaveHistoryPanel({
       </div>
 
       <div
+        role="status"
+        aria-live="polite"
         style={{
           padding: '12px 16px',
           borderTop: '1px solid #e5e7eb',
@@ -139,5 +153,5 @@ export default function SaveHistoryPanel({
         Last {saveHistory.length} auto-save{saveHistory.length !== 1 ? 's' : ''} stored
       </div>
     </div>
-  );
+  )
 }
