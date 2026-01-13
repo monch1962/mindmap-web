@@ -1,23 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 interface NotesPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  notes: string;
-  onSave: (notes: string) => void;
+  visible: boolean
+  onClose: () => void
+  notes: string
+  onSave: (notes: string) => void
 }
 
 export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPanelProps) {
-  const [content, setContent] = useState(notes);
+  const [content, setContent] = useState(notes)
 
   useEffect(() => {
-    setContent(notes);
-  }, [notes]);
+    setContent(notes)
+  }, [notes])
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="notes-panel-title"
       style={{
         position: 'fixed',
         right: '16px',
@@ -43,9 +46,12 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
           alignItems: 'center',
         }}
       >
-        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Notes</h3>
+        <h3 id="notes-panel-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          Notes
+        </h3>
         <button
           onClick={onClose}
+          aria-label="Close notes panel"
           style={{
             background: 'none',
             border: 'none',
@@ -61,9 +67,12 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
 
       {/* Content */}
       <textarea
+        id="notes-content"
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={e => setContent(e.target.value)}
         placeholder="Enter detailed notes here..."
+        aria-label="Notes content"
+        aria-multiline="true"
         style={{
           flex: 1,
           padding: '12px',
@@ -89,9 +98,10 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
       >
         <button
           onClick={() => {
-            onSave(content);
-            onClose();
+            onSave(content)
+            onClose()
           }}
+          aria-label="Save and close notes"
           style={{
             padding: '8px 16px',
             background: '#3b82f6',
@@ -107,5 +117,5 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
         </button>
       </div>
     </div>
-  );
+  )
 }

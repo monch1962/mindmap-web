@@ -1,24 +1,24 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react'
 
 interface Comment {
-  id: string;
-  nodeId: string;
-  author: string;
-  authorColor: string;
-  content: string;
-  timestamp: number;
-  resolved: boolean;
+  id: string
+  nodeId: string
+  author: string
+  authorColor: string
+  content: string
+  timestamp: number
+  resolved: boolean
 }
 
 interface CommentsPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  nodeId: string | null;
-  nodeLabel: string;
-  comments: Comment[];
-  onAddComment: (content: string) => void;
-  onResolveComment: (commentId: string) => void;
-  onDeleteComment: (commentId: string) => void;
+  visible: boolean
+  onClose: () => void
+  nodeId: string | null
+  nodeLabel: string
+  comments: Comment[]
+  onAddComment: (content: string) => void
+  onResolveComment: (commentId: string) => void
+  onDeleteComment: (commentId: string) => void
 }
 
 export default function CommentsPanel({
@@ -31,27 +31,29 @@ export default function CommentsPanel({
   onResolveComment,
   onDeleteComment,
 }: CommentsPanelProps) {
-  const [newComment, setNewComment] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [newComment, setNewComment] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [comments]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [comments])
 
-  if (!visible) return null;
+  if (!visible) return null
 
-  const nodeComments = comments.filter((c) => c.nodeId === nodeId);
-  const unresolvedCount = nodeComments.filter((c) => !c.resolved).length;
+  const nodeComments = comments.filter(c => c.nodeId === nodeId)
+  const unresolvedCount = nodeComments.filter(c => !c.resolved).length
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    onAddComment(newComment);
-    setNewComment('');
-  };
+    e.preventDefault()
+    if (!newComment.trim()) return
+    onAddComment(newComment)
+    setNewComment('')
+  }
 
   return (
     <div
+      role="region"
+      aria-labelledby="comments-panel-title"
       style={{
         position: 'fixed',
         right: '20px',
@@ -84,11 +86,17 @@ export default function CommentsPanel({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>💬</span>
           <div>
-            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+            <h2
+              id="comments-panel-title"
+              style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}
+            >
               Comments
             </h2>
             {unresolvedCount > 0 && (
-              <span style={{ fontSize: '11px', opacity: 0.9 }}>
+              <span
+                style={{ fontSize: '11px', opacity: 0.9 }}
+                aria-label={`${unresolvedCount} unresolved comments`}
+              >
                 {unresolvedCount} unresolved
               </span>
             )}
@@ -96,6 +104,7 @@ export default function CommentsPanel({
         </div>
         <button
           onClick={onClose}
+          aria-label="Close comments panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -126,6 +135,8 @@ export default function CommentsPanel({
 
       {/* Comments List */}
       <div
+        role="list"
+        aria-label={`Comments for ${nodeLabel || 'selected node'}`}
         style={{
           flex: 1,
           overflowY: 'auto',
@@ -137,6 +148,7 @@ export default function CommentsPanel({
       >
         {!nodeId ? (
           <div
+            role="status"
             style={{
               textAlign: 'center',
               color: '#6b7280',
@@ -148,6 +160,7 @@ export default function CommentsPanel({
           </div>
         ) : nodeComments.length === 0 ? (
           <div
+            role="status"
             style={{
               textAlign: 'center',
               color: '#6b7280',
@@ -158,9 +171,11 @@ export default function CommentsPanel({
             No comments yet. Be the first to comment!
           </div>
         ) : (
-          nodeComments.map((comment) => (
+          nodeComments.map(comment => (
             <div
               key={comment.id}
+              role="listitem"
+              aria-label={`Comment by ${comment.author}: ${comment.content.slice(0, 50)}${comment.content.length > 50 ? '...' : ''}${comment.resolved ? ', resolved' : ''}`}
               style={{
                 padding: '12px',
                 background: comment.resolved ? '#f0fdf4' : '#f9fafb',
@@ -194,9 +209,7 @@ export default function CommentsPanel({
                   >
                     {comment.author.charAt(0).toUpperCase()}
                   </div>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                    {comment.author}
-                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{comment.author}</span>
                   {comment.resolved && (
                     <span
                       style={{
@@ -229,6 +242,7 @@ export default function CommentsPanel({
                 {!comment.resolved && (
                   <button
                     onClick={() => onResolveComment(comment.id)}
+                    aria-label={`Resolve comment from ${comment.author}`}
                     style={{
                       padding: '4px 8px',
                       background: '#10b981',
@@ -244,6 +258,7 @@ export default function CommentsPanel({
                 )}
                 <button
                   onClick={() => onDeleteComment(comment.id)}
+                  aria-label={`Delete comment from ${comment.author}`}
                   style={{
                     padding: '4px 8px',
                     background: '#ef4444',
@@ -274,11 +289,16 @@ export default function CommentsPanel({
             gap: '8px',
           }}
         >
+          <label htmlFor="comment-input" style={{ display: 'none' }}>
+            Add a comment
+          </label>
           <input
+            id="comment-input"
             type="text"
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={e => setNewComment(e.target.value)}
             placeholder="Add a comment..."
+            aria-label="Add a new comment"
             style={{
               flex: 1,
               padding: '8px 12px',
@@ -290,6 +310,7 @@ export default function CommentsPanel({
           <button
             type="submit"
             disabled={!newComment.trim()}
+            aria-label={!newComment.trim() ? 'Enter comment text to submit' : 'Submit comment'}
             style={{
               padding: '8px 16px',
               background: newComment.trim() ? '#8b5cf6' : '#d1d5db',
@@ -307,5 +328,5 @@ export default function CommentsPanel({
         </form>
       )}
     </div>
-  );
+  )
 }

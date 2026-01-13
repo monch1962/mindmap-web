@@ -1,9 +1,9 @@
-import { type SaveSlot } from '../hooks/useAutoSave';
+import { type SaveSlot } from '../hooks/useAutoSave'
 
 interface ConflictResolutionModalProps {
-  saveSlot: SaveSlot | null;
-  onRestore: () => void;
-  onDismiss: () => void;
+  saveSlot: SaveSlot | null
+  onRestore: () => void
+  onDismiss: () => void
 }
 
 export default function ConflictResolutionModal({
@@ -11,10 +11,14 @@ export default function ConflictResolutionModal({
   onRestore,
   onDismiss,
 }: ConflictResolutionModalProps) {
-  if (!saveSlot) return null;
+  if (!saveSlot) return null
 
   return (
     <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="conflict-title"
+      aria-describedby="conflict-description"
       style={{
         position: 'fixed',
         top: '50%',
@@ -35,21 +39,32 @@ export default function ConflictResolutionModal({
           borderBottom: '1px solid #e5e7eb',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h2
+          id="conflict-title"
+          style={{
+            margin: 0,
+            fontSize: '16px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
           <span style={{ fontSize: '20px' }}>⚠️</span>
           Recover Auto-Saved Version?
         </h2>
       </div>
 
-      <div style={{ padding: '16px' }}>
+      <div id="conflict-description" style={{ padding: '16px' }}>
         <p style={{ margin: '0 0 12px 0', fontSize: '14px', lineHeight: '1.5' }}>
-          We found an auto-saved version of your mind map from{' '}
-          <strong>{saveSlot.label}</strong>.
+          We found an auto-saved version of your mind map from <strong>{saveSlot.label}</strong>.
         </p>
         <p style={{ margin: '0 0 12px 0', fontSize: '14px', lineHeight: '1.5' }}>
           Would you like to restore it, or start with a blank canvas?
         </p>
         <div
+          role="region"
+          aria-label="Auto-save details"
           style={{
             padding: '12px',
             background: '#f3f4f6',
@@ -76,6 +91,7 @@ export default function ConflictResolutionModal({
       >
         <button
           onClick={onDismiss}
+          aria-label="Start with a blank canvas"
           style={{
             padding: '8px 16px',
             background: '#f3f4f6',
@@ -91,6 +107,7 @@ export default function ConflictResolutionModal({
         </button>
         <button
           onClick={onRestore}
+          aria-label="Restore auto-saved version"
           style={{
             padding: '8px 16px',
             background: '#3b82f6',
@@ -106,5 +123,5 @@ export default function ConflictResolutionModal({
         </button>
       </div>
     </div>
-  );
+  )
 }

@@ -1,29 +1,29 @@
-import { type HistoryState } from '../hooks/useUndoRedo';
+import { type HistoryState } from '../hooks/useUndoRedo'
 
 interface HistoryPanelProps {
-  history: Array<HistoryState & { isCurrent: boolean }>;
-  canUndo: boolean;
-  canRedo: boolean;
-  onJump: (index: number, fromPast: boolean) => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  onClose: () => void;
+  history: Array<HistoryState & { isCurrent: boolean }>
+  canUndo: boolean
+  canRedo: boolean
+  onJump: (index: number, fromPast: boolean) => void
+  onUndo: () => void
+  onRedo: () => void
+  onClose: () => void
 }
 
 /**
  * Format timestamp as readable time
  */
 function formatTimestamp(timestamp: number): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return date.toLocaleDateString();
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  return date.toLocaleDateString()
 }
 
 export default function HistoryPanel({
@@ -35,10 +35,13 @@ export default function HistoryPanel({
   onRedo,
   onClose,
 }: HistoryPanelProps) {
-  const currentIndex = history.findIndex(h => h.isCurrent);
+  const currentIndex = history.findIndex(h => h.isCurrent)
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-panel-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -65,11 +68,12 @@ export default function HistoryPanel({
           alignItems: 'center',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+        <h2 id="history-panel-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
           History Timeline
         </h2>
         <button
           onClick={onClose}
+          aria-label="Close history panel"
           style={{
             background: 'none',
             border: 'none',
@@ -95,6 +99,7 @@ export default function HistoryPanel({
         <button
           onClick={onUndo}
           disabled={!canUndo}
+          aria-label={`Undo${!canUndo ? ' (disabled)' : ''}`}
           style={{
             padding: '6px 12px',
             background: canUndo ? '#3b82f6' : '#f3f4f6',
@@ -111,6 +116,7 @@ export default function HistoryPanel({
         <button
           onClick={onRedo}
           disabled={!canRedo}
+          aria-label={`Redo${!canRedo ? ' (disabled)' : ''}`}
           style={{
             padding: '6px 12px',
             background: canRedo ? '#3b82f6' : '#f3f4f6',
@@ -125,7 +131,7 @@ export default function HistoryPanel({
           Redo (Ctrl+Y)
         </button>
         <div style={{ flex: 1 }} />
-        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+        <div aria-live="polite" style={{ fontSize: '12px', color: '#6b7280' }}>
           {history.length} steps
         </div>
       </div>
@@ -133,6 +139,7 @@ export default function HistoryPanel({
       <div style={{ padding: '8px', overflowY: 'auto', flex: 1 }}>
         {history.length === 0 ? (
           <div
+            role="status"
             style={{
               padding: '24px',
               textAlign: 'center',
@@ -143,7 +150,7 @@ export default function HistoryPanel({
             No history yet. Actions will appear here as you make changes.
           </div>
         ) : (
-          <div style={{ position: 'relative' }}>
+          <div role="list" aria-label="History timeline" style={{ position: 'relative' }}>
             {/* Timeline line */}
             <div
               style={{
@@ -159,6 +166,8 @@ export default function HistoryPanel({
             {history.map((item, index) => (
               <div
                 key={item.timestamp}
+                role="listitem"
+                aria-label={`${item.label}, ${item.nodes.length} nodes, ${formatTimestamp(item.timestamp)}${item.isCurrent ? ' (current)' : ''}`}
                 style={{
                   position: 'relative',
                   paddingLeft: '44px',
@@ -193,27 +202,43 @@ export default function HistoryPanel({
                   onClick={() => {
                     if (!item.isCurrent) {
                       // Calculate if this is from past or future
-                      const isFromPast = index < (currentIndex >= 0 ? currentIndex : history.length - 1);
-                      const adjustedIndex = isFromPast ? index : index - (currentIndex >= 0 ? currentIndex + 1 : history.length);
-                      onJump(adjustedIndex, isFromPast);
+                      const isFromPast =
+                        index < (currentIndex >= 0 ? currentIndex : history.length - 1)
+                      const adjustedIndex = isFromPast
+                        ? index
+                        : index - (currentIndex >= 0 ? currentIndex + 1 : history.length)
+                      onJump(adjustedIndex, isFromPast)
                     }
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={e => {
                     if (!item.isCurrent) {
-                      e.currentTarget.style.background = '#f9fafb';
-                      e.currentTarget.style.borderColor = '#3b82f6';
+                      e.currentTarget.style.background = '#f9fafb'
+                      e.currentTarget.style.borderColor = '#3b82f6'
                     }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={e => {
                     if (!item.isCurrent) {
-                      e.currentTarget.style.background = '#ffffff';
-                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.background = '#ffffff'
+                      e.currentTarget.style.borderColor = '#e5e7eb'
                     }
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      gap: '8px',
+                    }}
+                  >
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: item.isCurrent ? '600' : '500', marginBottom: '4px' }}>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: item.isCurrent ? '600' : '500',
+                          marginBottom: '4px',
+                        }}
+                      >
                         {item.isCurrent && (
                           <span style={{ color: '#3b82f6', marginRight: '4px' }}>●</span>
                         )}
@@ -233,7 +258,9 @@ export default function HistoryPanel({
                           borderRadius: '4px',
                         }}
                       >
-                        {index < (currentIndex >= 0 ? currentIndex : history.length - 1) ? 'Undo' : 'Redo'}
+                        {index < (currentIndex >= 0 ? currentIndex : history.length - 1)
+                          ? 'Undo'
+                          : 'Redo'}
                       </div>
                     )}
                   </div>
@@ -257,5 +284,5 @@ export default function HistoryPanel({
         Click any item to jump to that point in history
       </div>
     </div>
-  );
+  )
 }
