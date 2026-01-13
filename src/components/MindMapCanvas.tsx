@@ -27,6 +27,7 @@ import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import BulkOperationsPanel from './BulkOperationsPanel'
 import MobileToolbar from './MobileToolbar'
 import PresenceIndicator from './PresenceIndicator'
+import FeatureErrorBoundary from './FeatureErrorBoundary'
 
 // Lazy load heavy feature components
 const AIAssistantPanel = lazy(() => import('./AIAssistantPanel'))
@@ -1691,106 +1692,154 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
       )}
 
       {/* AI Assistant Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading AI Assistant...</div>}>
-        <AIAssistantPanel
-          visible={showAIAssistant}
-          onClose={() => setShowAIAssistant(false)}
-          onGenerateMindMap={handleAIGenerateMindMap}
-          onSuggestIdeas={handleAISuggestIdeas}
-          onSummarizeBranch={handleAISummarizeBranch}
-          selectedNodeId={selectedNodeId}
-        />
+      <Suspense
+        fallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading AI Assistant...</div>
+        }
+      >
+        <FeatureErrorBoundary name="AIAssistant">
+          <AIAssistantPanel
+            visible={showAIAssistant}
+            onClose={() => setShowAIAssistant(false)}
+            onGenerateMindMap={handleAIGenerateMindMap}
+            onSuggestIdeas={handleAISuggestIdeas}
+            onSummarizeBranch={handleAISummarizeBranch}
+            selectedNodeId={selectedNodeId}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Comments Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Comments...</div>}>
-        <CommentsPanel
-          visible={showCommentsPanel}
-          onClose={() => setShowCommentsPanel(false)}
-          nodeId={selectedNodeId}
-          nodeLabel={selectedNode?.data?.label || ''}
-          comments={comments}
-          onAddComment={handleAddComment}
-          onResolveComment={handleResolveComment}
-          onDeleteComment={handleDeleteComment}
-        />
+      <Suspense
+        fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Comments...</div>}
+      >
+        <FeatureErrorBoundary name="CommentsPanel">
+          <CommentsPanel
+            visible={showCommentsPanel}
+            onClose={() => setShowCommentsPanel(false)}
+            nodeId={selectedNodeId}
+            nodeLabel={selectedNode?.data?.label || ''}
+            comments={comments}
+            onAddComment={handleAddComment}
+            onResolveComment={handleResolveComment}
+            onDeleteComment={handleDeleteComment}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Presence Indicator */}
       <PresenceIndicator users={onlineUsers} currentUser={currentUser} />
 
       {/* Webhook Integration Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Webhook Integration...</div>}>
-        <WebhookIntegrationPanel
-          visible={showWebhookPanel}
-          onClose={() => setShowWebhookPanel(false)}
-          tree={flowToTree(nodes, edges)}
-          onWebhookData={data => {
-            if (data.parentId) {
-              createChildNode(data.parentId)
-            }
-          }}
-        />
+      <Suspense
+        fallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading Webhook Integration...</div>
+        }
+      >
+        <FeatureErrorBoundary name="WebhookIntegration">
+          <WebhookIntegrationPanel
+            visible={showWebhookPanel}
+            onClose={() => setShowWebhookPanel(false)}
+            tree={flowToTree(nodes, edges)}
+            onWebhookData={data => {
+              if (data.parentId) {
+                createChildNode(data.parentId)
+              }
+            }}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Calendar Export Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Calendar Export...</div>}>
-        <CalendarExportPanel
-          visible={showCalendarPanel}
-          onClose={() => setShowCalendarPanel(false)}
-          tree={flowToTree(nodes, edges)}
-        />
+      <Suspense
+        fallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading Calendar Export...</div>
+        }
+      >
+        <FeatureErrorBoundary name="CalendarExport">
+          <CalendarExportPanel
+            visible={showCalendarPanel}
+            onClose={() => setShowCalendarPanel(false)}
+            tree={flowToTree(nodes, edges)}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Email Integration Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Email Integration...</div>}>
-        <EmailIntegrationPanel
-          visible={showEmailPanel}
-          onClose={() => setShowEmailPanel(false)}
-          tree={flowToTree(nodes, edges)}
-        />
+      <Suspense
+        fallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading Email Integration...</div>
+        }
+      >
+        <FeatureErrorBoundary name="EmailIntegration">
+          <EmailIntegrationPanel
+            visible={showEmailPanel}
+            onClose={() => setShowEmailPanel(false)}
+            tree={flowToTree(nodes, edges)}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Presentation Mode */}
       {showPresentation && (
-        <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Presentation...</div>}>
-          <PresentationMode
-            visible={showPresentation}
-            onClose={() => setShowPresentation(false)}
-            tree={flowToTree(nodes, edges)}
-          />
+        <Suspense
+          fallback={
+            <div style={{ padding: '20px', textAlign: 'center' }}>Loading Presentation...</div>
+          }
+        >
+          <FeatureErrorBoundary name="PresentationMode">
+            <PresentationMode
+              visible={showPresentation}
+              onClose={() => setShowPresentation(false)}
+              tree={flowToTree(nodes, edges)}
+            />
+          </FeatureErrorBoundary>
         </Suspense>
       )}
 
       {/* 3D View */}
       {show3DView && (
-        <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading 3D View...</div>}>
-          <ThreeDView
-            visible={show3DView}
-            onClose={() => setShow3DView(false)}
-            tree={flowToTree(nodes, edges)}
-          />
+        <Suspense
+          fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading 3D View...</div>}
+        >
+          <FeatureErrorBoundary name="ThreeDView">
+            <ThreeDView
+              visible={show3DView}
+              onClose={() => setShow3DView(false)}
+              tree={flowToTree(nodes, edges)}
+            />
+          </FeatureErrorBoundary>
         </Suspense>
       )}
 
       {/* Templates Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Templates...</div>}>
-        <TemplatesPanel
-          visible={showTemplatesPanel}
-          onClose={() => setShowTemplatesPanel(false)}
-          onApplyTemplate={handleApplyTemplate}
-        />
+      <Suspense
+        fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Templates...</div>}
+      >
+        <FeatureErrorBoundary name="TemplatesPanel">
+          <TemplatesPanel
+            visible={showTemplatesPanel}
+            onClose={() => setShowTemplatesPanel(false)}
+            onApplyTemplate={handleApplyTemplate}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
 
       {/* Theme Settings Panel */}
-      <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading Theme Settings...</div>}>
-        <ThemeSettingsPanel
-          visible={showThemeSettings}
-          onClose={() => setShowThemeSettings(false)}
-          onThemeChange={() => {
-            // Theme change handled by the panel itself
-          }}
-        />
+      <Suspense
+        fallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading Theme Settings...</div>
+        }
+      >
+        <FeatureErrorBoundary name="ThemeSettings">
+          <ThemeSettingsPanel
+            visible={showThemeSettings}
+            onClose={() => setShowThemeSettings(false)}
+            onThemeChange={() => {
+              // Theme change handled by the panel itself
+            }}
+          />
+        </FeatureErrorBoundary>
       </Suspense>
     </div>
   )
