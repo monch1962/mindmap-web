@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { trackError } from '../utils/errorTracking'
 
 interface AIAssistantPanelProps {
@@ -28,6 +29,15 @@ export default function AIAssistantPanel({
   const [aiResponse, setAiResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Keyboard navigation for the panel
+  const panelRef = useKeyboardNavigation({
+    isOpen: visible,
+    onClose,
+    trapFocus: true,
+    autoFocus: true,
+    restoreFocus: true,
+  })
 
   useEffect(() => {
     localStorage.setItem('ai_api_key', apiKey)
@@ -119,6 +129,7 @@ export default function AIAssistantPanel({
 
   return (
     <div
+      ref={panelRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="ai-assistant-title"

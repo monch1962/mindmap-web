@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 
 interface Shortcut {
   keys: string[]
@@ -59,6 +60,15 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
 
+  // Keyboard navigation for the modal
+  const modalRef = useKeyboardNavigation({
+    isOpen: true,
+    onClose,
+    trapFocus: true,
+    autoFocus: true,
+    restoreFocus: true,
+  })
+
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
@@ -83,6 +93,7 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
 
   return (
     <div
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="keyboard-shortcuts-title"
