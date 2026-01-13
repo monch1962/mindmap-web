@@ -126,6 +126,9 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
   return (
     <div
+      role="region"
+      aria-label={`3D view of mind map: ${tree.content}`}
+      aria-live="polite"
       style={{
         position: 'fixed',
         top: 0,
@@ -145,6 +148,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
     >
       {/* UI Overlay */}
       <div
+        role="presentation"
+        aria-hidden="true"
         style={{
           position: 'absolute',
           top: '20px',
@@ -156,6 +161,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
       >
         {/* Top Bar */}
         <div
+          role="banner"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -175,6 +181,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => setAutoRotate(!autoRotate)}
+              aria-label={autoRotate ? 'Pause auto-rotation' : 'Start auto-rotation'}
+              aria-pressed={autoRotate}
               style={{
                 padding: '8px 12px',
                 background: autoRotate ? 'rgba(102, 126, 234, 0.8)' : 'rgba(255,255,255,0.1)',
@@ -190,6 +198,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
             <button
               onClick={onClose}
+              aria-label="Exit 3D view (Escape)"
               style={{
                 padding: '8px 16px',
                 background: 'rgba(239, 68, 68, 0.8)',
@@ -208,6 +217,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
         {/* Controls Help */}
         <div
+          role="note"
+          aria-label="3D view keyboard and mouse controls"
           style={{
             marginTop: '16px',
             padding: '12px',
@@ -226,6 +237,9 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
       {/* Zoom Indicator */}
       <div
+        role="status"
+        aria-live="polite"
+        aria-label={`Zoom level: ${Math.round(zoom * 100)}%`}
         style={{
           position: 'absolute',
           bottom: '20px',
@@ -244,6 +258,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
       {/* 3D Scene */}
       <div
+        role="presentation"
+        aria-hidden="true"
         ref={containerRef}
         style={{
           width: '100%',
@@ -255,6 +271,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
         }}
       >
         <div
+          role="list"
+          aria-label={`Mind map nodes in 3D space: ${nodes3D.length} nodes`}
           style={{
             transformStyle: 'preserve-3d',
             transform: `scale(${zoom}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
@@ -267,7 +285,16 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
           {nodes3D.map(node => (
             <div
               key={node.id}
+              role="listitem"
+              aria-label={`${node.content}, level ${node.level}${node.id === selectedNode ? ', selected' : ''}`}
+              tabIndex={0}
               onClick={() => setSelectedNode(node.id === selectedNode ? null : node.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedNode(node.id === selectedNode ? null : node.id);
+                }
+              }}
               style={{
                 position: 'absolute',
                 left: '50%',
@@ -281,6 +308,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
               {node.children && node.children.map(child => (
                 <div
                   key={child.id}
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -303,6 +331,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
               {/* Node Card */}
               <div
+                aria-hidden="true"
                 style={{
                   padding: '12px 16px',
                   background: selectedNode === node.id
@@ -341,6 +370,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
           {/* Central Sphere */}
           <div
+            aria-hidden="true"
             style={{
               position: 'absolute',
               left: '50%',
@@ -360,6 +390,10 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
       {/* Selected Node Info */}
       {selectedNode && (
         <div
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="selected-node-title"
+          aria-live="polite"
           style={{
             position: 'absolute',
             bottom: '20px',
@@ -373,7 +407,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
             zIndex: 10,
           }}
         >
-          <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>
+          <div id="selected-node-title" style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>
             {nodes3D.find(n => n.id === selectedNode)?.content}
           </div>
           <div style={{ fontSize: '12px', opacity: 0.8 }}>
@@ -384,6 +418,8 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
 
       {/* Stats */}
       <div
+        role="complementary"
+        aria-labelledby="stats-title"
         style={{
           position: 'absolute',
           top: '50%',
@@ -398,7 +434,7 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
           zIndex: 10,
         }}
       >
-        <div style={{ marginBottom: '8px' }}>
+        <div id="stats-title" style={{ marginBottom: '8px' }}>
           <strong>Stats</strong>
         </div>
         <div>Total Nodes: {nodes3D.length}</div>

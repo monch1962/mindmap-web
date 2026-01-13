@@ -27,6 +27,8 @@ export default function MobileToolbar({
 }: MobileToolbarProps) {
   return (
     <div
+      role="toolbar"
+      aria-label="Mind map editing toolbar"
       style={{
         position: 'fixed',
         bottom: 0,
@@ -91,7 +93,7 @@ export default function MobileToolbar({
           ...mobileButtonStyle,
           opacity: canUndo ? 1 : 0.3,
         }}
-        aria-label="Undo"
+        aria-label={canUndo ? 'Undo last action' : 'Cannot undo'}
       >
         ↶
       </button>
@@ -102,7 +104,7 @@ export default function MobileToolbar({
           ...mobileButtonStyle,
           opacity: canRedo ? 1 : 0.3,
         }}
-        aria-label="Redo"
+        aria-label={canRedo ? 'Redo last action' : 'Cannot redo'}
       >
         ↷
       </button>

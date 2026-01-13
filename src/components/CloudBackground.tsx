@@ -18,6 +18,8 @@ const CloudBackground = memo(({ nodes }: CloudBackgroundProps) => {
 
   return (
     <svg
+      role="presentation"
+      aria-label="Cloud backgrounds visualizing node groupings"
       style={{
         position: 'absolute',
         top: 0,
@@ -47,6 +49,7 @@ const CloudBackground = memo(({ nodes }: CloudBackgroundProps) => {
             style={{
               filter: 'blur(2px)',
             }}
+            aria-label={`Cloud background for ${node.data.label || node.id}`}
           />
         );
       })}

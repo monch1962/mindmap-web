@@ -23,7 +23,10 @@ const CrossLinkEdge = memo(({
   });
 
   return (
-    <>
+    <g
+      role="presentation"
+      aria-label="Cross-link edge between nodes"
+    >
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
@@ -37,6 +40,8 @@ const CrossLinkEdge = memo(({
       {data?.isCrossLink && (
         <EdgeLabelRenderer>
           <div
+            role="img"
+            aria-label="Cross-link connection"
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
@@ -54,7 +59,7 @@ const CrossLinkEdge = memo(({
           </div>
         </EdgeLabelRenderer>
       )}
-    </>
+    </g>
   );
 });
 
