@@ -1,105 +1,115 @@
-import { memo, useState, useRef, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
-import type { MindMapNodeData } from '../types';
-import { getIconEmoji } from '../utils/icons';
-import { sanitizeHtml } from '../utils/sanitize';
-import RichTextEditor from './RichTextEditor';
+import { memo, useState, useRef, useEffect } from 'react'
+import { Handle, Position, type NodeProps } from 'reactflow'
+import type { MindMapNodeData } from '../types'
+import { getIconEmoji } from '../utils/icons'
+import { sanitizeHtml } from '../utils/sanitize'
+import { getNodeLabel, getNodeAttributes } from '../utils/accessibility'
+import RichTextEditor from './RichTextEditor'
 
 const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [localChecked, setLocalChecked] = useState(data.checked || false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [isEditing, setIsEditing] = useState(false)
+  const [localChecked, setLocalChecked] = useState(data.checked || false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
-  const isRoot = data.isRoot || false;
+  const isRoot = data.isRoot || false
 
   const defaultStyle = {
     fontSize: data.fontSize || (isRoot ? 18 : 14),
     color: data.color || (isRoot ? '#1e40af' : '#333'),
-    fontWeight: data.bold ? 'bold' as const : (isRoot ? 'bold' as const : 'normal' as const),
-    fontStyle: data.italic ? 'italic' as const : 'normal' as const,
+    fontWeight: data.bold ? ('bold' as const) : isRoot ? ('bold' as const) : ('normal' as const),
+    fontStyle: data.italic ? ('italic' as const) : ('normal' as const),
     fontFamily: data.fontName || 'inherit',
-  };
+  }
 
-  const hasMetadata = data.metadata && (
-    data.metadata.url ||
-    data.metadata.description ||
-    data.metadata.notes ||
-    (data.metadata.tags && data.metadata.tags.length > 0) ||
-    (data.metadata.attachments && data.metadata.attachments.length > 0)
-  );
+  const hasMetadata =
+    data.metadata &&
+    (data.metadata.url ||
+      data.metadata.description ||
+      data.metadata.notes ||
+      (data.metadata.tags && data.metadata.tags.length > 0) ||
+      (data.metadata.attachments && data.metadata.attachments.length > 0))
 
-  const hasLink = data.link || data.metadata?.url;
-  const iconEmoji = data.icon ? getIconEmoji(data.icon) : null;
+  const hasLink = data.link || data.metadata?.url
+  const iconEmoji = data.icon ? getIconEmoji(data.icon) : null
 
   // Check if label contains HTML (rich text)
-  const isRichText = data.label.includes('<') && data.label.includes('>');
+  const isRichText = data.label.includes('<') && data.label.includes('>')
+
+  // Generate accessibility label
+  const ariaLabel = getNodeLabel(data.label, data.children?.length, data.depth)
+  const nodeAttrs = getNodeAttributes(
+    id,
+    ariaLabel,
+    (data.children?.length ?? 0) > 0,
+    data.collapsed
+  )
 
   const handleDoubleClick = () => {
-    setIsEditing(true);
-  };
+    setIsEditing(true)
+  }
 
   const handleSave = (newContent: string) => {
     // Trigger update via a custom event that the canvas will handle
     const event = new CustomEvent('nodeLabelChange', {
       detail: { nodeId: id, label: newContent },
-    });
-    window.dispatchEvent(event);
-    setIsEditing(false);
-  };
+    })
+    window.dispatchEvent(event)
+    setIsEditing(false)
+  }
 
   const handleCancel = () => {
-    setIsEditing(false);
-  };
+    setIsEditing(false)
+  }
 
   const handleToggleCheckbox = () => {
-    const newChecked = !localChecked;
-    setLocalChecked(newChecked);
+    const newChecked = !localChecked
+    setLocalChecked(newChecked)
     const event = new CustomEvent('nodeCheckboxChange', {
       detail: { nodeId: id, checked: newChecked },
-    });
-    window.dispatchEvent(event);
-  };
+    })
+    window.dispatchEvent(event)
+  }
 
   const handleCollapseAll = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation()
     const event = new CustomEvent('collapseAllDescendants', {
       detail: { nodeId: id },
-    });
-    window.dispatchEvent(event);
-  };
+    })
+    window.dispatchEvent(event)
+  }
 
   const handleExpandAll = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation()
     const event = new CustomEvent('expandAllDescendants', {
       detail: { nodeId: id },
-    });
-    window.dispatchEvent(event);
-  };
+    })
+    window.dispatchEvent(event)
+  }
 
   // Listen for E key to edit and triggerNodeEdit event
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Use E key instead of F2 for better cross-platform compatibility
       if (e.key === 'e' && selected && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        setIsEditing(true);
+        e.preventDefault()
+        setIsEditing(true)
       }
-    };
+    }
 
     const handleTriggerEdit = (e: Event) => {
-      const customEvent = e as CustomEvent<{ nodeId: string }>;
+      const customEvent = e as CustomEvent<{ nodeId: string }>
       if (customEvent.detail?.nodeId === id) {
-        setIsEditing(true);
+        setIsEditing(true)
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('triggerNodeEdit', handleTriggerEdit);
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('triggerNodeEdit', handleTriggerEdit)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('triggerNodeEdit', handleTriggerEdit);
-    };
-  }, [selected, id]);
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('triggerNodeEdit', handleTriggerEdit)
+    }
+  }, [selected, id])
 
   return (
     <div
@@ -107,17 +117,23 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
       style={{
         padding: isRoot ? '16px 20px' : '12px 16px',
         borderRadius: isRoot ? '12px' : '8px',
-        border: '2px solid ' + (selected ? '#3b82f6' : (isRoot ? '#3b82f6' : '#e5e7eb')),
+        border: '2px solid ' + (selected ? '#3b82f6' : isRoot ? '#3b82f6' : '#e5e7eb'),
         background: data.backgroundColor || (isRoot ? '#eff6ff' : 'white'),
         minWidth: isRoot ? '150px' : '100px',
         maxWidth: isRoot ? '400px' : '300px',
         boxShadow: selected
           ? '0 4px 12px rgba(59, 130, 246, 0.3)'
-          : (isRoot ? '0 6px 16px rgba(59, 130, 246, 0.25)' : '0 2px 8px rgba(0,0,0,0.1)'),
+          : isRoot
+            ? '0 6px 16px rgba(59, 130, 246, 0.25)'
+            : '0 2px 8px rgba(0,0,0,0.1)',
         transition: 'all 0.2s ease',
         position: 'relative',
       }}
       onDoubleClick={handleDoubleClick}
+      role={nodeAttrs.role as 'treeitem'}
+      aria-label={nodeAttrs['aria-label']}
+      aria-level={nodeAttrs['aria-level']}
+      aria-expanded={nodeAttrs['aria-expanded']}
     >
       {/* Input handle (for connections from parents) */}
       <Handle
@@ -168,7 +184,8 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
             type="checkbox"
             checked={localChecked}
             onChange={handleToggleCheckbox}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
+            aria-label={`Mark "${data.label}" as ${localChecked ? 'incomplete' : 'complete'}`}
             style={{
               cursor: 'pointer',
               width: '16px',
@@ -183,15 +200,15 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           ref={contentRef}
           contentEditable={!isRichText}
           suppressContentEditableWarning
-          onInput={(e) => {
-            if (isRichText) return; // RichTextEditor handles its own input
-            const content = e.currentTarget.innerHTML;
+          onInput={e => {
+            if (isRichText) return // RichTextEditor handles its own input
+            const content = e.currentTarget.innerHTML
             // Sanitize and dispatch change event
-            const sanitizedContent = isRichText ? content : content; // Don't sanitize plain text yet
+            const sanitizedContent = isRichText ? content : content // Don't sanitize plain text yet
             const event = new CustomEvent('nodeLabelChange', {
               detail: { nodeId: id, content: sanitizedContent },
-            });
-            window.dispatchEvent(event);
+            })
+            window.dispatchEvent(event)
           }}
           style={{
             ...defaultStyle,
@@ -204,6 +221,9 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           }}
           className="node-content"
           title={hasLink ? data.link || data.metadata?.url : undefined}
+          role="textbox"
+          aria-label={isRichText ? undefined : `Node content: ${data.label}`}
+          aria-multiline="true"
           dangerouslySetInnerHTML={isRichText ? { __html: sanitizeHtml(data.label) } : undefined}
         >
           {!isRichText && data.label}
@@ -372,12 +392,13 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           }}
         >
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('Expand all clicked for node:', id);
-              handleExpandAll(e);
+            onClick={e => {
+              e.stopPropagation()
+              console.log('Expand all clicked for node:', id)
+              handleExpandAll(e)
             }}
             title="Expand all descendants"
+            aria-label={`Expand all descendants of "${data.label}"`}
             style={{
               background: '#10b981',
               color: 'white',
@@ -399,12 +420,13 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
             +
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('Collapse all clicked for node:', id);
-              handleCollapseAll(e);
+            onClick={e => {
+              e.stopPropagation()
+              console.log('Collapse all clicked for node:', id)
+              handleCollapseAll(e)
             }}
             title="Collapse all descendants"
+            aria-label={`Collapse all descendants of "${data.label}"`}
             style={{
               background: '#ef4444',
               color: 'white',
@@ -447,14 +469,17 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
             fontSize: '12px',
             fontWeight: 'bold',
           }}
+          role="button"
+          aria-label={`Expand "${data.label}"`}
+          tabIndex={0}
         >
           +
         </div>
       )}
     </div>
-  );
-});
+  )
+})
 
-MindMapNode.displayName = 'MindMapNode';
+MindMapNode.displayName = 'MindMapNode'
 
-export default MindMapNode;
+export default MindMapNode

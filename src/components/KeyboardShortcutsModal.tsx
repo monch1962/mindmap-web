@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 interface Shortcut {
-  keys: string[];
-  action: string;
-  category: string;
-  description?: string;
+  keys: string[]
+  action: string
+  category: string
+  description?: string
 }
 
 const SHORTCUTS: Shortcut[] = [
@@ -31,7 +31,11 @@ const SHORTCUTS: Shortcut[] = [
   // Search & Navigation
   { keys: ['Ctrl', 'F'], action: 'Open search panel', category: 'Search & Navigation' },
   { keys: ['Ctrl', 'G'], action: 'Next search result', category: 'Search & Navigation' },
-  { keys: ['Ctrl', 'Shift', 'G'], action: 'Previous search result', category: 'Search & Navigation' },
+  {
+    keys: ['Ctrl', 'Shift', 'G'],
+    action: 'Previous search result',
+    category: 'Search & Navigation',
+  },
 
   // Panels
   { keys: ['Ctrl', 'N'], action: 'Toggle notes panel', category: 'Panels' },
@@ -42,43 +46,46 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['Ctrl', 'Shift', 'C'], action: 'Toggle comments panel', category: 'Panels' },
   { keys: ['Escape'], action: 'Close panels', category: 'Panels' },
   { keys: ['?'], action: 'Show keyboard shortcuts', category: 'Panels' },
-];
+]
 
-const CATEGORIES = Array.from(new Set(SHORTCUTS.map(s => s.category)));
+const CATEGORIES = Array.from(new Set(SHORTCUTS.map(s => s.category)))
 
 interface KeyboardShortcutsModalProps {
-  onClose: () => void;
+  onClose: () => void
 }
 
 export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsModalProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const filteredShortcuts = SHORTCUTS.filter(shortcut => {
     const matchesSearch =
       !searchQuery ||
       shortcut.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shortcut.keys.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
+      shortcut.keys.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const matchesCategory = !selectedCategory || shortcut.category === selectedCategory;
+    const matchesCategory = !selectedCategory || shortcut.category === selectedCategory
 
-    return matchesSearch && matchesCategory;
-  });
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="keyboard-shortcuts-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -105,11 +112,15 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
           alignItems: 'center',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+        <h2
+          id="keyboard-shortcuts-title"
+          style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}
+        >
           ⌨️ Keyboard Shortcuts
         </h2>
         <button
           onClick={onClose}
+          aria-label="Close keyboard shortcuts"
           style={{
             background: 'none',
             border: 'none',
@@ -124,12 +135,17 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
       </div>
 
       {/* Search and Filter */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
+      <div role="search" style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
+        <label htmlFor="shortcuts-search" style={{ display: 'none' }}>
+          Search shortcuts
+        </label>
         <input
+          id="shortcuts-search"
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search shortcuts..."
+          aria-label="Search keyboard shortcuts"
           style={{
             width: '100%',
             padding: '8px 12px',
@@ -140,9 +156,14 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
             marginBottom: '8px',
           }}
         />
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <div
+          role="group"
+          aria-label="Filter by category"
+          style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}
+        >
           <button
             onClick={() => setSelectedCategory(null)}
+            aria-pressed={!selectedCategory}
             style={{
               padding: '4px 10px',
               background: !selectedCategory ? '#3b82f6' : '#f3f4f6',
@@ -160,6 +181,7 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
+              aria-pressed={selectedCategory === category}
               style={{
                 padding: '4px 10px',
                 background: selectedCategory === category ? '#3b82f6' : '#f3f4f6',
@@ -178,9 +200,16 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
       </div>
 
       {/* Shortcuts List */}
-      <div style={{ padding: '12px', overflowY: 'auto', flex: 1 }}>
+      <div
+        role="region"
+        aria-label="Keyboard shortcuts list"
+        tabIndex={0}
+        style={{ padding: '12px', overflowY: 'auto', flex: 1 }}
+      >
         {filteredShortcuts.length === 0 ? (
           <div
+            role="status"
+            aria-live="polite"
             style={{
               padding: '24px',
               textAlign: 'center',
@@ -191,70 +220,74 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
             No shortcuts found matching "{searchQuery}"
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {CATEGORIES.filter(cat => !selectedCategory || cat === selectedCategory).map(category => (
-              <div key={category}>
-                <h3
-                  style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#6b7280',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  {category}
-                </h3>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '8px',
-                  }}
-                >
-                  {filteredShortcuts
-                    .filter(s => s.category === category)
-                    .map((shortcut, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          padding: '8px 10px',
-                          background: '#f9fafb',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '6px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          fontSize: '12px',
-                        }}
-                      >
-                        <span style={{ color: '#374151' }}>{shortcut.action}</span>
-                        <div style={{ display: 'flex', gap: '2px' }}>
-                          {shortcut.keys.map((key, i) => (
-                            <span key={i}>
-                              <kbd
-                                style={{
-                                  padding: '2px 6px',
-                                  background: 'white',
-                                  border: '1px solid #d1d5db',
-                                  borderRadius: '3px',
-                                  fontSize: '11px',
-                                  fontFamily: 'monospace',
-                                  fontWeight: '500',
-                                }}
-                              >
-                                {key}
-                              </kbd>
-                              {i < shortcut.keys.length - 1 && '+'}
-                            </span>
-                          ))}
+          <div role="list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {CATEGORIES.filter(cat => !selectedCategory || cat === selectedCategory).map(
+              category => (
+                <div key={category} role="group" aria-label={category}>
+                  <h3
+                    style={{
+                      margin: '0 0 8px 0',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: '#6b7280',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {category}
+                  </h3>
+                  <div
+                    role="list"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                      gap: '8px',
+                    }}
+                  >
+                    {filteredShortcuts
+                      .filter(s => s.category === category)
+                      .map((shortcut, index) => (
+                        <div
+                          key={index}
+                          role="listitem"
+                          style={{
+                            padding: '8px 10px',
+                            background: '#f9fafb',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '12px',
+                          }}
+                        >
+                          <span style={{ color: '#374151' }}>{shortcut.action}</span>
+                          <div style={{ display: 'flex', gap: '2px' }}>
+                            {shortcut.keys.map((key, i) => (
+                              <span key={i}>
+                                <kbd
+                                  style={{
+                                    padding: '2px 6px',
+                                    background: 'white',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '3px',
+                                    fontSize: '11px',
+                                    fontFamily: 'monospace',
+                                    fontWeight: '500',
+                                  }}
+                                >
+                                  {key}
+                                </kbd>
+                                {i < shortcut.keys.length - 1 && '+'}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </div>
@@ -270,8 +303,20 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
           textAlign: 'center',
         }}
       >
-        Press <kbd style={{ padding: '2px 4px', background: 'white', border: '1px solid #d1d5db', borderRadius: '3px', fontSize: '10px' }}>?</kbd> anytime to open this help
+        Press{' '}
+        <kbd
+          style={{
+            padding: '2px 4px',
+            background: 'white',
+            border: '1px solid #d1d5db',
+            borderRadius: '3px',
+            fontSize: '10px',
+          }}
+        >
+          ?
+        </kbd>{' '}
+        anytime to open this help
       </div>
     </div>
-  );
+  )
 }

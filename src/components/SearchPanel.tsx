@@ -1,23 +1,24 @@
-import { useState } from 'react';
+import { useState } from 'react'
+import { getSearchLabel, getToggleLabel } from '../utils/accessibility'
 
 export interface SearchOptions {
-  caseSensitive: boolean;
-  wholeWord: boolean;
-  useRegex: boolean;
-  searchInNotes: boolean;
-  filterIcon?: string;
-  filterCloud?: string;
-  filterDate?: 'hour' | 'day' | 'week' | 'month';
+  caseSensitive: boolean
+  wholeWord: boolean
+  useRegex: boolean
+  searchInNotes: boolean
+  filterIcon?: string
+  filterCloud?: string
+  filterDate?: 'hour' | 'day' | 'week' | 'month'
 }
 
 interface SearchPanelProps {
-  onSearch: (query: string, options: SearchOptions) => void;
-  onNext: () => void;
-  onPrevious: () => void;
-  resultCount: number;
-  currentResult: number;
-  availableIcons?: string[];
-  availableClouds?: string[];
+  onSearch: (query: string, options: SearchOptions) => void
+  onNext: () => void
+  onPrevious: () => void
+  resultCount: number
+  currentResult: number
+  availableIcons?: string[]
+  availableClouds?: string[]
 }
 
 export default function SearchPanel({
@@ -29,43 +30,46 @@ export default function SearchPanel({
   availableIcons = [],
   availableClouds = [],
 }: SearchPanelProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('')
   const [options, setOptions] = useState<SearchOptions>({
     caseSensitive: false,
     wholeWord: false,
     useRegex: false,
     searchInNotes: false,
-  });
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  })
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(query, options);
-  };
+    e.preventDefault()
+    onSearch(query, options)
+  }
 
   const toggleOption = (key: keyof SearchOptions) => {
-    const newValue = !options[key];
-    setOptions((prev) => ({ ...prev, [key]: newValue }));
+    const newValue = !options[key]
+    setOptions(prev => ({ ...prev, [key]: newValue }))
     // Re-search when option changes
     if (query) {
-      onSearch(query, { ...options, [key]: newValue });
+      onSearch(query, { ...options, [key]: newValue })
     }
-  };
+  }
 
-  const setFilter = (key: keyof SearchOptions, value: SearchOptions[keyof SearchOptions] | undefined) => {
-    setOptions((prev) => ({ ...prev, [key]: value || undefined }));
+  const setFilter = (
+    key: keyof SearchOptions,
+    value: SearchOptions[keyof SearchOptions] | undefined
+  ) => {
+    setOptions(prev => ({ ...prev, [key]: value || undefined }))
     // Re-search when filter changes
-    onSearch(query, { ...options, [key]: value || undefined });
-  };
+    onSearch(query, { ...options, [key]: value || undefined })
+  }
 
-  const activeFilterCount = [
-    options.filterIcon,
-    options.filterCloud,
-    options.filterDate,
-  ].filter(Boolean).length;
+  const activeFilterCount = [options.filterIcon, options.filterCloud, options.filterDate].filter(
+    Boolean
+  ).length
 
   return (
     <div
+      role="search"
+      aria-label={getSearchLabel(resultCount)}
       style={{
         padding: '12px',
         background: 'white',
@@ -82,8 +86,9 @@ export default function SearchPanel({
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={e => setQuery(e.target.value)}
           placeholder="Search nodes... (Ctrl+F)"
+          aria-label="Search nodes"
           style={{
             flex: 1,
             padding: '6px 10px',
@@ -95,6 +100,7 @@ export default function SearchPanel({
         />
         <button
           type="submit"
+          aria-label="Execute search"
           style={{
             padding: '6px 12px',
             background: '#3b82f6',
@@ -111,6 +117,8 @@ export default function SearchPanel({
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
+          aria-label={getToggleLabel('Search options', showAdvanced)}
+          aria-expanded={showAdvanced}
           style={{
             padding: '6px 10px',
             background: showAdvanced || activeFilterCount > 0 ? '#3b82f6' : '#f3f4f6',
@@ -135,6 +143,7 @@ export default function SearchPanel({
                 padding: '1px 4px',
                 borderRadius: '8px',
               }}
+              aria-label={`${activeFilterCount} active filters`}
             >
               {activeFilterCount}
             </span>
@@ -144,6 +153,8 @@ export default function SearchPanel({
 
       {showAdvanced && (
         <div
+          role="region"
+          aria-label="Advanced search options"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -152,6 +163,8 @@ export default function SearchPanel({
         >
           {/* Text search options */}
           <div
+            role="group"
+            aria-label="Text search options"
             style={{
               padding: '8px',
               background: '#f9fafb',
@@ -159,42 +172,61 @@ export default function SearchPanel({
               border: '1px solid #e5e7eb',
             }}
           >
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#6b7280' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '6px',
+                color: '#6b7280',
+              }}
+            >
               TEXT OPTIONS
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '12px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+              >
                 <input
                   type="checkbox"
                   checked={options.caseSensitive}
                   onChange={() => toggleOption('caseSensitive')}
+                  aria-label="Case sensitive search"
                   style={{ cursor: 'pointer' }}
                 />
                 Case sensitive
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+              >
                 <input
                   type="checkbox"
                   checked={options.wholeWord}
                   onChange={() => toggleOption('wholeWord')}
+                  aria-label="Match whole words only"
                   style={{ cursor: 'pointer' }}
                 />
                 Whole word
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+              >
                 <input
                   type="checkbox"
                   checked={options.useRegex}
                   onChange={() => toggleOption('useRegex')}
+                  aria-label="Use regular expressions"
                   style={{ cursor: 'pointer' }}
                 />
                 Regular expression
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+              >
                 <input
                   type="checkbox"
                   checked={options.searchInNotes}
                   onChange={() => toggleOption('searchInNotes')}
+                  aria-label="Include notes in search"
                   style={{ cursor: 'pointer' }}
                 />
                 Search in notes
@@ -204,6 +236,8 @@ export default function SearchPanel({
 
           {/* Filters */}
           <div
+            role="group"
+            aria-label="Search filters"
             style={{
               padding: '8px',
               background: '#f9fafb',
@@ -211,7 +245,14 @@ export default function SearchPanel({
               border: '1px solid #e5e7eb',
             }}
           >
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#6b7280' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '6px',
+                color: '#6b7280',
+              }}
+            >
               FILTERS
             </div>
 
@@ -220,7 +261,8 @@ export default function SearchPanel({
               <div style={{ fontSize: '12px', marginBottom: '4px' }}>Filter by icon:</div>
               <select
                 value={options.filterIcon || ''}
-                onChange={(e) => setFilter('filterIcon', e.target.value)}
+                onChange={e => setFilter('filterIcon', e.target.value)}
+                aria-label="Filter by icon"
                 style={{
                   padding: '4px 8px',
                   border: '1px solid #d1d5db',
@@ -230,7 +272,7 @@ export default function SearchPanel({
                 }}
               >
                 <option value="">Any icon</option>
-                {availableIcons.map((icon) => (
+                {availableIcons.map(icon => (
                   <option key={icon} value={icon}>
                     {icon}
                   </option>
@@ -243,7 +285,8 @@ export default function SearchPanel({
               <div style={{ fontSize: '12px', marginBottom: '4px' }}>Filter by cloud:</div>
               <select
                 value={options.filterCloud || ''}
-                onChange={(e) => setFilter('filterCloud', e.target.value)}
+                onChange={e => setFilter('filterCloud', e.target.value)}
+                aria-label="Filter by cloud"
                 style={{
                   padding: '4px 8px',
                   border: '1px solid #d1d5db',
@@ -253,7 +296,7 @@ export default function SearchPanel({
                 }}
               >
                 <option value="">Any cloud</option>
-                {availableClouds.map((cloud) => (
+                {availableClouds.map(cloud => (
                   <option key={cloud} value={cloud}>
                     {cloud}
                   </option>
@@ -266,7 +309,8 @@ export default function SearchPanel({
               <div style={{ fontSize: '12px', marginBottom: '4px' }}>Filter by date modified:</div>
               <select
                 value={options.filterDate || ''}
-                onChange={(e) => setFilter('filterDate', e.target.value)}
+                onChange={e => setFilter('filterDate', e.target.value)}
+                aria-label="Filter by date modified"
                 style={{
                   padding: '4px 8px',
                   border: '1px solid #d1d5db',
@@ -287,6 +331,9 @@ export default function SearchPanel({
       )}
 
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -296,6 +343,7 @@ export default function SearchPanel({
         {resultCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div
+              aria-label={`Showing result ${currentResult + 1} of ${resultCount}`}
               style={{
                 fontSize: '12px',
                 color: '#666',
@@ -306,6 +354,7 @@ export default function SearchPanel({
             <button
               onClick={onPrevious}
               title="Previous result (Shift+F3)"
+              aria-label="Previous search result"
               style={{
                 padding: '4px 10px',
                 background: '#f3f4f6',
@@ -320,6 +369,7 @@ export default function SearchPanel({
             <button
               onClick={onNext}
               title="Next result (F3)"
+              aria-label="Next search result"
               style={{
                 padding: '4px 10px',
                 background: '#f3f4f6',
@@ -336,6 +386,8 @@ export default function SearchPanel({
 
         {resultCount === 0 && query && (
           <div
+            role="alert"
+            aria-live="assertive"
             style={{
               fontSize: '12px',
               color: '#ef4444',
@@ -346,5 +398,5 @@ export default function SearchPanel({
         )}
       </div>
     </div>
-  );
+  )
 }
