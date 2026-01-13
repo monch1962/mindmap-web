@@ -27,7 +27,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
   const [showNotes, setShowNotes] = useState(false);
 
   // Reset slides when tree changes
-  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (tree) {
       const generatedSlides = generateSlides(tree);
@@ -36,6 +36,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tree]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Navigation callbacks (must be declared before the keyboard effect)
   const nextSlide = useCallback(() => {
@@ -108,6 +109,9 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
   return (
     <div
+      role="region"
+      aria-label={`Presentation mode: ${tree.content}, slide ${currentSlideIndex + 1} of ${slides.length}`}
+      aria-live="polite"
       style={{
         position: 'fixed',
         top: 0,
@@ -123,6 +127,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
     >
       {/* Top Bar */}
       <div
+        role="banner"
         style={{
           padding: '16px 24px',
           display: 'flex',
@@ -143,6 +148,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             onClick={() => setShowNotes(!showNotes)}
+            aria-label={showNotes ? 'Hide speaker notes' : 'Show speaker notes'}
+            aria-pressed={showNotes}
             style={{
               padding: '8px 12px',
               background: showNotes ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
@@ -158,6 +165,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
           <button
             onClick={onClose}
+            aria-label="Exit presentation mode (Escape)"
             style={{
               padding: '8px 16px',
               background: 'rgba(239, 68, 68, 0.8)',
@@ -175,7 +183,14 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
       </div>
 
       {/* Progress Bar */}
-      <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)' }}>
+      <div
+        role="progressbar"
+        aria-valuenow={currentSlideIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={slides.length}
+        aria-label={`Presentation progress: slide ${currentSlideIndex + 1} of ${slides.length}`}
+        style={{ height: '4px', background: 'rgba(255,255,255,0.1)' }}
+      >
         <div
           style={{
             height: '100%',
@@ -190,6 +205,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
       <div style={{ flex: 1, display: 'flex', position: 'relative' }}>
         {/* Slide Content */}
         <div
+          role="main"
+          aria-label={`Current slide: ${currentSlide.content}`}
           style={{
             flex: 1,
             display: 'flex',
@@ -211,6 +228,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
             {/* Level Indicator */}
             {currentSlide.level > 0 && (
               <div
+                role="presentation"
+                aria-hidden="true"
                 style={{
                   marginBottom: '20px',
                   display: 'flex',
@@ -233,6 +252,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
             {/* Slide Title */}
             <h2
+              id="slide-title"
               style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
@@ -247,6 +267,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
             {/* Slide Metadata */}
             {currentSlide.metadata?.notes && showNotes && (
               <div
+                role="complementary"
+                aria-label="Speaker notes"
                 style={{
                   marginTop: '24px',
                   padding: '16px',
@@ -263,6 +285,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
             {currentSlide.metadata?.link && (
               <div
+                role="note"
+                aria-label="Related link"
                 style={{
                   marginTop: '16px',
                   fontSize: '14px',
@@ -276,6 +300,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
             {/* Children Preview */}
             {currentSlide.children && currentSlide.children.length > 0 && (
               <div
+                role="list"
+                aria-label={`Child slides: ${currentSlide.children.length} items`}
                 style={{
                   marginTop: '32px',
                   display: 'grid',
@@ -287,6 +313,7 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
                 {currentSlide.children.slice(0, 6).map((child, index) => (
                   <div
                     key={child.id}
+                    role="listitem"
                     style={{
                       padding: '12px',
                       background: 'rgba(255,255,255,0.1)',
@@ -306,6 +333,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
         {/* Side Panel - Slide Overview */}
         <div
+          role="complementary"
+          aria-labelledby="slides-overview-title"
           style={{
             width: '280px',
             background: 'rgba(0,0,0,0.3)',
@@ -314,15 +343,24 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
             overflowY: 'auto',
           }}
         >
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', opacity: 0.8 }}>
+          <h3 id="slides-overview-title" style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', opacity: 0.8 }}>
             Slides ({slides.length})
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div role="list" aria-label="All slides" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {slides.map((slide, index) => (
               <div
                 key={slide.id}
+                role="listitem"
+                aria-label={`Slide ${index + 1}: ${slide.content}${index === currentSlideIndex ? ' (current)' : ''}`}
+                tabIndex={0}
                 onClick={() => goToSlide(index)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    goToSlide(index);
+                  }
+                }}
                 style={{
                   padding: '12px',
                   background: index === currentSlideIndex
@@ -363,6 +401,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
 
       {/* Bottom Navigation */}
       <div
+        role="navigation"
+        aria-label="Slide navigation"
         style={{
           padding: '20px 24px',
           display: 'flex',
@@ -374,6 +414,11 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
         <button
           onClick={prevSlide}
           disabled={currentSlideIndex === 0}
+          aria-label={
+            currentSlideIndex === 0
+              ? 'No previous slide'
+              : `Go to previous slide (${currentSlideIndex} of ${slides.length})`
+          }
           style={{
             padding: '12px 24px',
             background: currentSlideIndex > 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
@@ -392,13 +437,18 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
           ← Previous
         </button>
 
-        <div style={{ fontSize: '14px', opacity: 0.8 }}>
+        <div role="status" aria-live="polite" style={{ fontSize: '14px', opacity: 0.8 }}>
           {currentSlideIndex + 1} / {slides.length}
         </div>
 
         <button
           onClick={nextSlide}
           disabled={currentSlideIndex >= slides.length - 1}
+          aria-label={
+            currentSlideIndex >= slides.length - 1
+              ? 'No next slide'
+              : `Go to next slide (${currentSlideIndex + 2} of ${slides.length})`
+          }
           style={{
             padding: '12px 24px',
             background: currentSlideIndex < slides.length - 1 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',

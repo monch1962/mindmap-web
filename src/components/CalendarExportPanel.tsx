@@ -66,6 +66,9 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="calendar-export-title"
       style={{
         position: 'fixed',
         right: '20px',
@@ -97,12 +100,13 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>📅</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          <h2 id="calendar-export-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
             Calendar Export
           </h2>
         </div>
         <button
           onClick={onClose}
+          aria-label="Close calendar export panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -120,12 +124,14 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
       {/* Content */}
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* Task Summary */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="region" aria-labelledby="task-summary-title" style={{ marginBottom: '20px' }}>
+          <h3 id="task-summary-title" style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
             Task Summary
           </h3>
 
           <div
+            role="group"
+            aria-label={`Task statistics: ${summary.total} total, ${summary.completed} completed, ${summary.pending} pending, ${summary.overdue} overdue`}
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
@@ -191,7 +197,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
           </div>
 
           {/* Progress Bar */}
-          <div style={{ marginBottom: '8px' }}>
+          <div role="progressbar" aria-valuenow={getCompletionPercentage()} aria-valuemin={0} aria-valuemax={100} aria-label={`Task completion: ${getCompletionPercentage()}%`} style={{ marginBottom: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
               <span style={{ color: '#6b7280' }}>Progress</span>
               <span style={{ fontWeight: 'bold', color: '#374151' }}>{getCompletionPercentage()}%</span>
@@ -211,14 +217,15 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
         </div>
 
         {/* Export Options */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="export-options-title" style={{ marginBottom: '20px' }}>
+          <h3 id="export-options-title" style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
             Export Options
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
               onClick={handleExportICS}
+              aria-label="Download mind map tasks as ICS file for iCalendar"
               style={{
                 padding: '12px',
                 background: '#3b82f6',
@@ -239,6 +246,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
             <button
               onClick={handleExportCSV}
+              aria-label="Export mind map tasks as CSV file"
               style={{
                 padding: '12px',
                 background: '#10b981',
@@ -259,6 +267,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
             <button
               onClick={handleOpenGoogleCalendar}
+              aria-label="Open first task in Google Calendar"
               style={{
                 padding: '12px',
                 background: '#4285f4',
@@ -279,6 +288,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
             <button
               onClick={handleExportAllGoogle}
+              aria-label="Export all tasks to Google Calendar"
               style={{
                 padding: '12px',
                 background: '#8b5cf6',
@@ -301,12 +311,14 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
         {/* Calendar Heatmap */}
         {heatmap.length > 0 && (
-          <div>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+          <div role="region" aria-labelledby="activity-calendar-title">
+            <h3 id="activity-calendar-title" style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
               Activity Calendar
             </h3>
 
             <div
+              role="grid"
+              aria-label={`Activity calendar showing ${heatmap.length} days`}
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(7, 1fr)',
@@ -329,6 +341,8 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
                 return (
                   <div
                     key={date}
+                    role="gridcell"
+                    aria-label={`${date}: ${count} tasks`}
                     title={`${date}: ${count} tasks`}
                     style={{
                       aspectRatio: 1,
@@ -348,7 +362,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
               })}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#6b7280' }}>
+            <div role="legend" aria-label="Activity intensity legend" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#6b7280' }}>
               <span>Less</span>
               <div style={{ display: 'flex', gap: '2px' }}>
                 <div style={{ width: '12px', height: '12px', background: '#f3f4f6', borderRadius: '2px' }} />
@@ -364,6 +378,8 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
 
         {/* Help Text */}
         <div
+          role="region"
+          aria-labelledby="calendar-help-title"
           style={{
             marginTop: '20px',
             padding: '12px',
@@ -374,7 +390,7 @@ export default function CalendarExportPanel({ visible, onClose, tree }: Calendar
             color: '#1e40af',
           }}
         >
-          <strong>Tip:</strong> Add due dates to nodes using metadata to create calendar events.
+          <strong id="calendar-help-title">Tip:</strong> Add due dates to nodes using metadata to create calendar events.
           Tasks are detected from checkbox nodes or content containing "task", "todo", or "deadline".
         </div>
       </div>

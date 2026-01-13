@@ -23,7 +23,7 @@ export default function RichTextEditor({
   const [linkUrl, setLinkUrl] = useState('');
 
   // Sync local state with props when content changes
-  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // Sanitize content on initialization
     const sanitizedContent = sanitizeHtml(content);
@@ -38,6 +38,7 @@ export default function RichTextEditor({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const execCommand = (command: string, value: string = '') => {
     document.execCommand(command, false, value);
@@ -75,6 +76,8 @@ export default function RichTextEditor({
 
   return (
     <div
+      role="region"
+      aria-label="Rich text editor"
       style={{
         position: 'absolute',
         zIndex: 1000,
@@ -88,6 +91,8 @@ export default function RichTextEditor({
     >
       {/* Toolbar */}
       <div
+        role="toolbar"
+        aria-label="Text formatting toolbar"
         style={{
           display: 'flex',
           gap: '2px',
@@ -104,6 +109,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('bold');
           }}
+          aria-label="Make text bold (Ctrl+B)"
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',
@@ -123,6 +129,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('italic');
           }}
+          aria-label="Make text italic (Ctrl+I)"
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',
@@ -142,6 +149,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('underline');
           }}
+          aria-label="Underline text (Ctrl+U)"
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',
@@ -155,13 +163,14 @@ export default function RichTextEditor({
         >
           U
         </button>
-        <div style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
+        <div role="separator" aria-orientation="vertical" style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
         <button
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
             execCommand('foreColor', '#ef4444');
           }}
+          aria-label="Apply red color to text"
           style={{
             padding: '4px 8px',
             background: '#fef2f2',
@@ -182,6 +191,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('foreColor', '#3b82f6');
           }}
+          aria-label="Apply blue color to text"
           style={{
             padding: '4px 8px',
             background: '#eff6ff',
@@ -202,6 +212,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('foreColor', '#10b981');
           }}
+          aria-label="Apply green color to text"
           style={{
             padding: '4px 8px',
             background: '#ecfdf5',
@@ -222,6 +233,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('foreColor', '#f59e0b');
           }}
+          aria-label="Apply orange color to text"
           style={{
             padding: '4px 8px',
             background: '#fffbeb',
@@ -242,6 +254,7 @@ export default function RichTextEditor({
             e.preventDefault();
             execCommand('removeFormat');
           }}
+          aria-label="Clear text formatting"
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',
@@ -254,10 +267,12 @@ export default function RichTextEditor({
         >
           Clear
         </button>
-        <div style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
+        <div role="separator" aria-orientation="vertical" style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
         <button
           type="button"
           onClick={() => setShowLinkModal(true)}
+          aria-label="Insert link"
+          aria-haspopup="dialog"
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',
@@ -275,6 +290,9 @@ export default function RichTextEditor({
       {/* Editor */}
       <div
         ref={editorRef}
+        role="textbox"
+        aria-label="Text editor"
+        aria-multiline="true"
         contentEditable
         onInput={handleInput}
         onKeyDown={handleKeyDown}
@@ -292,6 +310,9 @@ export default function RichTextEditor({
       {/* Link Modal */}
       {showLinkModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="link-modal-title"
           style={{
             position: 'absolute',
             top: '100%',
@@ -308,11 +329,16 @@ export default function RichTextEditor({
             gap: '4px',
           }}
         >
+          <label htmlFor="link-url-input" style={{ display: 'none' }}>
+            Enter link URL
+          </label>
           <input
+            id="link-url-input"
             type="text"
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             placeholder="https://example.com"
+            aria-label="Enter link URL"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -334,6 +360,7 @@ export default function RichTextEditor({
           />
           <button
             onClick={handleLink}
+            aria-label="Add link to text"
             style={{
               padding: '4px 8px',
               background: '#3b82f6',
@@ -351,6 +378,8 @@ export default function RichTextEditor({
 
       {/* Footer */}
       <div
+        role="status"
+        aria-live="polite"
         style={{
           padding: '6px 12px',
           borderTop: '1px solid #e5e7eb',
