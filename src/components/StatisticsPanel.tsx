@@ -1,11 +1,11 @@
-import type { Node, Edge } from 'reactflow';
-import type { MindMapNodeData } from '../types';
+import type { Node, Edge } from 'reactflow'
+import type { MindMapNodeData } from '../types'
 
 interface StatisticsPanelProps {
-  nodes: Node<MindMapNodeData>[];
-  edges: Edge[];
-  selectedNodeId: string | null;
-  onClose: () => void;
+  nodes: Node<MindMapNodeData>[]
+  edges: Edge[]
+  selectedNodeId: string | null
+  onClose: () => void
 }
 
 /**
@@ -13,73 +13,73 @@ interface StatisticsPanelProps {
  */
 function calculateTreeStats(nodes: Node<MindMapNodeData>[], edges: Edge[]) {
   // Find root nodes (nodes with no incoming edges)
-  const childIds = new Set(edges.map(e => e.target));
-  const rootNodes = nodes.filter(n => !childIds.has(n.id));
+  const childIds = new Set(edges.map(e => e.target))
+  const rootNodes = nodes.filter(n => !childIds.has(n.id))
 
   if (rootNodes.length === 0) {
-    return { maxDepth: 0, nodesByLevel: { 0: nodes.length } };
+    return { maxDepth: 0, nodesByLevel: { 0: nodes.length } }
   }
 
-  let maxDepth = 0;
-  const nodesByLevel: Record<number, number> = {};
+  let maxDepth = 0
+  const nodesByLevel: Record<number, number> = {}
 
   // Calculate depth for each node using BFS from roots
-  const depthMap = new Map<string, number>();
+  const depthMap = new Map<string, number>()
 
   for (const root of rootNodes) {
-    depthMap.set(root.id, 0);
-    nodesByLevel[0] = (nodesByLevel[0] || 0) + 1;
+    depthMap.set(root.id, 0)
+    nodesByLevel[0] = (nodesByLevel[0] || 0) + 1
   }
 
-  let changed = true;
+  let changed = true
   while (changed) {
-    changed = false;
+    changed = false
     for (const edge of edges) {
-      const parentDepth = depthMap.get(edge.source);
+      const parentDepth = depthMap.get(edge.source)
       if (parentDepth !== undefined && depthMap.get(edge.target) === undefined) {
-        const newDepth = parentDepth + 1;
-        depthMap.set(edge.target, newDepth);
-        nodesByLevel[newDepth] = (nodesByLevel[newDepth] || 0) + 1;
-        maxDepth = Math.max(maxDepth, newDepth);
-        changed = true;
+        const newDepth = parentDepth + 1
+        depthMap.set(edge.target, newDepth)
+        nodesByLevel[newDepth] = (nodesByLevel[newDepth] || 0) + 1
+        maxDepth = Math.max(maxDepth, newDepth)
+        changed = true
       }
     }
   }
 
-  return { maxDepth, nodesByLevel };
+  return { maxDepth, nodesByLevel }
 }
 
 /**
  * Get icon distribution
  */
 function getIconDistribution(nodes: Node<MindMapNodeData>[]): Record<string, number> {
-  const distribution: Record<string, number> = {};
+  const distribution: Record<string, number> = {}
   for (const node of nodes) {
     if (node.data.icon) {
-      distribution[node.data.icon] = (distribution[node.data.icon] || 0) + 1;
+      distribution[node.data.icon] = (distribution[node.data.icon] || 0) + 1
     }
   }
-  return distribution;
+  return distribution
 }
 
 /**
  * Get cloud color distribution
  */
 function getCloudDistribution(nodes: Node<MindMapNodeData>[]): Record<string, number> {
-  const distribution: Record<string, number> = {};
+  const distribution: Record<string, number> = {}
   for (const node of nodes) {
     if (node.data.cloud?.color) {
-      distribution[node.data.cloud.color] = (distribution[node.data.cloud.color] || 0) + 1;
+      distribution[node.data.cloud.color] = (distribution[node.data.cloud.color] || 0) + 1
     }
   }
-  return distribution;
+  return distribution
 }
 
 /**
  * Format number with commas
  */
 function formatNumber(num: number): string {
-  return num.toLocaleString();
+  return num.toLocaleString()
 }
 
 export default function StatisticsPanel({
@@ -88,31 +88,32 @@ export default function StatisticsPanel({
   selectedNodeId,
   onClose,
 }: StatisticsPanelProps) {
-  const { maxDepth, nodesByLevel } = calculateTreeStats(nodes, edges);
-  const iconDistribution = getIconDistribution(nodes);
-  const cloudDistribution = getCloudDistribution(nodes);
+  const { maxDepth, nodesByLevel } = calculateTreeStats(nodes, edges)
+  const iconDistribution = getIconDistribution(nodes)
+  const cloudDistribution = getCloudDistribution(nodes)
 
   // Calculate character counts
-  const totalCharacters = nodes.reduce((sum, node) => sum + node.data.label.length, 0);
+  const totalCharacters = nodes.reduce((sum, node) => sum + node.data.label.length, 0)
   const totalWords = nodes.reduce((sum, node) => {
-    return sum + node.data.label.split(/\s+/).filter(w => w.length > 0).length;
-  }, 0);
+    return sum + node.data.label.split(/\s+/).filter(w => w.length > 0).length
+  }, 0)
 
-  const selectedNode = selectedNodeId
-    ? nodes.find(n => n.id === selectedNodeId)
-    : null;
+  const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null
 
-  const selectedChars = selectedNode?.data.label.length || 0;
+  const selectedChars = selectedNode?.data.label.length || 0
   const selectedWords = selectedNode
     ? selectedNode.data.label.split(/\s+/).filter(w => w.length > 0).length
-    : 0;
+    : 0
 
   // Count cross-links vs tree edges
-  const treeEdges = edges.filter(e => !e.data?.isCrossLink).length;
-  const crossLinks = edges.filter(e => e.data?.isCrossLink).length;
+  const treeEdges = edges.filter(e => !e.data?.isCrossLink).length
+  const crossLinks = edges.filter(e => e.data?.isCrossLink).length
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="statistics-panel-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -139,11 +140,12 @@ export default function StatisticsPanel({
           alignItems: 'center',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+        <h2 id="statistics-panel-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
           Mind Map Statistics
         </h2>
         <button
           onClick={onClose}
+          aria-label="Close statistics panel"
           style={{
             background: 'none',
             border: 'none',
@@ -159,7 +161,7 @@ export default function StatisticsPanel({
 
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* Overview */}
-        <div style={{ marginBottom: '20px' }}>
+        <div role="region" aria-label="Overview statistics" style={{ marginBottom: '20px' }}>
           <h3
             style={{
               margin: '0 0 10px 0',
@@ -241,7 +243,7 @@ export default function StatisticsPanel({
         </div>
 
         {/* Content Statistics */}
-        <div style={{ marginBottom: '20px' }}>
+        <div role="region" aria-label="Content statistics" style={{ marginBottom: '20px' }}>
           <h3
             style={{
               margin: '0 0 10px 0',
@@ -262,11 +264,15 @@ export default function StatisticsPanel({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ fontSize: '12px', color: '#6b7280' }}>Total characters:</span>
-              <span style={{ fontSize: '13px', fontWeight: '500' }}>{formatNumber(totalCharacters)}</span>
+              <span style={{ fontSize: '13px', fontWeight: '500' }}>
+                {formatNumber(totalCharacters)}
+              </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ fontSize: '12px', color: '#6b7280' }}>Total words:</span>
-              <span style={{ fontSize: '13px', fontWeight: '500' }}>{formatNumber(totalWords)}</span>
+              <span style={{ fontSize: '13px', fontWeight: '500' }}>
+                {formatNumber(totalWords)}
+              </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '12px', color: '#6b7280' }}>Avg characters per node:</span>
@@ -279,8 +285,9 @@ export default function StatisticsPanel({
 
         {/* Selected Node */}
         {selectedNode && (
-          <div style={{ marginBottom: '20px' }}>
+          <div role="region" aria-labelledby="selected-node-title" style={{ marginBottom: '20px' }}>
             <h3
+              id="selected-node-title"
               style={{
                 margin: '0 0 10px 0',
                 fontSize: '13px',
@@ -298,7 +305,14 @@ export default function StatisticsPanel({
                 border: '1px solid #bfdbfe',
               }}
             >
-              <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '8px', color: '#1e40af' }}>
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  marginBottom: '8px',
+                  color: '#1e40af',
+                }}
+              >
                 "{selectedNode.data.label.substring(0, 30)}
                 {selectedNode.data.label.length > 30 ? '...' : ''}"
               </div>
@@ -316,8 +330,13 @@ export default function StatisticsPanel({
 
         {/* Nodes by Level */}
         {Object.keys(nodesByLevel).length > 0 && (
-          <div style={{ marginBottom: '20px' }}>
+          <div
+            role="region"
+            aria-labelledby="nodes-by-level-title"
+            style={{ marginBottom: '20px' }}
+          >
             <h3
+              id="nodes-by-level-title"
               style={{
                 margin: '0 0 10px 0',
                 fontSize: '13px',
@@ -360,8 +379,13 @@ export default function StatisticsPanel({
 
         {/* Icon Distribution */}
         {Object.keys(iconDistribution).length > 0 && (
-          <div style={{ marginBottom: '20px' }}>
+          <div
+            role="region"
+            aria-labelledby="icon-distribution-title"
+            style={{ marginBottom: '20px' }}
+          >
             <h3
+              id="icon-distribution-title"
               style={{
                 margin: '0 0 10px 0',
                 fontSize: '13px',
@@ -406,8 +430,9 @@ export default function StatisticsPanel({
 
         {/* Cloud Distribution */}
         {Object.keys(cloudDistribution).length > 0 && (
-          <div>
+          <div role="region" aria-labelledby="cloud-distribution-title">
             <h3
+              id="cloud-distribution-title"
               style={{
                 margin: '0 0 10px 0',
                 fontSize: '13px',
@@ -459,5 +484,5 @@ export default function StatisticsPanel({
         )}
       </div>
     </div>
-  );
+  )
 }

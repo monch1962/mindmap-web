@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { templates, getTemplatesByCategory, type Template } from '../utils/mindmapTemplates';
-import type { MindMapTree } from '../types';
+import { useState } from 'react'
+import { templates, getTemplatesByCategory, type Template } from '../utils/mindmapTemplates'
+import type { MindMapTree } from '../types'
 
 interface TemplatesPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  onApplyTemplate: (tree: ReturnType<Template['tree']>) => void;
+  visible: boolean
+  onClose: () => void
+  onApplyTemplate: (tree: ReturnType<Template['tree']>) => void
 }
 
 export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: TemplatesPanelProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
 
-  if (!visible) return null;
+  if (!visible) return null
 
   const categories = [
     { id: 'all', name: 'All Templates', icon: '📚' },
@@ -22,31 +22,36 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
     { id: 'personal', name: 'Personal', icon: '👤' },
     { id: 'project-management', name: 'Project Management', icon: '📋' },
     { id: 'brainstorming', name: 'Brainstorming', icon: '💡' },
-  ];
+  ]
 
-  const filteredTemplates = selectedCategory === 'all'
-    ? templates
-    : getTemplatesByCategory(selectedCategory as Template['category']);
+  const filteredTemplates =
+    selectedCategory === 'all'
+      ? templates
+      : getTemplatesByCategory(selectedCategory as Template['category'])
 
   const searchedTemplates = searchQuery
-    ? filteredTemplates.filter(t =>
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ? filteredTemplates.filter(
+        t =>
+          t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.description.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : filteredTemplates;
+    : filteredTemplates
 
   const handleApplyTemplate = (template: Template) => {
-    const tree = template.tree();
-    onApplyTemplate(tree);
-    onClose();
-  };
+    const tree = template.tree()
+    onApplyTemplate(tree)
+    onClose()
+  }
 
   const handlePreviewTemplate = (template: Template) => {
-    setSelectedTemplate(template);
-  };
+    setSelectedTemplate(template)
+  }
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="templates-panel-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -80,7 +85,10 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '28px' }}>📋</span>
           <div>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
+            <h2
+              id="templates-panel-title"
+              style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}
+            >
               Mind Map Templates
             </h2>
             <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
@@ -90,6 +98,7 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
         </div>
         <button
           onClick={onClose}
+          aria-label="Close templates panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -106,6 +115,8 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
 
       {/* Search and Categories */}
       <div
+        role="search"
+        aria-label="Search and filter templates"
         style={{
           padding: '20px 24px',
           borderBottom: '1px solid #e5e7eb',
@@ -114,11 +125,16 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
           alignItems: 'center',
         }}
       >
+        <label htmlFor="template-search" style={{ display: 'none' }}>
+          Search templates
+        </label>
         <input
+          id="template-search"
           type="text"
           placeholder="🔍 Search templates..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
+          aria-label="Search templates by name or description"
           style={{
             flex: 1,
             padding: '10px 16px',
@@ -128,11 +144,16 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
           }}
         />
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {categories.map((cat) => (
+        <div
+          role="group"
+          aria-label="Filter templates by category"
+          style={{ display: 'flex', gap: '8px' }}
+        >
+          {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
+              aria-pressed={selectedCategory === cat.id}
               style={{
                 padding: '8px 16px',
                 background: selectedCategory === cat.id ? '#667eea' : '#f3f4f6',
@@ -158,6 +179,8 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         {searchedTemplates.length === 0 ? (
           <div
+            role="status"
+            aria-live="polite"
             style={{
               textAlign: 'center',
               padding: '60px',
@@ -166,19 +189,25 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
           >
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
             <p style={{ fontSize: '16px', margin: 0 }}>No templates found</p>
-            <p style={{ fontSize: '14px', marginTop: '8px' }}>Try a different search term or category</p>
+            <p style={{ fontSize: '14px', marginTop: '8px' }}>
+              Try a different search term or category
+            </p>
           </div>
         ) : (
           <div
+            role="grid"
+            aria-label={`${searchedTemplates.length} templates available`}
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
               gap: '20px',
             }}
           >
-            {searchedTemplates.map((template) => (
+            {searchedTemplates.map(template => (
               <div
                 key={template.id}
+                role="gridcell"
+                aria-label={`${template.name}: ${template.description}`}
                 style={{
                   padding: '20px',
                   background: 'white',
@@ -188,16 +217,23 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
                   transition: 'all 0.2s',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)'
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    marginBottom: '12px',
+                  }}
+                >
                   <div
                     style={{
                       width: '48px',
@@ -213,7 +249,9 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
                     {template.icon}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#111827' }}>
+                    <h3
+                      style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#111827' }}
+                    >
                       {template.name}
                     </h3>
                     <span
@@ -233,16 +271,25 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
                   </div>
                 </div>
 
-                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280', lineHeight: '1.5', marginBottom: '16px' }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '13px',
+                    color: '#6b7280',
+                    lineHeight: '1.5',
+                    marginBottom: '16px',
+                  }}
+                >
                   {template.description}
                 </p>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApplyTemplate(template);
+                    onClick={e => {
+                      e.stopPropagation()
+                      handleApplyTemplate(template)
                     }}
+                    aria-label={`Use ${template.name} template`}
                     style={{
                       flex: 1,
                       padding: '8px 12px',
@@ -255,20 +302,21 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
                       fontWeight: '500',
                       transition: 'background 0.2s',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#5a67d8';
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = '#5a67d8'
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#667eea';
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = '#667eea'
                     }}
                   >
                     Use Template
                   </button>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePreviewTemplate(template);
+                    onClick={e => {
+                      e.stopPropagation()
+                      handlePreviewTemplate(template)
                     }}
+                    aria-label={`Preview ${template.name} template`}
                     style={{
                       padding: '8px 12px',
                       background: '#f3f4f6',
@@ -280,11 +328,11 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
                       fontWeight: '500',
                       transition: 'background 0.2s',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#e5e7eb';
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = '#e5e7eb'
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#f3f4f6';
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = '#f3f4f6'
                     }}
                   >
                     Preview
@@ -298,6 +346,8 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
 
       {/* Footer Stats */}
       <div
+        role="status"
+        aria-live="polite"
         style={{
           padding: '16px 24px',
           borderTop: '1px solid #e5e7eb',
@@ -311,14 +361,31 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
         }}
       >
         <div>
-          Showing <strong>{searchedTemplates.length}</strong> of <strong>{templates.length}</strong> templates
+          Showing <strong>{searchedTemplates.length}</strong> of <strong>{templates.length}</strong>{' '}
+          templates
         </div>
-        <div>Press <kbd style={{ padding: '2px 6px', background: 'white', border: '1px solid #d1d5db', borderRadius: '4px' }}>Esc</kbd> to close</div>
+        <div>
+          Press{' '}
+          <kbd
+            style={{
+              padding: '2px 6px',
+              background: 'white',
+              border: '1px solid #d1d5db',
+              borderRadius: '4px',
+            }}
+          >
+            Esc
+          </kbd>{' '}
+          to close
+        </div>
       </div>
 
       {/* Preview Modal */}
       {selectedTemplate && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="template-preview-title"
           onClick={() => setSelectedTemplate(null)}
           style={{
             position: 'fixed',
@@ -334,7 +401,7 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             style={{
               width: '90%',
               maxWidth: '700px',
@@ -358,7 +425,10 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '32px' }}>{selectedTemplate.icon}</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>
+                  <h3
+                    id="template-preview-title"
+                    style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}
+                  >
                     {selectedTemplate.name}
                   </h3>
                   <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
@@ -368,6 +438,7 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
               </div>
               <button
                 onClick={() => setSelectedTemplate(null)}
+                aria-label="Close template preview"
                 style={{
                   background: 'none',
                   border: 'none',
@@ -396,6 +467,7 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
             >
               <button
                 onClick={() => setSelectedTemplate(null)}
+                aria-label="Close preview without applying template"
                 style={{
                   padding: '10px 20px',
                   background: '#f3f4f6',
@@ -411,9 +483,10 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
               </button>
               <button
                 onClick={() => {
-                  handleApplyTemplate(selectedTemplate);
-                  setSelectedTemplate(null);
+                  handleApplyTemplate(selectedTemplate)
+                  setSelectedTemplate(null)
                 }}
+                aria-label={`Use ${selectedTemplate.name} template`}
                 style={{
                   padding: '10px 20px',
                   background: '#667eea',
@@ -432,14 +505,14 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
         </div>
       )}
     </div>
-  );
+  )
 }
 
 /**
  * Tree preview component
  */
 function TreePreview({ tree, level = 0 }: { tree: MindMapTree; level?: number }) {
-  const indent = level * 20;
+  const indent = level * 20
 
   return (
     <div style={{ marginLeft: `${indent}px`, marginBottom: '8px' }}>
@@ -464,5 +537,5 @@ function TreePreview({ tree, level = 0 }: { tree: MindMapTree; level?: number })
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,27 +1,31 @@
-import { useState } from 'react';
-import { FREE_MIND_ICONS, ICON_CATEGORIES } from '../utils/icons';
+import { useState } from 'react'
+import { FREE_MIND_ICONS, ICON_CATEGORIES } from '../utils/icons'
 
 interface IconPickerProps {
-  onSelect: (iconId: string | null) => void;
-  onClose: () => void;
-  currentIcon?: string;
+  onSelect: (iconId: string | null) => void
+  onClose: () => void
+  currentIcon?: string
 }
 
 export default function IconPicker({ onSelect, onClose, currentIcon }: IconPickerProps) {
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const filteredIcons = search
-    ? FREE_MIND_ICONS.filter(icon =>
-        icon.name.toLowerCase().includes(search.toLowerCase()) ||
-        icon.id.toLowerCase().includes(search.toLowerCase())
+    ? FREE_MIND_ICONS.filter(
+        icon =>
+          icon.name.toLowerCase().includes(search.toLowerCase()) ||
+          icon.id.toLowerCase().includes(search.toLowerCase())
       )
     : selectedCategory
-    ? ICON_CATEGORIES.find(cat => cat.id === selectedCategory)?.icons || []
-    : FREE_MIND_ICONS;
+      ? ICON_CATEGORIES.find(cat => cat.id === selectedCategory)?.icons || []
+      : FREE_MIND_ICONS
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="icon-picker-title"
       style={{
         position: 'fixed',
         top: '50%',
@@ -37,14 +41,24 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         display: 'flex',
         flexDirection: 'column',
       }}
-      onClick={(e) => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
     >
       {/* Header */}
       <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Choose Icon</h3>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
+          <h3 id="icon-picker-title" style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>
+            Choose Icon
+          </h3>
           <button
             onClick={onClose}
+            aria-label="Close icon picker"
             style={{
               background: 'none',
               border: 'none',
@@ -59,14 +73,19 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         </div>
 
         {/* Search */}
+        <label htmlFor="icon-search" style={{ display: 'none' }}>
+          Search icons
+        </label>
         <input
+          id="icon-search"
           type="text"
           placeholder="Search icons..."
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setSelectedCategory(null);
+          onChange={e => {
+            setSearch(e.target.value)
+            setSelectedCategory(null)
           }}
+          aria-label="Search icons by name or ID"
           style={{
             width: '100%',
             padding: '8px 12px',
@@ -78,12 +97,17 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         />
 
         {/* Category tabs */}
-        <div style={{ display: 'flex', gap: '4px', marginTop: '12px', flexWrap: 'wrap' }}>
+        <div
+          role="group"
+          aria-label="Filter icons by category"
+          style={{ display: 'flex', gap: '4px', marginTop: '12px', flexWrap: 'wrap' }}
+        >
           <button
             onClick={() => {
-              setSelectedCategory(null);
-              setSearch('');
+              setSelectedCategory(null)
+              setSearch('')
             }}
+            aria-pressed={selectedCategory === null}
             style={{
               padding: '6px 12px',
               background: selectedCategory === null ? '#3b82f6' : '#f3f4f6',
@@ -97,13 +121,14 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
           >
             All ({FREE_MIND_ICONS.length})
           </button>
-          {ICON_CATEGORIES.map((category) => (
+          {ICON_CATEGORIES.map(category => (
             <button
               key={category.id}
               onClick={() => {
-                setSelectedCategory(category.id);
-                setSearch('');
+                setSelectedCategory(category.id)
+                setSearch('')
               }}
+              aria-pressed={selectedCategory === category.id}
               style={{
                 padding: '6px 12px',
                 background: selectedCategory === category.id ? '#3b82f6' : '#f3f4f6',
@@ -130,6 +155,8 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         }}
       >
         <div
+          role="grid"
+          aria-label={`Available icons${filteredIcons.length < FREE_MIND_ICONS.length ? ` (${filteredIcons.length} shown)` : ''}`}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))',
@@ -139,6 +166,9 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
           {/* Remove icon option */}
           <button
             onClick={() => onSelect(null)}
+            role="gridcell"
+            aria-label="Remove icon"
+            aria-selected={currentIcon === null}
             style={{
               padding: '8px',
               border: currentIcon === null ? '2px solid #3b82f6' : '1px solid #e5e7eb',
@@ -157,10 +187,13 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
           </button>
 
           {/* Icon options */}
-          {filteredIcons.map((icon) => (
+          {filteredIcons.map(icon => (
             <button
               key={icon.id}
               onClick={() => onSelect(icon.id)}
+              role="gridcell"
+              aria-label={`${icon.name} (${icon.id})`}
+              aria-selected={currentIcon === icon.id}
               style={{
                 padding: '8px',
                 border: currentIcon === icon.id ? '2px solid #3b82f6' : '1px solid #e5e7eb',
@@ -183,6 +216,8 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
 
         {filteredIcons.length === 0 && (
           <div
+            role="status"
+            aria-live="polite"
             style={{
               textAlign: 'center',
               padding: '40px',
@@ -194,5 +229,5 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         )}
       </div>
     </div>
-  );
+  )
 }
