@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { MindMapTree } from '../types';
+import { useState, useEffect, useCallback } from 'react'
+import type { MindMapTree } from '../types'
 import {
   registerWebhook,
   getWebhookConfig,
@@ -8,13 +8,13 @@ import {
   generateTestPayload,
   validateWebhookPayload,
   type WebhookConfig,
-} from '../utils/webhookIntegration';
+} from '../utils/webhookIntegration'
 
 interface WebhookIntegrationPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  tree: MindMapTree | null;
-  onWebhookData?: (data: { nodeId: string; content: string; parentId?: string }) => void;
+  visible: boolean
+  onClose: () => void
+  tree: MindMapTree | null
+  onWebhookData?: (data: { nodeId: string; content: string; parentId?: string }) => void
 }
 
 export default function WebhookIntegrationPanel({
@@ -27,86 +27,86 @@ export default function WebhookIntegrationPanel({
     enabled: false,
     webhookUrl: '',
     apiKey: '',
-  });
-  const [testPayload, setTestPayload] = useState<string>('');
-  const [incomingData, setIncomingData] = useState<string>('');
-  const [lastTriggered, setLastTriggered] = useState<string>('');
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  })
+  const [testPayload, setTestPayload] = useState<string>('')
+  const [incomingData, setIncomingData] = useState<string>('')
+  const [lastTriggered, setLastTriggered] = useState<string>('')
+  const [statusMessage, setStatusMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   useEffect(() => {
-    const savedConfig = getWebhookConfig();
+    const savedConfig = getWebhookConfig()
     if (savedConfig) {
-      setConfig(savedConfig);
+      setConfig(savedConfig)
       if (savedConfig.lastTriggered) {
-        setLastTriggered(new Date(savedConfig.lastTriggered).toLocaleString());
+        setLastTriggered(new Date(savedConfig.lastTriggered).toLocaleString())
       }
     }
-    setTestPayload(JSON.stringify(generateTestPayload(), null, 2));
-     
-  }, []);
+    setTestPayload(JSON.stringify(generateTestPayload(), null, 2))
+  }, [])
 
   const showStatus = useCallback((type: 'success' | 'error', text: string) => {
-    setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 3000);
-  }, []);
+    setStatusMessage({ type, text })
+    setTimeout(() => setStatusMessage(null), 3000)
+  }, [])
 
   const handleSaveConfig = () => {
-    registerWebhook(config);
-    showStatus('success', 'Webhook configuration saved!');
-  };
+    registerWebhook(config)
+    showStatus('success', 'Webhook configuration saved!')
+  }
 
   const handleTestWebhook = useCallback(async () => {
     if (!config.webhookUrl || !tree) {
-      showStatus('error', 'Please enter a webhook URL');
-      return;
+      showStatus('error', 'Please enter a webhook URL')
+      return
     }
 
-    const success = await triggerWebhook(
-      config.webhookUrl,
-      config.apiKey,
-      tree,
-      'updated'
-    );
+    const success = await triggerWebhook(config.webhookUrl, config.apiKey, tree, 'updated')
 
     if (success) {
-      const timestamp = Date.now();
-      const newConfig = { ...config, lastTriggered: timestamp };
-      registerWebhook(newConfig);
-      setConfig(newConfig);
-      setLastTriggered(new Date(timestamp).toLocaleString());
-      showStatus('success', 'Webhook triggered successfully!');
+      const timestamp = Date.now()
+      const newConfig = { ...config, lastTriggered: timestamp }
+      registerWebhook(newConfig)
+      setConfig(newConfig)
+      setLastTriggered(new Date(timestamp).toLocaleString())
+      showStatus('success', 'Webhook triggered successfully!')
     } else {
-      showStatus('error', 'Failed to trigger webhook. Check URL and API key.');
+      showStatus('error', 'Failed to trigger webhook. Check URL and API key.')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, tree]);
+  }, [config, tree])
 
   const handleSimulateIncoming = useCallback(() => {
     try {
-      const payload = JSON.parse(incomingData);
+      const payload = JSON.parse(incomingData)
       if (validateWebhookPayload(payload)) {
         onWebhookData?.({
           nodeId: `webhook_${Date.now()}`,
           content: payload.data.content,
           parentId: payload.data.parentId,
-        });
-        showStatus('success', 'Incoming webhook data processed!');
-        setIncomingData('');
+        })
+        showStatus('success', 'Incoming webhook data processed!')
+        setIncomingData('')
       } else {
-        showStatus('error', 'Invalid webhook payload format');
+        showStatus('error', 'Invalid webhook payload format')
       }
     } catch {
-      showStatus('error', 'Invalid JSON format');
+      showStatus('error', 'Invalid JSON format')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [incomingData, onWebhookData]);
+  }, [incomingData, onWebhookData])
 
-  if (!visible) return null;
+  if (!visible) return null
 
-  const webhookEndpoint = config.apiKey ? generateWebhookEndpoint(config.apiKey) : '';
+  const webhookEndpoint = config.apiKey ? generateWebhookEndpoint(config.apiKey) : ''
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="webhook-integration-title"
       style={{
         position: 'fixed',
         right: '20px',
@@ -138,12 +138,16 @@ export default function WebhookIntegrationPanel({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>🔗</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          <h2
+            id="webhook-integration-title"
+            style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}
+          >
             Webhook Integration
           </h2>
         </div>
         <button
           onClick={onClose}
+          aria-label="Close webhook integration panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -163,6 +167,8 @@ export default function WebhookIntegrationPanel({
         {/* Status Message */}
         {statusMessage && (
           <div
+            role="alert"
+            aria-live="polite"
             style={{
               padding: '12px',
               marginBottom: '16px',
@@ -177,18 +183,31 @@ export default function WebhookIntegrationPanel({
         )}
 
         {/* Webhook Configuration */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="webhook-config-title" style={{ marginBottom: '20px' }}>
+          <h3
+            id="webhook-config-title"
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Configuration
           </h3>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="webhook-enabled"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Enable Webhooks
             </label>
             <select
+              id="webhook-enabled"
               value={config.enabled ? 'enabled' : 'disabled'}
-              onChange={(e) => setConfig({ ...config, enabled: e.target.value === 'enabled' })}
+              onChange={e => setConfig({ ...config, enabled: e.target.value === 'enabled' })}
+              aria-label="Enable or disable webhooks"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -203,14 +222,24 @@ export default function WebhookIntegrationPanel({
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="webhook-url"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Webhook URL
             </label>
             <input
+              id="webhook-url"
               type="text"
               value={config.webhookUrl}
-              onChange={(e) => setConfig({ ...config, webhookUrl: e.target.value })}
+              onChange={e => setConfig({ ...config, webhookUrl: e.target.value })}
               placeholder="https://hooks.zapier.com/hooks/catch/..."
+              aria-label="Enter your webhook URL"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -225,14 +254,24 @@ export default function WebhookIntegrationPanel({
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="webhook-api-key"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               API Key
             </label>
             <input
+              id="webhook-api-key"
               type="password"
               value={config.apiKey}
-              onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+              onChange={e => setConfig({ ...config, apiKey: e.target.value })}
               placeholder="Enter your API key..."
+              aria-label="Enter your API key for webhook authentication"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -245,6 +284,8 @@ export default function WebhookIntegrationPanel({
 
           {webhookEndpoint && (
             <div
+              role="region"
+              aria-label="Your webhook endpoint"
               style={{
                 padding: '8px',
                 background: '#f3f4f6',
@@ -258,13 +299,14 @@ export default function WebhookIntegrationPanel({
           )}
 
           {lastTriggered && (
-            <div style={{ fontSize: '11px', color: '#6b7280' }}>
+            <div role="status" aria-live="polite" style={{ fontSize: '11px', color: '#6b7280' }}>
               Last triggered: {lastTriggered}
             </div>
           )}
 
           <button
             onClick={handleSaveConfig}
+            aria-label="Save webhook configuration"
             style={{
               marginTop: '8px',
               padding: '8px 16px',
@@ -282,12 +324,17 @@ export default function WebhookIntegrationPanel({
         </div>
 
         {/* Test Webhook */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="test-webhook-title" style={{ marginBottom: '20px' }}>
+          <h3
+            id="test-webhook-title"
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Test Webhook
           </h3>
 
           <div
+            role="region"
+            aria-labelledby="test-payload-title"
             style={{
               padding: '12px',
               background: '#f9fafb',
@@ -300,12 +347,28 @@ export default function WebhookIntegrationPanel({
               overflowY: 'auto',
             }}
           >
+            <h4
+              id="test-payload-title"
+              style={{
+                margin: '0 0 4px 0',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: '#6b7280',
+              }}
+            >
+              Test Payload Preview
+            </h4>
             {testPayload}
           </div>
 
           <button
             onClick={handleTestWebhook}
             disabled={!config.webhookUrl}
+            aria-label={
+              !config.webhookUrl
+                ? 'Enter webhook URL to enable testing'
+                : 'Send test payload to webhook'
+            }
             style={{
               padding: '8px 16px',
               background: config.webhookUrl ? '#10b981' : '#d1d5db',
@@ -323,15 +386,23 @@ export default function WebhookIntegrationPanel({
         </div>
 
         {/* Simulate Incoming */}
-        <div>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="incoming-webhook-title">
+          <h3
+            id="incoming-webhook-title"
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Simulate Incoming Webhook
           </h3>
 
+          <label htmlFor="webhook-incoming" style={{ display: 'none' }}>
+            Enter webhook payload to simulate
+          </label>
           <textarea
+            id="webhook-incoming"
             value={incomingData}
-            onChange={(e) => setIncomingData(e.target.value)}
+            onChange={e => setIncomingData(e.target.value)}
             placeholder='{"action":"add_node","data":{"content":"New idea"},"source":"zapier","timestamp":1234567890}'
+            aria-label="Enter JSON webhook payload to simulate incoming webhook"
             style={{
               width: '100%',
               padding: '8px',
@@ -348,6 +419,9 @@ export default function WebhookIntegrationPanel({
           <button
             onClick={handleSimulateIncoming}
             disabled={!incomingData.trim()}
+            aria-label={
+              !incomingData.trim() ? 'Enter JSON data to process' : 'Process incoming webhook data'
+            }
             style={{
               padding: '8px 16px',
               background: incomingData.trim() ? '#8b5cf6' : '#d1d5db',
@@ -366,6 +440,8 @@ export default function WebhookIntegrationPanel({
 
         {/* Help Text */}
         <div
+          role="region"
+          aria-labelledby="webhook-help-title"
           style={{
             marginTop: '20px',
             padding: '12px',
@@ -376,7 +452,7 @@ export default function WebhookIntegrationPanel({
             color: '#1e40af',
           }}
         >
-          <strong>How to use:</strong>
+          <strong id="webhook-help-title">How to use:</strong>
           <ol style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
             <li>Create a webhook in Zapier or Make</li>
             <li>Paste the webhook URL above</li>
@@ -386,5 +462,5 @@ export default function WebhookIntegrationPanel({
         </div>
       </div>
     </div>
-  );
+  )
 }
