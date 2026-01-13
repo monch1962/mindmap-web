@@ -149,7 +149,6 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
       {/* UI Overlay */}
       <div
         role="presentation"
-        aria-hidden="true"
         style={{
           position: 'absolute',
           top: '20px',
@@ -259,7 +258,6 @@ export default function ThreeDView({ visible, onClose, tree }: ThreeDViewProps) 
       {/* 3D Scene */}
       <div
         role="presentation"
-        aria-hidden="true"
         ref={containerRef}
         style={{
           width: '100%',
