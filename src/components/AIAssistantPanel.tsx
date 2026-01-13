@@ -119,6 +119,9 @@ export default function AIAssistantPanel({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-assistant-title"
       style={{
         position: 'fixed',
         right: '20px',
@@ -151,10 +154,13 @@ export default function AIAssistantPanel({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>🤖</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>AI Assistant</h2>
+          <h2 id="ai-assistant-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+            AI Assistant
+          </h2>
         </div>
         <button
           onClick={onClose}
+          aria-label="Close AI assistant panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -172,15 +178,21 @@ export default function AIAssistantPanel({
       {/* Content */}
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* API Key Input */}
-        <div style={{ marginBottom: '16px' }}>
-          <label
-            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+        <div role="group" aria-labelledby="ai-config-title" style={{ marginBottom: '16px' }}>
+          <h3
+            id="ai-config-title"
+            style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
           >
             AI Provider
+          </h3>
+          <label htmlFor="ai-provider-select" style={{ display: 'none' }}>
+            Select AI provider
           </label>
           <select
+            id="ai-provider-select"
             value={provider}
             onChange={e => setProvider(e.target.value as AIProvider)}
+            aria-label="Select AI provider"
             style={{
               width: '100%',
               padding: '8px',
@@ -198,6 +210,7 @@ export default function AIAssistantPanel({
           {provider !== 'none' && (
             <>
               <label
+                htmlFor="ai-api-key"
                 style={{
                   display: 'block',
                   fontSize: '12px',
@@ -208,10 +221,12 @@ export default function AIAssistantPanel({
                 API Key
               </label>
               <input
+                id="ai-api-key"
                 type="password"
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
                 placeholder="Enter your API key..."
+                aria-label="Enter your API key for the selected AI provider"
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -229,8 +244,9 @@ export default function AIAssistantPanel({
 
         {/* Quick Actions */}
         {provider !== 'none' && apiKey && (
-          <div style={{ marginBottom: '16px' }}>
+          <div role="group" aria-labelledby="quick-actions-title" style={{ marginBottom: '16px' }}>
             <label
+              id="quick-actions-title"
               style={{
                 display: 'block',
                 fontSize: '12px',
@@ -244,6 +260,13 @@ export default function AIAssistantPanel({
               <button
                 onClick={handleSuggestIdeas}
                 disabled={!selectedNodeId || isLoading}
+                aria-label={
+                  !selectedNodeId
+                    ? 'Select a node to generate ideas'
+                    : isLoading
+                      ? 'Generating ideas...'
+                      : 'Generate ideas for selected node'
+                }
                 style={{
                   padding: '10px',
                   background: selectedNodeId ? '#3b82f6' : '#d1d5db',
@@ -263,6 +286,13 @@ export default function AIAssistantPanel({
               <button
                 onClick={handleSummarize}
                 disabled={!selectedNodeId || isLoading}
+                aria-label={
+                  !selectedNodeId
+                    ? 'Select a node to summarize branch'
+                    : isLoading
+                      ? 'Summarizing...'
+                      : 'Summarize branch for selected node'
+                }
                 style={{
                   padding: '10px',
                   background: selectedNodeId ? '#8b5cf6' : '#d1d5db',
@@ -285,8 +315,9 @@ export default function AIAssistantPanel({
 
         {/* Generate Mind Map */}
         {provider !== 'none' && apiKey && (
-          <div style={{ marginBottom: '16px' }}>
+          <div role="group" aria-labelledby="generate-title" style={{ marginBottom: '16px' }}>
             <label
+              id="generate-title"
               style={{
                 display: 'block',
                 fontSize: '12px',
@@ -296,10 +327,15 @@ export default function AIAssistantPanel({
             >
               Generate Mind Map from Text
             </label>
+            <label htmlFor="ai-prompt" style={{ display: 'none' }}>
+              Enter text to generate mind map
+            </label>
             <textarea
+              id="ai-prompt"
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
               placeholder="Enter a topic or paste text to generate a mind map..."
+              aria-label="Enter topic or text to generate mind map from"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -314,6 +350,13 @@ export default function AIAssistantPanel({
             <button
               onClick={handleGenerate}
               disabled={!prompt.trim() || isLoading}
+              aria-label={
+                !prompt.trim()
+                  ? 'Enter text to generate mind map'
+                  : isLoading
+                    ? 'Generating mind map...'
+                    : 'Generate mind map from text'
+              }
               style={{
                 marginTop: '8px',
                 padding: '10px 16px',
@@ -335,6 +378,8 @@ export default function AIAssistantPanel({
         {/* Response Area */}
         {aiResponse && (
           <div
+            role="region"
+            aria-labelledby="ai-response-title"
             style={{
               padding: '12px',
               background: '#f9fafb',
@@ -346,6 +391,17 @@ export default function AIAssistantPanel({
               overflowY: 'auto',
             }}
           >
+            <h4
+              id="ai-response-title"
+              style={{
+                margin: '0 0 8px 0',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#374151',
+              }}
+            >
+              AI Response
+            </h4>
             {aiResponse}
           </div>
         )}

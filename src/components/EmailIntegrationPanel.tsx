@@ -1,33 +1,40 @@
-import { useState } from 'react';
-import type { MindMapTree } from '../types';
+import { useState } from 'react'
+import type { MindMapTree } from '../types'
 import {
   sendEmail,
   downloadEmailHTML,
   exportEmailTemplate,
   generateWeeklyDigest,
   generateEmailSignature,
-} from '../utils/emailIntegration';
+} from '../utils/emailIntegration'
 
 interface EmailIntegrationPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  tree: MindMapTree | null;
+  visible: boolean
+  onClose: () => void
+  tree: MindMapTree | null
 }
 
-type EmailFormat = 'summary' | 'detailed' | 'bullet-points' | 'newsletter';
+type EmailFormat = 'summary' | 'detailed' | 'bullet-points' | 'newsletter'
 
-export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailIntegrationPanelProps) {
-  const [recipient, setRecipient] = useState('');
-  const [subject, setSubject] = useState('');
-  const [format, setFormat] = useState<EmailFormat>('summary');
-  const [includeSummary, setIncludeSummary] = useState(true);
-  const [includePlainText, setIncludePlainText] = useState(true);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+export default function EmailIntegrationPanel({
+  visible,
+  onClose,
+  tree,
+}: EmailIntegrationPanelProps) {
+  const [recipient, setRecipient] = useState('')
+  const [subject, setSubject] = useState('')
+  const [format, setFormat] = useState<EmailFormat>('summary')
+  const [includeSummary, setIncludeSummary] = useState(true)
+  const [includePlainText, setIncludePlainText] = useState(true)
+  const [statusMessage, setStatusMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   const handleSendEmail = () => {
     if (!tree) {
-      showStatus('error', 'No mind map to send');
-      return;
+      showStatus('error', 'No mind map to send')
+      return
     }
 
     sendEmail(tree, {
@@ -37,50 +44,53 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
       includePlainText,
       includeHTML: true,
       format,
-    });
+    })
 
-    showStatus('success', 'Opening email client...');
-  };
+    showStatus('success', 'Opening email client...')
+  }
 
   const handleDownloadHTML = () => {
-    if (!tree) return;
-    downloadEmailHTML(tree);
-    showStatus('success', 'HTML email downloaded!');
-  };
+    if (!tree) return
+    downloadEmailHTML(tree)
+    showStatus('success', 'HTML email downloaded!')
+  }
 
   const handleExportTemplate = () => {
-    if (!tree) return;
-    exportEmailTemplate(tree);
-    showStatus('success', 'Email template exported!');
-  };
+    if (!tree) return
+    exportEmailTemplate(tree)
+    showStatus('success', 'Email template exported!')
+  }
 
   const handleCopySignature = () => {
-    if (!tree) return;
-    const signature = generateEmailSignature(tree);
-    navigator.clipboard.writeText(signature);
-    showStatus('success', 'Signature copied to clipboard!');
-  };
+    if (!tree) return
+    const signature = generateEmailSignature(tree)
+    navigator.clipboard.writeText(signature)
+    showStatus('success', 'Signature copied to clipboard!')
+  }
 
   const handleWeeklyDigest = () => {
-    if (!tree) return;
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7);
-    const digest = generateWeeklyDigest(tree, startDate, endDate);
+    if (!tree) return
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - 7)
+    const digest = generateWeeklyDigest(tree, startDate, endDate)
 
-    navigator.clipboard.writeText(digest);
-    showStatus('success', 'Weekly digest copied to clipboard!');
-  };
+    navigator.clipboard.writeText(digest)
+    showStatus('success', 'Weekly digest copied to clipboard!')
+  }
 
   const showStatus = (type: 'success' | 'error', text: string) => {
-    setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 3000);
-  };
+    setStatusMessage({ type, text })
+    setTimeout(() => setStatusMessage(null), 3000)
+  }
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="email-integration-title"
       style={{
         position: 'fixed',
         right: '20px',
@@ -112,12 +122,16 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>✉️</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+          <h2
+            id="email-integration-title"
+            style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}
+          >
             Email Integration
           </h2>
         </div>
         <button
           onClick={onClose}
+          aria-label="Close email integration panel"
           style={{
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
@@ -137,6 +151,8 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
         {/* Status Message */}
         {statusMessage && (
           <div
+            role="alert"
+            aria-live="polite"
             style={{
               padding: '12px',
               marginBottom: '16px',
@@ -151,20 +167,33 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
         )}
 
         {/* Email Configuration */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="email-config-title" style={{ marginBottom: '20px' }}>
+          <h3
+            id="email-config-title"
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Email Configuration
           </h3>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="email-recipient"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Recipient (Optional)
             </label>
             <input
+              id="email-recipient"
               type="email"
               value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
+              onChange={e => setRecipient(e.target.value)}
               placeholder="recipient@example.com"
+              aria-label="Enter recipient email address"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -176,14 +205,24 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="email-subject"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Subject
             </label>
             <input
+              id="email-subject"
               type="text"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={e => setSubject(e.target.value)}
               placeholder={`Mind Map: ${tree?.content || ''}`}
+              aria-label="Enter email subject"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -195,12 +234,22 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              htmlFor="email-format"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Email Format
             </label>
             <select
+              id="email-format"
               value={format}
-              onChange={(e) => setFormat(e.target.value as EmailFormat)}
+              onChange={e => setFormat(e.target.value as EmailFormat)}
+              aria-label="Select email format"
               style={{
                 width: '100%',
                 padding: '8px',
@@ -217,20 +266,38 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={includeSummary}
-                onChange={(e) => setIncludeSummary(e.target.checked)}
+                onChange={e => setIncludeSummary(e.target.checked)}
+                aria-label="Include summary in email"
               />
               Include Summary
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={includePlainText}
-                onChange={(e) => setIncludePlainText(e.target.checked)}
+                onChange={e => setIncludePlainText(e.target.checked)}
+                aria-label="Include plain text version"
               />
               Include Plain Text
             </label>
@@ -238,6 +305,7 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
 
           <button
             onClick={handleSendEmail}
+            aria-label="Open email client with mind map content"
             style={{
               width: '100%',
               padding: '12px',
@@ -255,14 +323,18 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
         </div>
 
         {/* Quick Actions */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+        <div role="group" aria-labelledby="quick-actions-title" style={{ marginBottom: '20px' }}>
+          <h3
+            id="quick-actions-title"
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Quick Actions
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
               onClick={handleDownloadHTML}
+              aria-label="Download mind map as HTML email"
               style={{
                 padding: '10px',
                 background: '#10b981',
@@ -284,6 +356,7 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
 
             <button
               onClick={handleExportTemplate}
+              aria-label="Export email template"
               style={{
                 padding: '10px',
                 background: '#8b5cf6',
@@ -305,6 +378,7 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
 
             <button
               onClick={handleCopySignature}
+              aria-label="Copy email signature to clipboard"
               style={{
                 padding: '10px',
                 background: '#f59e0b',
@@ -326,6 +400,7 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
 
             <button
               onClick={handleWeeklyDigest}
+              aria-label="Generate weekly digest and copy to clipboard"
               style={{
                 padding: '10px',
                 background: '#ec4899',
@@ -360,13 +435,21 @@ export default function EmailIntegrationPanel({ visible, onClose, tree }: EmailI
         >
           <strong>Email Formats:</strong>
           <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-            <li><strong>Summary:</strong> Quick overview with stats</li>
-            <li><strong>Detailed:</strong> Full tree structure</li>
-            <li><strong>Bullet Points:</strong> Concise list format</li>
-            <li><strong>Newsletter:</strong> Styled newsletter format</li>
+            <li>
+              <strong>Summary:</strong> Quick overview with stats
+            </li>
+            <li>
+              <strong>Detailed:</strong> Full tree structure
+            </li>
+            <li>
+              <strong>Bullet Points:</strong> Concise list format
+            </li>
+            <li>
+              <strong>Newsletter:</strong> Styled newsletter format
+            </li>
           </ul>
         </div>
       </div>
     </div>
-  );
+  )
 }

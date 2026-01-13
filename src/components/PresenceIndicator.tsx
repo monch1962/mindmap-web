@@ -1,32 +1,31 @@
 interface User {
-  id: string;
-  name: string;
-  color: string;
-  cursor?: { x: number; y: number };
-  selectedNodeId?: string;
+  id: string
+  name: string
+  color: string
+  cursor?: { x: number; y: number }
+  selectedNodeId?: string
 }
 
 interface PresenceIndicatorProps {
-  users: User[];
-  currentUser: User;
+  users: User[]
+  currentUser: User
 }
 
-export default function PresenceIndicator({
-  users,
-  currentUser,
-}: PresenceIndicatorProps) {
-  const otherUsers = users.filter((u) => u.id !== currentUser.id);
+export default function PresenceIndicator({ users, currentUser }: PresenceIndicatorProps) {
+  const otherUsers = users.filter(u => u.id !== currentUser.id)
 
-  if (otherUsers.length === 0) return null;
+  if (otherUsers.length === 0) return null
 
   return (
     <>
       {/* User Cursors */}
       {otherUsers.map(
-        (user) =>
+        user =>
           user.cursor && (
             <div
               key={user.id}
+              role="img"
+              aria-label={`${user.name}'s cursor`}
               style={{
                 position: 'fixed',
                 left: user.cursor.x,
@@ -37,12 +36,7 @@ export default function PresenceIndicator({
               }}
             >
               {/* Cursor */}
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19138L11.7841 12.3673H5.65376Z"
                   fill={user.color}
@@ -74,6 +68,8 @@ export default function PresenceIndicator({
 
       {/* User List */}
       <div
+        role="region"
+        aria-labelledby="presence-title"
         style={{
           position: 'fixed',
           top: '20px',
@@ -88,6 +84,7 @@ export default function PresenceIndicator({
         }}
       >
         <h3
+          id="presence-title"
           style={{
             margin: '0 0 8px 0',
             fontSize: '12px',
@@ -97,10 +94,16 @@ export default function PresenceIndicator({
         >
           👥 Online ({users.length})
         </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {users.map((user) => (
+        <div
+          role="list"
+          aria-label="Online users"
+          style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+        >
+          {users.map(user => (
             <div
               key={user.id}
+              role="listitem"
+              aria-label={`${user.name}${user.id === currentUser.id ? ' (you)' : ''}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -116,6 +119,7 @@ export default function PresenceIndicator({
                   background: user.color,
                   animation: 'pulse 2s ease-in-out infinite',
                 }}
+                aria-hidden="true"
               />
               <span style={{ flex: 1 }}>{user.name}</span>
               {user.id === currentUser.id && (
@@ -148,5 +152,5 @@ export default function PresenceIndicator({
         }
       `}</style>
     </>
-  );
+  )
 }
