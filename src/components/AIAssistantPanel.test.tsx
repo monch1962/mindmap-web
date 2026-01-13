@@ -1,19 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import AIAssistantPanel from './AIAssistantPanel';
-import type { MindMapTree } from '../types';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import AIAssistantPanel from './AIAssistantPanel'
 
 // Mock fetch for API calls
-global.fetch = vi.fn();
+global.fetch = vi.fn()
 
 function createMockFetch(response: string) {
-  return vi.fn(() =>
-    Promise.resolve({
-      ok: true,
-      json: async () => ({ choices: [{ message: { content: response } }] }),
-    }) as Response
-  );
+  return vi.fn(
+    () =>
+      Promise.resolve({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: response } }] }),
+      }) as Response
+  )
 }
 
 describe('AIAssistantPanel', () => {
@@ -24,317 +24,326 @@ describe('AIAssistantPanel', () => {
     onSuggestIdeas: vi.fn(),
     onSummarizeBranch: vi.fn(),
     selectedNodeId: null,
-  };
+  }
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    localStorage.clear();
-  });
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
 
   it('should not render when visible is false', () => {
-    const { container } = render(<AIAssistantPanel {...defaultProps} visible={false} />);
+    const { container } = render(<AIAssistantPanel {...defaultProps} visible={false} />)
 
-    expect(container.firstChild).toBe(null);
-  });
+    expect(container.firstChild).toBe(null)
+  })
 
   it('should render AI assistant panel when visible', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('🤖')).toBeInTheDocument();
-    expect(screen.getByText('AI Assistant')).toBeInTheDocument();
-  });
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('🤖')).toBeInTheDocument()
+    expect(screen.getByText('AI Assistant')).toBeInTheDocument()
+  })
 
   it('should call onClose when close button is clicked', () => {
-    const handleClose = vi.fn();
-    render(<AIAssistantPanel {...defaultProps} onClose={handleClose} />);
+    const handleClose = vi.fn()
+    render(<AIAssistantPanel {...defaultProps} onClose={handleClose} />)
 
-    const closeButton = screen.getByLabelText('Close AI assistant panel');
-    fireEvent.click(closeButton);
+    const closeButton = screen.getByLabelText('Close AI assistant panel')
+    fireEvent.click(closeButton)
 
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
+    expect(handleClose).toHaveBeenCalledTimes(1)
+  })
 
   it('should render provider selector', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const selector = screen.getByLabelText('Select AI provider');
-    expect(selector).toBeInTheDocument();
+    const selector = screen.getByLabelText('Select AI provider')
+    expect(selector).toBeInTheDocument()
 
-    expect(screen.getByText('Select Provider...')).toBeInTheDocument();
-    expect(screen.getByText('OpenAI (GPT-4)')).toBeInTheDocument();
-    expect(screen.getByText('Anthropic (Claude)')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Select Provider...')).toBeInTheDocument()
+    expect(screen.getByText('OpenAI (GPT-4)')).toBeInTheDocument()
+    expect(screen.getByText('Anthropic (Claude)')).toBeInTheDocument()
+  })
 
   it('should show API key input when provider is selected', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const selector = screen.getByLabelText('Select AI provider');
-    fireEvent.change(selector, { target: { value: 'openai' } });
+    const selector = screen.getByLabelText('Select AI provider')
+    fireEvent.change(selector, { target: { value: 'openai' } })
 
-    expect(screen.getByLabelText('Enter your API key for the selected AI provider')).toBeInTheDocument();
-  });
+    expect(
+      screen.getByLabelText('Enter your API key for the selected AI provider')
+    ).toBeInTheDocument()
+  })
 
   it('should store API key and provider in localStorage', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const selector = screen.getByLabelText('Select AI provider');
-    fireEvent.change(selector, { target: { value: 'openai' } });
+    const selector = screen.getByLabelText('Select AI provider')
+    fireEvent.change(selector, { target: { value: 'openai' } })
 
-    const apiKeyInput = screen.getByLabelText('Enter your API key for the selected AI provider');
-    fireEvent.change(apiKeyInput, { target: { value: 'test-api-key' } });
+    const apiKeyInput = screen.getByLabelText('Enter your API key for the selected AI provider')
+    fireEvent.change(apiKeyInput, { target: { value: 'test-api-key' } })
 
-    expect(localStorage.getItem('ai_provider')).toBe('openai');
-    expect(localStorage.getItem('ai_api_key')).toBe('test-api-key');
-  });
+    expect(localStorage.getItem('ai_provider')).toBe('openai')
+    expect(localStorage.getItem('ai_api_key')).toBe('test-api-key')
+  })
 
   it('should render quick actions when API key is set', () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} selectedNodeId="1" />)
 
-    expect(screen.getByLabelText(/Generate ideas for selected node/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Summarize branch for selected node/)).toBeInTheDocument();
-  });
+    expect(screen.getByLabelText(/Generate ideas for selected node/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Summarize branch for selected node/)).toBeInTheDocument()
+  })
 
   it('should disable quick actions when no node is selected', () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
-    render(<AIAssistantPanel {...defaultProps} selectedNodeId={null} />);
+    render(<AIAssistantPanel {...defaultProps} selectedNodeId={null} />)
 
-    const ideasButton = screen.getByLabelText(/Select a node to generate ideas/);
-    const summarizeButton = screen.getByLabelText(/Select a node to summarize branch/);
+    const ideasButton = screen.getByLabelText(/Select a node to generate ideas/)
+    const summarizeButton = screen.getByLabelText(/Select a node to summarize branch/)
 
-    expect(ideasButton).toBeDisabled();
-    expect(summarizeButton).toBeDisabled();
-  });
+    expect(ideasButton).toBeDisabled()
+    expect(summarizeButton).toBeDisabled()
+  })
 
   it('should enable quick actions when node is selected', () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
-    render(<AIAssistantPanel {...defaultProps} selectedNodeId="1" />);
+    render(<AIAssistantPanel {...defaultProps} selectedNodeId="1" />)
 
-    const ideasButton = screen.getByLabelText(/Generate ideas for selected node/);
-    const summarizeButton = screen.getByLabelText(/Summarize branch for selected node/);
+    const ideasButton = screen.getByLabelText(/Generate ideas for selected node/)
+    const summarizeButton = screen.getByLabelText(/Summarize branch for selected node/)
 
-    expect(ideasButton).not.toBeDisabled();
-    expect(summarizeButton).not.toBeDisabled();
-  });
+    expect(ideasButton).not.toBeDisabled()
+    expect(summarizeButton).not.toBeDisabled()
+  })
 
   it('should call onSuggestIdeas when ideas button is clicked', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
-    global.fetch = createMockFetch('Idea 1\nIdea 2\nIdea 3');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
+    global.fetch = createMockFetch('Idea 1\nIdea 2\nIdea 3')
 
-    const handleSuggestIdeas = vi.fn();
+    const handleSuggestIdeas = vi.fn()
     render(
       <AIAssistantPanel {...defaultProps} selectedNodeId="1" onSuggestIdeas={handleSuggestIdeas} />
-    );
+    )
 
-    const ideasButton = screen.getByLabelText(/Generate ideas for selected node/);
-    await userEvent.click(ideasButton);
+    const ideasButton = screen.getByLabelText(/Generate ideas for selected node/)
+    await userEvent.click(ideasButton)
 
     await waitFor(() => {
-      expect(handleSuggestIdeas).toHaveBeenCalledWith('1');
-    });
-  });
+      expect(handleSuggestIdeas).toHaveBeenCalledWith('1')
+    })
+  })
 
   it('should call onSummarizeBranch when summarize button is clicked', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
-    global.fetch = createMockFetch('Summary of the branch');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
+    global.fetch = createMockFetch('Summary of the branch')
 
-    const handleSummarizeBranch = vi.fn();
+    const handleSummarizeBranch = vi.fn()
     render(
-      <AIAssistantPanel {...defaultProps} selectedNodeId="1" onSummarizeBranch={handleSummarizeBranch} />
-    );
+      <AIAssistantPanel
+        {...defaultProps}
+        selectedNodeId="1"
+        onSummarizeBranch={handleSummarizeBranch}
+      />
+    )
 
-    const summarizeButton = screen.getByLabelText(/Summarize branch for selected node/);
-    await userEvent.click(summarizeButton);
+    const summarizeButton = screen.getByLabelText(/Summarize branch for selected node/)
+    await userEvent.click(summarizeButton)
 
     await waitFor(() => {
-      expect(handleSummarizeBranch).toHaveBeenCalledWith('1');
-    });
-  });
+      expect(handleSummarizeBranch).toHaveBeenCalledWith('1')
+    })
+  })
 
   it('should render generate mind map section', () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    expect(screen.getByLabelText('Enter topic or text to generate mind map from')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Generate mind map from text/)).toBeInTheDocument();
-  });
+    expect(
+      screen.getByLabelText('Enter topic or text to generate mind map from')
+    ).toBeInTheDocument()
+    expect(screen.getByText('Generate Mind Map from Text')).toBeInTheDocument()
+  })
 
   it('should call onGenerateMindMap when text is submitted', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
-    global.fetch = createMockFetch('Root\n  Child 1\n  Child 2');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
+    global.fetch = createMockFetch('Root\n  Child 1\n  Child 2')
 
-    const handleGenerate = vi.fn();
-    render(
-      <AIAssistantPanel {...defaultProps} onGenerateMindMap={handleGenerate} />
-    );
+    const handleGenerate = vi.fn()
+    render(<AIAssistantPanel {...defaultProps} onGenerateMindMap={handleGenerate} />)
 
-    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from');
-    await userEvent.type(textarea, 'Create a project plan');
+    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from')
+    await userEvent.type(textarea, 'Create a project plan')
 
-    const generateButton = screen.getByLabelText(/Generate mind map from text/);
-    await userEvent.click(generateButton);
+    const generateButton = screen.getByLabelText(/Generate mind map from text/)
+    await userEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(handleGenerate).toHaveBeenCalled();
-    });
-  });
+      expect(handleGenerate).toHaveBeenCalled()
+    })
+  })
 
   it('should display AI response', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
-    global.fetch = createMockFetch('AI response text');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
+    global.fetch = createMockFetch('AI response text')
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from');
-    await userEvent.type(textarea, 'Test prompt');
+    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from')
+    await userEvent.type(textarea, 'Test prompt')
 
-    const generateButton = screen.getByLabelText(/Generate mind map from text/);
-    await userEvent.click(generateButton);
+    const generateButton = screen.getByLabelText(/Generate mind map from text/)
+    await userEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText('AI response text')).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('AI response text')).toBeInTheDocument()
+    })
+  })
 
   it('should disable generate button when prompt is empty', () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const generateButton = screen.getByLabelText(/Enter text to generate mind map/);
-    expect(generateButton).toBeDisabled();
-  });
+    const generateButton = screen.getByRole('button', { name: /Enter text to generate mind map/ })
+    expect(generateButton).toBeDisabled()
+  })
 
   it('should show loading state during generation', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
 
     // Mock a delayed response
-    global.fetch = vi.fn(() =>
-      new Promise(resolve => {
-        setTimeout(() => {
-          resolve({
-            ok: true,
-            json: async () => ({ choices: [{ message: { content: 'Response' } }] }),
-          } as Response);
-        }, 100);
-      })
-    );
+    global.fetch = vi.fn(
+      () =>
+        new Promise(resolve => {
+          setTimeout(() => {
+            resolve({
+              ok: true,
+              json: async () => ({ choices: [{ message: { content: 'Response' } }] }),
+            } as Response)
+          }, 100)
+        })
+    )
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from');
-    await userEvent.type(textarea, 'Test prompt');
+    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from')
+    await userEvent.type(textarea, 'Test prompt')
 
-    const generateButton = screen.getByLabelText(/Generate mind map from text/);
-    await userEvent.click(generateButton);
+    const generateButton = screen.getByLabelText(/Generate mind map from text/)
+    await userEvent.click(generateButton)
 
     // Check for loading state
-    expect(screen.getByText(/⏳ Generating.../)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/⏳ Generating.../)).toBeInTheDocument()
+  })
 
   it('should have proper accessibility attributes', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'ai-assistant-title');
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true')
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'ai-assistant-title')
 
-    const title = screen.getByText('AI Assistant');
-    expect(title).toHaveAttribute('id', 'ai-assistant-title');
-  });
+    const title = screen.getByText('AI Assistant')
+    expect(title).toHaveAttribute('id', 'ai-assistant-title')
+  })
 
   it('should have privacy note for API key', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
     // Select a provider to show the API key input
-    const selector = screen.getByLabelText('Select AI provider');
-    fireEvent.change(selector, { target: { value: 'openai' } });
+    const selector = screen.getByLabelText('Select AI provider')
+    fireEvent.change(selector, { target: { value: 'openai' } })
 
-    expect(screen.getByText(/🔒 Your API key is stored locally/)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/🔒 Your API key is stored locally/)).toBeInTheDocument()
+  })
 
   it('should handle fetch errors gracefully', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         json: async () => ({ error: { message: 'Invalid API key' } }),
       } as Response)
-    );
+    )
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from');
-    await userEvent.type(textarea, 'Test prompt');
+    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from')
+    await userEvent.type(textarea, 'Test prompt')
 
-    const generateButton = screen.getByLabelText(/Generate mind map from text/);
-    await userEvent.click(generateButton);
+    const generateButton = screen.getByLabelText(/Generate mind map from text/)
+    await userEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/Error:/)).toBeInTheDocument()
+    })
+  })
 
   it('should switch provider correctly', () => {
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const selector = screen.getByLabelText('Select AI provider');
+    const selector = screen.getByLabelText('Select AI provider')
 
     // Switch to Anthropic
-    fireEvent.change(selector, { target: { value: 'anthropic' } });
-    expect(selector).toHaveValue('anthropic');
-    expect(localStorage.getItem('ai_provider')).toBe('anthropic');
+    fireEvent.change(selector, { target: { value: 'anthropic' } })
+    expect(selector).toHaveValue('anthropic')
+    expect(localStorage.getItem('ai_provider')).toBe('anthropic')
 
     // Switch to OpenAI
-    fireEvent.change(selector, { target: { value: 'openai' } });
-    expect(selector).toHaveValue('openai');
-    expect(localStorage.getItem('ai_provider')).toBe('openai');
-  });
+    fireEvent.change(selector, { target: { value: 'openai' } })
+    expect(selector).toHaveValue('openai')
+    expect(localStorage.getItem('ai_provider')).toBe('openai')
+  })
 
   it('should clear response on new generation', async () => {
-    localStorage.setItem('ai_api_key', 'test-key');
-    localStorage.setItem('ai_provider', 'openai');
-    global.fetch = createMockFetch('First response');
+    localStorage.setItem('ai_api_key', 'test-key')
+    localStorage.setItem('ai_provider', 'openai')
+    global.fetch = createMockFetch('First response')
 
-    render(<AIAssistantPanel {...defaultProps} />);
+    render(<AIAssistantPanel {...defaultProps} />)
 
-    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from');
+    const textarea = screen.getByLabelText('Enter topic or text to generate mind map from')
 
     // First generation
-    await userEvent.type(textarea, 'First prompt');
-    const generateButton = screen.getByLabelText(/Generate mind map from text/);
-    await userEvent.click(generateButton);
+    await userEvent.type(textarea, 'First prompt')
+    const generateButton = screen.getByLabelText(/Generate mind map from text/)
+    await userEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText('First response')).toBeInTheDocument();
-    });
+      expect(screen.getByText('First response')).toBeInTheDocument()
+    })
 
     // Change response for second generation
-    (global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(createMockFetch('Second response'));
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      createMockFetch('Second response')
+    )
 
     // Second generation
-    await userEvent.clear(textarea);
-    await userEvent.type(textarea, 'Second prompt');
-    await userEvent.click(generateButton);
+    await userEvent.clear(textarea)
+    await userEvent.type(textarea, 'Second prompt')
+    await userEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Second response')).toBeInTheDocument();
-      expect(screen.queryByText('First response')).not.toBeInTheDocument();
-    });
-  });
-});
+      expect(screen.getByText('Second response')).toBeInTheDocument()
+      expect(screen.queryByText('First response')).not.toBeInTheDocument()
+    })
+  })
+})
