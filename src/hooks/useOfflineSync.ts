@@ -325,6 +325,7 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
     forceReload,
     clearCache,
     getCacheSize,
+    checkPendingSync,
     syncOfflineRequestsNow,
     storeOfflineData,
     getOfflineData,
