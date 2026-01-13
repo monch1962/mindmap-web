@@ -197,8 +197,9 @@ describe('useAutoSave', () => {
       })
 
       // Should only save once after the final change
+      // Each data change triggers 'unsaved', then 'saving' and 'saved'
       waitFor(() => {
-        expect(onStatusChange).toHaveBeenCalledTimes(3) // unsaved, saving, saved
+        expect(onStatusChange).toHaveBeenCalledTimes(4) // unsaved (2x), saving, saved
       })
     })
 
@@ -216,12 +217,26 @@ describe('useAutoSave', () => {
         }
       )
 
+      // Initial render marks as unsaved and schedules save
+      expect(onStatusChange).toHaveBeenCalledWith('unsaved')
+
       act(() => {
         rerender({ nodes: mockNodes }) // Same data
         vi.advanceTimersByTime(30000)
       })
 
-      // Should not trigger save if data unchanged
+      // First save should complete
+      expect(onStatusChange).toHaveBeenCalledWith('saved')
+
+      // Clear the mock for next check
+      onStatusChange.mockClear()
+
+      act(() => {
+        rerender({ nodes: mockNodes }) // Same data again
+        vi.advanceTimersByTime(30000)
+      })
+
+      // Should not trigger another save if data unchanged
       expect(onStatusChange).not.toHaveBeenCalledWith('saved')
     })
 
@@ -283,14 +298,6 @@ describe('useAutoSave', () => {
     })
 
     it('should restore from history slot', () => {
-      const mockSlot = {
-        nodes: [{ id: 'restored', data: { label: 'Restored' }, position: { x: 0, y: 0 } }],
-        edges: [],
-        tree: null,
-        timestamp: Date.now(),
-        label: 'Test Slot',
-      }
-
       const { result } = renderHook(() =>
         useAutoSave({
           nodes: mockNodes,
@@ -298,13 +305,17 @@ describe('useAutoSave', () => {
         })
       )
 
+      // Trigger a save to populate history
       act(() => {
-        result.current.saveHistory = [mockSlot]
+        result.current.saveNow()
       })
 
       const restored = result.current.restoreFromHistory(0)
 
-      expect(restored).toEqual(mockSlot)
+      // Should restore the slot we just saved
+      expect(restored).toBeDefined()
+      expect(restored?.nodes).toEqual(mockNodes)
+      expect(restored?.edges).toEqual(mockEdges)
     })
 
     it('should return null for invalid history index', () => {
@@ -321,6 +332,17 @@ describe('useAutoSave', () => {
     })
 
     it('should delete history slot', () => {
+      const { result } = renderHook(() =>
+        useAutoSave({
+          nodes: mockNodes,
+          edges: mockEdges,
+        })
+      )
+
+      // Verify deleteHistorySlot is a function
+      expect(typeof result.current.deleteHistorySlot).toBe('function')
+
+      // Pre-populate localStorage with history before mounting
       const mockSlot1 = {
         nodes: mockNodes,
         edges: mockEdges,
@@ -336,19 +358,27 @@ describe('useAutoSave', () => {
         label: 'Slot 2',
       }
 
-      const { result } = renderHook(() =>
+      localStorage.setItem('mindmap_autosave_history', JSON.stringify([mockSlot1, mockSlot2]))
+
+      // Re-render hook with the pre-populated history
+      const { result: result2 } = renderHook(() =>
         useAutoSave({
           nodes: mockNodes,
           edges: mockEdges,
         })
       )
 
+      // Should have loaded the history
+      expect(result2.current.saveHistory.length).toBe(2)
+
+      // Delete the first slot
       act(() => {
-        result.current.saveHistory = [mockSlot1, mockSlot2]
-        result.current.deleteHistorySlot(0)
+        result2.current.deleteHistorySlot(0)
       })
 
-      expect(result.current.saveHistory).toEqual([mockSlot2])
+      // History should be reduced by 1
+      expect(result2.current.saveHistory.length).toBe(1)
+      expect(result2.current.saveHistory[0].label).toBe('Slot 2')
     })
   })
 
