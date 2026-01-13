@@ -3,24 +3,25 @@
  * Allows external services to create/modify mind maps
  */
 
-import type { MindMapTree } from '../types';
+import type { MindMapTree } from '../types'
+import { trackError } from './errorTracking'
 
 export interface WebhookPayload {
-  action: 'create' | 'update' | 'add_node';
+  action: 'create' | 'update' | 'add_node'
   data: {
-    parentId?: string;
-    content: string;
-    metadata?: Record<string, unknown>;
-  };
-  source: 'zapier' | 'make' | 'ifft' | 'custom';
-  timestamp: number;
+    parentId?: string
+    content: string
+    metadata?: Record<string, unknown>
+  }
+  source: 'zapier' | 'make' | 'ifft' | 'custom'
+  timestamp: number
 }
 
 export interface WebhookConfig {
-  enabled: boolean;
-  webhookUrl: string;
-  apiKey: string;
-  lastTriggered?: number;
+  enabled: boolean
+  webhookUrl: string
+  apiKey: string
+  lastTriggered?: number
 }
 
 /**
@@ -29,30 +30,30 @@ export interface WebhookConfig {
 export function generateWebhookEndpoint(apiKey: string): string {
   // In a real implementation, this would be your server's endpoint
   // For client-side only, we return a webhook URL that users can configure
-  const baseUrl = window.location.origin;
-  return `${baseUrl}/api/webhook/${apiKey}`;
+  const baseUrl = window.location.origin
+  return `${baseUrl}/api/webhook/${apiKey}`
 }
 
 /**
  * Register webhook configuration
  */
 export function registerWebhook(config: WebhookConfig): void {
-  localStorage.setItem('mindmap_webhook_config', JSON.stringify(config));
+  localStorage.setItem('mindmap_webhook_config', JSON.stringify(config))
 }
 
 /**
  * Get webhook configuration
  */
 export function getWebhookConfig(): WebhookConfig | null {
-  const config = localStorage.getItem('mindmap_webhook_config');
+  const config = localStorage.getItem('mindmap_webhook_config')
   if (config) {
     try {
-      return JSON.parse(config);
+      return JSON.parse(config)
     } catch {
-      return null;
+      return null
     }
   }
-  return null;
+  return null
 }
 
 /**
@@ -74,7 +75,7 @@ export async function triggerWebhook(
         url: window.location.href,
       },
       apiKey,
-    };
+    }
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -83,12 +84,13 @@ export async function triggerWebhook(
         'X-API-Key': apiKey,
       },
       body: JSON.stringify(payload),
-    });
+    })
 
-    return response.ok;
+    return response.ok
   } catch (error) {
-    console.error('Webhook trigger failed:', error);
-    return false;
+    trackError(error instanceof Error ? error : new Error(String(error)), 'triggerWebhook')
+    console.error('Webhook trigger failed:', error)
+    return false
   }
 }
 
@@ -97,10 +99,10 @@ export async function triggerWebhook(
  * This would be called by your backend endpoint
  */
 export function processWebhookPayload(payload: WebhookPayload): {
-  nodeId: string;
-  content: string;
-  parentId?: string;
-  metadata?: Record<string, unknown>;
+  nodeId: string
+  content: string
+  parentId?: string
+  metadata?: Record<string, unknown>
 } {
   return {
     nodeId: `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -111,7 +113,7 @@ export function processWebhookPayload(payload: WebhookPayload): {
       source: payload.source,
       webhookTimestamp: payload.timestamp,
     },
-  };
+  }
 }
 
 /**
@@ -132,7 +134,7 @@ export function createZapierPayload(
     },
     source: 'zapier',
     timestamp: Date.now(),
-  };
+  }
 }
 
 /**
@@ -154,20 +156,20 @@ export function createMakePayload(
     },
     source: 'make',
     timestamp: Date.now(),
-  };
+  }
 }
 
 /**
  * Helper: Count total nodes in tree
  */
 function countNodes(tree: MindMapTree): number {
-  let count = 1;
+  let count = 1
   if (tree.children) {
     tree.children.forEach(child => {
-      count += countNodes(child);
-    });
+      count += countNodes(child)
+    })
   }
-  return count;
+  return count
 }
 
 /**
@@ -175,9 +177,9 @@ function countNodes(tree: MindMapTree): number {
  */
 function getTreeDepth(tree: MindMapTree): number {
   if (!tree.children || tree.children.length === 0) {
-    return 1;
+    return 1
   }
-  return 1 + Math.max(...tree.children.map(child => getTreeDepth(child)));
+  return 1 + Math.max(...tree.children.map(child => getTreeDepth(child)))
 }
 
 /**
@@ -196,7 +198,7 @@ export function generateTestPayload(): WebhookPayload {
     },
     source: 'zapier',
     timestamp: Date.now(),
-  };
+  }
 }
 
 /**
@@ -216,5 +218,5 @@ export function validateWebhookPayload(payload: unknown): payload is WebhookPayl
     typeof (payload as WebhookPayload).source === 'string' &&
     typeof (payload as WebhookPayload).timestamp === 'number' &&
     ['create', 'update', 'add_node'].includes((payload as WebhookPayload).action)
-  );
+  )
 }

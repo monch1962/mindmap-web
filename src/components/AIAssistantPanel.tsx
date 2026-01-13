@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react'
+import { trackError } from '../utils/errorTracking'
 
 interface AIAssistantPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  onGenerateMindMap: (text: string) => void;
-  onSuggestIdeas: (nodeId: string) => void;
-  onSummarizeBranch: (nodeId: string) => void;
-  selectedNodeId: string | null;
+  visible: boolean
+  onClose: () => void
+  onGenerateMindMap: (text: string) => void
+  onSuggestIdeas: (nodeId: string) => void
+  onSummarizeBranch: (nodeId: string) => void
+  selectedNodeId: string | null
 }
 
-type AIProvider = 'openai' | 'anthropic' | 'none';
+type AIProvider = 'openai' | 'anthropic' | 'none'
 
 export default function AIAssistantPanel({
   visible,
@@ -19,49 +20,55 @@ export default function AIAssistantPanel({
   onSummarizeBranch,
   selectedNodeId,
 }: AIAssistantPanelProps) {
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
-  const [provider, setProvider] = useState<AIProvider>(() => (localStorage.getItem('ai_provider') as AIProvider) || 'none');
-  const [prompt, setPrompt] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '')
+  const [provider, setProvider] = useState<AIProvider>(
+    () => (localStorage.getItem('ai_provider') as AIProvider) || 'none'
+  )
+  const [prompt, setPrompt] = useState('')
+  const [aiResponse, setAiResponse] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    localStorage.setItem('ai_api_key', apiKey);
-  }, [apiKey]);
+    localStorage.setItem('ai_api_key', apiKey)
+  }, [apiKey])
 
   useEffect(() => {
-    localStorage.setItem('ai_provider', provider);
-  }, [provider]);
+    localStorage.setItem('ai_provider', provider)
+  }, [provider])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [aiResponse]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [aiResponse])
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || !apiKey) return;
+    if (!prompt.trim() || !apiKey) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await fetchAIResponse(prompt, 'generate', provider, apiKey);
-      setAiResponse(response);
+      const response = await fetchAIResponse(prompt, 'generate', provider, apiKey)
+      setAiResponse(response)
 
       // Parse the response and generate mind map
-      const mindMapText = extractMindMapFromResponse(response);
+      const mindMapText = extractMindMapFromResponse(response)
       if (mindMapText) {
-        onGenerateMindMap(mindMapText);
+        onGenerateMindMap(mindMapText)
       }
     } catch (error) {
-      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      trackError(
+        error instanceof Error ? error : new Error(String(error)),
+        'AIAssistant-handleGenerate'
+      )
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSuggestIdeas = async () => {
-    if (!selectedNodeId || !apiKey) return;
+    if (!selectedNodeId || !apiKey) return
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
       const response = await fetchAIResponse(
@@ -69,20 +76,24 @@ export default function AIAssistantPanel({
         'suggest',
         provider,
         apiKey
-      );
-      setAiResponse(response);
-      onSuggestIdeas(selectedNodeId);
+      )
+      setAiResponse(response)
+      onSuggestIdeas(selectedNodeId)
     } catch (error) {
-      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      trackError(
+        error instanceof Error ? error : new Error(String(error)),
+        'AIAssistant-handleSuggestIdeas'
+      )
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSummarize = async () => {
-    if (!selectedNodeId || !apiKey) return;
+    if (!selectedNodeId || !apiKey) return
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
       const response = await fetchAIResponse(
@@ -90,17 +101,21 @@ export default function AIAssistantPanel({
         'summarize',
         provider,
         apiKey
-      );
-      setAiResponse(response);
-      onSummarizeBranch(selectedNodeId);
+      )
+      setAiResponse(response)
+      onSummarizeBranch(selectedNodeId)
     } catch (error) {
-      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      trackError(
+        error instanceof Error ? error : new Error(String(error)),
+        'AIAssistant-handleSummarize'
+      )
+      setAiResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div
@@ -136,9 +151,7 @@ export default function AIAssistantPanel({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>🤖</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-            AI Assistant
-          </h2>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>AI Assistant</h2>
         </div>
         <button
           onClick={onClose}
@@ -160,12 +173,14 @@ export default function AIAssistantPanel({
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* API Key Input */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             AI Provider
           </label>
           <select
             value={provider}
-            onChange={(e) => setProvider(e.target.value as AIProvider)}
+            onChange={e => setProvider(e.target.value as AIProvider)}
             style={{
               width: '100%',
               padding: '8px',
@@ -182,13 +197,20 @@ export default function AIAssistantPanel({
 
           {provider !== 'none' && (
             <>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  marginBottom: '4px',
+                }}
+              >
                 API Key
               </label>
               <input
                 type="password"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={e => setApiKey(e.target.value)}
                 placeholder="Enter your API key..."
                 style={{
                   width: '100%',
@@ -208,7 +230,14 @@ export default function AIAssistantPanel({
         {/* Quick Actions */}
         {provider !== 'none' && apiKey && (
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+              }}
+            >
               Quick Actions
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -257,12 +286,19 @@ export default function AIAssistantPanel({
         {/* Generate Mind Map */}
         {provider !== 'none' && apiKey && (
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+              }}
+            >
               Generate Mind Map from Text
             </label>
             <textarea
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={e => setPrompt(e.target.value)}
               placeholder="Enter a topic or paste text to generate a mind map..."
               style={{
                 width: '100%',
@@ -317,7 +353,7 @@ export default function AIAssistantPanel({
         <div ref={messagesEndRef} />
       </div>
     </div>
-  );
+  )
 }
 
 // Helper functions
@@ -339,16 +375,16 @@ Root Topic
     suggest: `You are a creative brainstorming assistant. Generate 5 creative, relevant ideas related to the user's topic.
 Each idea should be concise (1-2 sentences) and actionable.`,
     summarize: `You are a summarization expert. Create a clear, concise summary of the provided content.`,
-  };
+  }
 
-  const systemMessage = systemPrompt[mode as keyof typeof systemPrompt] || systemPrompt.generate;
+  const systemMessage = systemPrompt[mode as keyof typeof systemPrompt] || systemPrompt.generate
 
   if (provider === 'openai') {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'gpt-4',
@@ -358,15 +394,15 @@ Each idea should be concise (1-2 sentences) and actionable.`,
         ],
         temperature: 0.7,
       }),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'API request failed');
+      const error = await response.json()
+      throw new Error(error.error?.message || 'API request failed')
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || 'No response';
+    const data = await response.json()
+    return data.choices[0]?.message?.content || 'No response'
   } else if (provider === 'anthropic') {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -379,26 +415,24 @@ Each idea should be concise (1-2 sentences) and actionable.`,
         model: 'claude-3-sonnet-20240229',
         max_tokens: 1024,
         system: systemMessage,
-        messages: [
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: 'user', content: prompt }],
       }),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'API request failed');
+      const error = await response.json()
+      throw new Error(error.error?.message || 'API request failed')
     }
 
-    const data = await response.json();
-    return data.content[0]?.text || 'No response';
+    const data = await response.json()
+    return data.content[0]?.text || 'No response'
   }
 
-  throw new Error('No AI provider selected');
+  throw new Error('No AI provider selected')
 }
 
 function extractMindMapFromResponse(response: string): string {
   // Extract the mind map structure from AI response
-  const lines = response.split('\n').filter(line => line.trim());
-  return lines.join('\n');
+  const lines = response.split('\n').filter(line => line.trim())
+  return lines.join('\n')
 }

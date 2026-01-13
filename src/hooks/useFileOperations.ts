@@ -16,6 +16,7 @@ import {
   parseYaml,
 } from '../utils/formats'
 import { exportToPDF, exportToPowerPoint, createPresentation } from '../utils/enhancedExports'
+import { trackError } from '../utils/errorTracking'
 
 export type FileExportFormat =
   | 'json'
@@ -141,7 +142,7 @@ export function useFileOperations({
                 ? '.yaml,.yml'
                 : '.md'
 
-      input.onchange = async (e) => {
+      input.onchange = async e => {
         const file = (e.target as HTMLInputElement).files?.[0]
         if (!file) return
 
@@ -174,6 +175,10 @@ export function useFileOperations({
           // Fit view to show all nodes after a short delay to ensure rendering
           setTimeout(() => fitView({ padding: 0.2 }), 100)
         } catch (error) {
+          trackError(
+            error instanceof Error ? error : new Error(String(error)),
+            `loadFromFile-${format}`
+          )
           alert(`Error loading file: ${error}`)
         }
       }
