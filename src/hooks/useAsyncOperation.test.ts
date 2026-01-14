@@ -39,7 +39,6 @@ describe('useAsyncOperation', () => {
     await act(async () => {
       try {
         await result.current.execute(mockOperation, 'TestContext')
-         
       } catch {
         // Expected to throw
       }
@@ -133,7 +132,6 @@ describe('useAsyncOperation', () => {
 
     await act(async () => {
       try {
-         
         await result.current.execute(syncOperation, 'TestContext')
       } catch {
         // Expected to throw
@@ -149,8 +147,8 @@ describe('useAsyncOperation', () => {
 
     const slowOperation = vi.fn(
       () =>
-        new Promise<void>(resolve => {
-          resolveOperation = resolve
+        new Promise<void>(() => {
+          // Never resolves - keeps operation in loading state
         })
     )
 
@@ -164,7 +162,6 @@ describe('useAsyncOperation', () => {
     const secondOperation = vi.fn().mockResolvedValue(undefined)
 
     await act(async () => {
-       
       try {
         await result.current.execute(secondOperation, 'TestContext')
       } catch {
@@ -182,7 +179,7 @@ describe('useAsyncOperation', () => {
     const successOperation = vi.fn().mockResolvedValue('success')
 
     // First operation fails
-     
+
     await act(async () => {
       try {
         await result.current.execute(failOperation, 'TestContext')
