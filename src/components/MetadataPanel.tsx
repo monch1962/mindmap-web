@@ -24,6 +24,8 @@ export default function MetadataPanel({
   onUpdateIcon,
   onUpdateCloud,
 }: MetadataPanelProps) {
+  // Local state is initialized from props and updated only on save
+  // The component is re-mounted when nodeId changes (via key prop in parent)
   const [url, setUrl] = useState(metadata?.url || '')
   const [description, setDescription] = useState(metadata?.description || '')
   const [notes, setNotes] = useState(metadata?.notes || '')
@@ -35,22 +37,6 @@ export default function MetadataPanel({
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [cloudColor, setCloudColor] = useState(cloud?.color || '#f0f9ff')
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Local state is initialized from props and updated only on save
-  // The component is re-mounted when nodeId changes (via key prop in parent)
-  const urlState = useState(metadata?.url || '')
-  const descriptionState = useState(metadata?.description || '')
-  const notesState = useState(metadata?.notes || '')
-  const tagsState = useState(metadata?.tags?.join(', ') || '')
-  const attachmentsState = useState<FileAttachment[]>(metadata?.attachments || [])
-  const cloudColorState = useState(cloud?.color || '#f0f9ff')
-
-  const [url, setUrl] = urlState
-  const [description, setDescription] = descriptionState
-  const [notes, setNotes] = notesState
-  const [tags, setTags] = tagsState
-  const [attachments, setAttachments] = attachmentsState
-  const [cloudColor, setCloudColor] = cloudColorState
 
   const handleSave = () => {
     const updatedMetadata: NodeMetadata = {}
