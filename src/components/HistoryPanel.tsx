@@ -42,6 +42,7 @@ export default function HistoryPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-panel-title"
+      aria-label="History panel"
       style={{
         position: 'fixed',
         top: '50%',

@@ -1128,6 +1128,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               <button
                 onClick={saveNow}
                 title="Save now (Ctrl+S)"
+                aria-label="Save now"
                 style={{
                   padding: '4px 8px',
                   background: '#f3f4f6',
@@ -1143,6 +1144,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               <button
                 onClick={() => setShowSaveHistory(true)}
                 title="View save history (Ctrl+H)"
+                aria-label="Show save history"
                 style={{
                   padding: '4px 8px',
                   background: '#f3f4f6',
@@ -1183,6 +1185,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             onClick={handleUndo}
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
+            aria-label="Undo"
             style={{
               width: '32px',
               height: '32px',
@@ -1203,6 +1206,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             onClick={handleRedo}
             disabled={!canRedo}
             title="Redo (Ctrl+Y)"
+            aria-label="Redo"
             style={{
               width: '32px',
               height: '32px',
@@ -1222,6 +1226,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           <button
             onClick={() => setShowHistoryPanel(true)}
             title="History (Ctrl+Shift+H)"
+            aria-label="Show history"
             style={{
               width: '32px',
               height: '32px',
@@ -1240,6 +1245,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           <button
             onClick={() => zoomIn()}
             title="Zoom In (Ctrl +)"
+            aria-label="Zoom in"
             style={{
               width: '32px',
               height: '32px',
@@ -1258,6 +1264,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           <button
             onClick={() => zoomOut()}
             title="Zoom Out (Ctrl -)"
+            aria-label="Zoom out"
             style={{
               width: '32px',
               height: '32px',
@@ -1276,6 +1283,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           <button
             onClick={() => fitView()}
             title="Fit View (Ctrl 0)"
+            aria-label="Fit view"
             style={{
               width: '32px',
               height: '32px',
@@ -1301,6 +1309,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
                 setCurrentTheme(getEffectiveTheme())
               }}
               title="Toggle dark mode (Ctrl+Shift+D)"
+              aria-label="Toggle dark mode"
               style={{
                 padding: '8px 12px',
                 background: currentTheme === 'dark' ? '#1e293b' : '#f3f4f6',
@@ -1320,50 +1329,90 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
               {currentTheme === 'dark' ? 'Light' : 'Dark'}
             </button>
             <hr />
-            <button onClick={() => createChildNode(nodes[0]?.id || generateId())}>
+            <button
+              onClick={() => createChildNode(nodes[0]?.id || generateId())}
+              aria-label="Add node"
+            >
               + New Root
             </button>
             <hr />
             <div>
               <strong>Save As:</strong>
             </div>
-            <button onClick={() => saveToFile('json')}>JSON</button>
-            <button onClick={() => saveToFile('freemind')}>FreeMind (.mm)</button>
-            <button onClick={() => saveToFile('opml')}>OPML</button>
-            <button onClick={() => saveToFile('markdown')}>Markdown</button>
-            <button onClick={() => saveToFile('d2')}>D2</button>
-            <button onClick={() => saveToFile('yaml')}>YAML</button>
+            <button onClick={() => saveToFile('json')} aria-label="Save as JSON">
+              JSON
+            </button>
+            <button onClick={() => saveToFile('freemind')} aria-label="Save as FreeMind">
+              FreeMind (.mm)
+            </button>
+            <button onClick={() => saveToFile('opml')} aria-label="Save as OPML">
+              OPML
+            </button>
+            <button onClick={() => saveToFile('markdown')} aria-label="Save as Markdown">
+              Markdown
+            </button>
+            <button onClick={() => saveToFile('d2')} aria-label="Save as D2">
+              D2
+            </button>
+            <button onClick={() => saveToFile('yaml')} aria-label="Save as YAML">
+              YAML
+            </button>
             <hr />
             <div>
               <strong>Enhanced Exports:</strong>
             </div>
-            <button onClick={() => saveToFile('pdf')}>PDF (Print)</button>
-            <button onClick={() => saveToFile('powerpoint')}>PowerPoint</button>
-            <button onClick={() => saveToFile('presentation')}>Presentation</button>
-            <button onClick={() => downloadMarkdown(flowToTree(nodes, edges)!, 'notion.md')}>
+            <button onClick={() => saveToFile('pdf')} aria-label="Export as PDF">
+              PDF (Print)
+            </button>
+            <button onClick={() => saveToFile('powerpoint')} aria-label="Export as PowerPoint">
+              PowerPoint
+            </button>
+            <button onClick={() => saveToFile('presentation')} aria-label="Export as Presentation">
+              Presentation
+            </button>
+            <button
+              onClick={() => downloadMarkdown(flowToTree(nodes, edges)!, 'notion.md')}
+              aria-label="Export as Notion/Obsidian"
+            >
               Notion/Obsidian
             </button>
             <hr />
             <div>
               <strong>Export As Image:</strong>
             </div>
-            <button onClick={exportAsSVG}>SVG</button>
-            <button onClick={exportAsPNG}>PNG</button>
+            <button onClick={exportAsSVG} aria-label="Export as SVG">
+              SVG
+            </button>
+            <button onClick={exportAsPNG} aria-label="Export as PNG">
+              PNG
+            </button>
             <hr />
             <div>
               <strong>Load From:</strong>
             </div>
-            <button onClick={() => loadFromFile('json')}>JSON</button>
-            <button onClick={() => loadFromFile('freemind')}>FreeMind (.mm)</button>
-            <button onClick={() => loadFromFile('opml')}>OPML</button>
-            <button onClick={() => loadFromFile('markdown')}>Markdown</button>
-            <button onClick={() => loadFromFile('yaml')}>YAML</button>
+            <button onClick={() => loadFromFile('json')} aria-label="Load from JSON">
+              JSON
+            </button>
+            <button onClick={() => loadFromFile('freemind')} aria-label="Load from FreeMind">
+              FreeMind (.mm)
+            </button>
+            <button onClick={() => loadFromFile('opml')} aria-label="Load from OPML">
+              OPML
+            </button>
+            <button onClick={() => loadFromFile('markdown')} aria-label="Load from Markdown">
+              Markdown
+            </button>
+            <button onClick={() => loadFromFile('yaml')} aria-label="Load from YAML">
+              YAML
+            </button>
             <hr />
             <div>
               <strong>Cross-Links:</strong>
             </div>
             <button
               onClick={() => setCrossLinkMode(!crossLinkMode)}
+              aria-label="Toggle cross-link mode"
+              className={crossLinkMode ? 'active' : ''}
               style={{
                 background: crossLinkMode ? '#f59e0b' : '#f3f4f6',
                 color: crossLinkMode ? 'white' : '#374151',
@@ -1409,6 +1458,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             {selectedNodeId && (
               <button
                 onClick={() => setShowNotesPanel(!showNotesPanel)}
+                aria-label="Toggle notes panel"
                 style={{
                   marginTop: '8px',
                   padding: '4px 8px',
@@ -1425,6 +1475,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             )}
             <button
               onClick={() => setShowStatistics(true)}
+              aria-label="Show statistics"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1440,6 +1491,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             </button>
             <button
               onClick={() => setShowShortcuts(true)}
+              aria-label="Show keyboard shortcuts"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1455,6 +1507,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             </button>
             <button
               onClick={() => setShowAIAssistant(!showAIAssistant)}
+              aria-label="Toggle AI assistant"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1471,6 +1524,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowWebhookPanel(!showWebhookPanel)}
               title="Webhook Integration (Ctrl+Shift+W)"
+              aria-label="Toggle webhook panel"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1487,6 +1541,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowCalendarPanel(!showCalendarPanel)}
               title="Calendar Export (Ctrl+Shift+D)"
+              aria-label="Toggle calendar panel"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1503,6 +1558,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowEmailPanel(!showEmailPanel)}
               title="Email Integration (Ctrl+Shift+E)"
+              aria-label="Toggle email panel"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1519,6 +1575,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowPresentation(!showPresentation)}
               title="Presentation Mode (Ctrl+Shift+P)"
+              aria-label="Start presentation mode"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1535,6 +1592,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShow3DView(!show3DView)}
               title="3D View (Ctrl+Shift+3)"
+              aria-label="Toggle 3D view"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1551,6 +1609,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowTemplatesPanel(!showTemplatesPanel)}
               title="Templates (Ctrl+Shift+T)"
+              aria-label="Open templates panel"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',
@@ -1567,6 +1626,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button
               onClick={() => setShowThemeSettings(!showThemeSettings)}
               title="Theme Settings (Ctrl+Shift+;)"
+              aria-label="Toggle theme settings"
               style={{
                 marginTop: '4px',
                 padding: '4px 8px',

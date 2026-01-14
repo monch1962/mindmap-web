@@ -114,6 +114,7 @@ export default function StatisticsPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby="statistics-panel-title"
+      aria-label="Statistics panel"
       style={{
         position: 'fixed',
         top: '50%',

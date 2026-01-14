@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { ReactFlowProvider } from 'reactflow'
 import MindMapCanvas from './MindMapCanvas'
 import type { MindMapTree } from '../types'
@@ -120,6 +120,8 @@ vi.mock('../hooks/useUndoRedo', () => ({
     redo: vi.fn(),
     canUndo: false,
     canRedo: false,
+    getFullHistory: vi.fn(() => []),
+    jumpToHistory: vi.fn(),
   }),
 }))
 
@@ -204,7 +206,7 @@ describe('MindMapCanvas', () => {
   it('should display save button', () => {
     render(<MindMapCanvas initialData={mockTree} />, { wrapper })
 
-    expect(screen.getByLabelText(/Save/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Save now')).toBeInTheDocument()
   })
 
   it('should open metadata panel when node is selected', async () => {
@@ -291,7 +293,7 @@ describe('MindMapCanvas', () => {
   it('should support export to Markdown', () => {
     render(<MindMapCanvas initialData={mockTree} />, { wrapper })
 
-    expect(screen.getByLabelText('Export as Markdown')).toBeInTheDocument()
+    expect(screen.getByLabelText('Save as Markdown')).toBeInTheDocument()
   })
 
   it('should open templates panel', () => {
@@ -465,7 +467,7 @@ describe('MindMapCanvas', () => {
   it('should support file loading', () => {
     render(<MindMapCanvas initialData={mockTree} />, { wrapper })
 
-    const loadButton = screen.getByLabelText('Load from file')
+    const loadButton = screen.getByLabelText('Load from JSON')
     expect(loadButton).toBeInTheDocument()
   })
 

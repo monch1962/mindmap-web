@@ -1,17 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import type { NodeMetadata, FileAttachment } from '../types';
-import IconPicker from './IconPicker';
-import { getIconEmoji } from '../utils/icons';
+import { useState, useRef } from 'react'
+import type { NodeMetadata, FileAttachment } from '../types'
+import IconPicker from './IconPicker'
+import { getIconEmoji } from '../utils/icons'
 
 interface MetadataPanelProps {
-  nodeId: string | null;
-  nodeLabel: string;
-  metadata?: NodeMetadata;
-  icon?: string;
-  cloud?: { color?: string };
-  onUpdateMetadata: (metadata: NodeMetadata) => void;
-  onUpdateIcon?: (icon: string | null) => void;
-  onUpdateCloud?: (cloud: { color?: string } | null) => void;
+  nodeId: string | null
+  nodeLabel: string
+  metadata?: NodeMetadata
+  icon?: string
+  cloud?: { color?: string }
+  onUpdateMetadata: (metadata: NodeMetadata) => void
+  onUpdateIcon?: (icon: string | null) => void
+  onUpdateCloud?: (cloud: { color?: string } | null) => void
 }
 
 export default function MetadataPanel({
@@ -24,68 +24,69 @@ export default function MetadataPanel({
   onUpdateIcon,
   onUpdateCloud,
 }: MetadataPanelProps) {
-  const [url, setUrl] = useState(metadata?.url || '');
-  const [description, setDescription] = useState(metadata?.description || '');
-  const [notes, setNotes] = useState(metadata?.notes || '');
-  const [tags, setTags] = useState(metadata?.tags?.join(', ') || '');
-  const [attachments, setAttachments] = useState<FileAttachment[]>(metadata?.attachments || []);
-  const [showCodeInput, setShowCodeInput] = useState(false);
-  const [codeInput, setCodeInput] = useState('');
-  const [codeLanguage, setCodeLanguage] = useState('javascript');
-  const [showIconPicker, setShowIconPicker] = useState(false);
-  const [cloudColor, setCloudColor] = useState(cloud?.color || '#f0f9ff');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [url, setUrl] = useState(metadata?.url || '')
+  const [description, setDescription] = useState(metadata?.description || '')
+  const [notes, setNotes] = useState(metadata?.notes || '')
+  const [tags, setTags] = useState(metadata?.tags?.join(', ') || '')
+  const [attachments, setAttachments] = useState<FileAttachment[]>(metadata?.attachments || [])
+  const [showCodeInput, setShowCodeInput] = useState(false)
+  const [codeInput, setCodeInput] = useState('')
+  const [codeLanguage, setCodeLanguage] = useState('javascript')
+  const [showIconPicker, setShowIconPicker] = useState(false)
+  const [cloudColor, setCloudColor] = useState(cloud?.color || '#f0f9ff')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Reset local state when metadata changes (component is keyed by nodeId in parent)
-  /* eslint-disable-next-line react-hooks/set-state-in-effect */
-  useEffect(
-    () => {
-      setUrl(metadata?.url || '');
-      setDescription(metadata?.description || '');
-      setNotes(metadata?.notes || '');
-      setTags(metadata?.tags?.join(', ') || '');
-      setAttachments(metadata?.attachments || []);
-      setCloudColor(cloud?.color || '#f0f9ff');
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [metadata, cloud],
-  );
+  // Local state is initialized from props and updated only on save
+  // The component is re-mounted when nodeId changes (via key prop in parent)
+  const urlState = useState(metadata?.url || '')
+  const descriptionState = useState(metadata?.description || '')
+  const notesState = useState(metadata?.notes || '')
+  const tagsState = useState(metadata?.tags?.join(', ') || '')
+  const attachmentsState = useState<FileAttachment[]>(metadata?.attachments || [])
+  const cloudColorState = useState(cloud?.color || '#f0f9ff')
+
+  const [url, setUrl] = urlState
+  const [description, setDescription] = descriptionState
+  const [notes, setNotes] = notesState
+  const [tags, setTags] = tagsState
+  const [attachments, setAttachments] = attachmentsState
+  const [cloudColor, setCloudColor] = cloudColorState
 
   const handleSave = () => {
-    const updatedMetadata: NodeMetadata = {};
+    const updatedMetadata: NodeMetadata = {}
 
-    if (url.trim()) updatedMetadata.url = url.trim();
-    if (description.trim()) updatedMetadata.description = description.trim();
-    if (notes.trim()) updatedMetadata.notes = notes.trim();
+    if (url.trim()) updatedMetadata.url = url.trim()
+    if (description.trim()) updatedMetadata.description = description.trim()
+    if (notes.trim()) updatedMetadata.notes = notes.trim()
     if (tags.trim()) {
       updatedMetadata.tags = tags
         .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
+        .map(t => t.trim())
+        .filter(Boolean)
     }
-    if (attachments.length > 0) updatedMetadata.attachments = attachments;
+    if (attachments.length > 0) updatedMetadata.attachments = attachments
 
-    onUpdateMetadata(updatedMetadata);
-  };
+    onUpdateMetadata(updatedMetadata)
+  }
 
   const handleClear = () => {
-    setUrl('');
-    setDescription('');
-    setNotes('');
-    setTags('');
-    setAttachments([]);
-    onUpdateMetadata({});
-  };
+    setUrl('')
+    setDescription('')
+    setNotes('')
+    setTags('')
+    setAttachments([])
+    onUpdateMetadata({})
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
     // Check if file is an image
     if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
+      const reader = new FileReader()
+      reader.onload = event => {
+        const base64 = event.target?.result as string
         const newAttachment: FileAttachment = {
           id: `att_${Date.now()}`,
           name: file.name,
@@ -93,51 +94,51 @@ export default function MetadataPanel({
           mimeType: file.type,
           data: base64,
           size: file.size,
-        };
-        setAttachments((prev) => [...prev, newAttachment]);
-      };
-      reader.readAsDataURL(file);
+        }
+        setAttachments(prev => [...prev, newAttachment])
+      }
+      reader.readAsDataURL(file)
     } else {
       // For non-image files, read as text
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
+      const reader = new FileReader()
+      reader.onload = event => {
+        const text = event.target?.result as string
         const newAttachment: FileAttachment = {
           id: `att_${Date.now()}`,
           name: file.name,
           type: 'code',
           data: text,
           size: file.size,
-        };
-        setAttachments((prev) => [...prev, newAttachment]);
-      };
-      reader.readAsText(file);
+        }
+        setAttachments(prev => [...prev, newAttachment])
+      }
+      reader.readAsText(file)
     }
 
     // Reset input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''
     }
-  };
+  }
 
   const handleAddCode = () => {
-    if (!codeInput.trim()) return;
+    if (!codeInput.trim()) return
 
     const newAttachment: FileAttachment = {
       id: `att_${Date.now()}`,
       name: `code.${codeLanguage}`,
       type: 'code',
       data: codeInput,
-    };
+    }
 
-    setAttachments((prev) => [...prev, newAttachment]);
-    setCodeInput('');
-    setShowCodeInput(false);
-  };
+    setAttachments(prev => [...prev, newAttachment])
+    setCodeInput('')
+    setShowCodeInput(false)
+  }
 
   const handleRemoveAttachment = (id: string) => {
-    setAttachments((prev) => prev.filter((att) => att.id !== id));
-  };
+    setAttachments(prev => prev.filter(att => att.id !== id))
+  }
 
   if (!nodeId) {
     return (
@@ -155,11 +156,13 @@ export default function MetadataPanel({
           Select a node to edit metadata
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div
+      aria-label="Node metadata"
+      role="region"
       style={{
         background: 'white',
         padding: '16px',
@@ -176,9 +179,7 @@ export default function MetadataPanel({
         scrollbarColor: '#cbd5e1 #f1f5f9',
       }}
     >
-      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 'bold' }}>
-        Metadata
-      </h3>
+      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 'bold' }}>Metadata</h3>
 
       <div style={{ marginBottom: '8px', fontSize: '12px', color: '#6b7280' }}>
         Node: <strong>{nodeLabel}</strong>
@@ -187,13 +188,15 @@ export default function MetadataPanel({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* URL */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             URL
           </label>
           <input
             type="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
             style={{
               width: '100%',
@@ -208,13 +211,15 @@ export default function MetadataPanel({
 
         {/* Description */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             Description
           </label>
           <input
             type="text"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={e => setDescription(e.target.value)}
             placeholder="Short description"
             style={{
               width: '100%',
@@ -229,12 +234,14 @@ export default function MetadataPanel({
 
         {/* Notes */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             Notes
           </label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={e => setNotes(e.target.value)}
             placeholder="Detailed notes..."
             rows={3}
             style={{
@@ -252,13 +259,15 @@ export default function MetadataPanel({
 
         {/* Tags */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             Tags (comma-separated)
           </label>
           <input
             type="text"
             value={tags}
-            onChange={(e) => setTags(e.target.value)}
+            onChange={e => setTags(e.target.value)}
             placeholder="tag1, tag2, tag3"
             style={{
               width: '100%',
@@ -274,7 +283,14 @@ export default function MetadataPanel({
         {/* Icon */}
         {onUpdateIcon && (
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Icon
             </label>
             <button
@@ -296,9 +312,7 @@ export default function MetadataPanel({
               {icon ? (
                 <>
                   {getIconEmoji(icon)}
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                    (change)
-                  </span>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>(change)</span>
                 </>
               ) : (
                 <span style={{ fontSize: '12px', color: '#6b7280' }}>Choose icon...</span>
@@ -310,14 +324,21 @@ export default function MetadataPanel({
         {/* Cloud */}
         {onUpdateCloud && (
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+              }}
+            >
               Cloud (Visual Group)
             </label>
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
               <input
                 type="color"
                 value={cloudColor}
-                onChange={(e) => setCloudColor(e.target.value)}
+                onChange={e => setCloudColor(e.target.value)}
                 style={{
                   width: '40px',
                   height: '32px',
@@ -361,7 +382,9 @@ export default function MetadataPanel({
 
         {/* Attachments */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <label
+            style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             Attachments
           </label>
 
@@ -410,7 +433,7 @@ export default function MetadataPanel({
             <div style={{ marginBottom: '8px' }}>
               <select
                 value={codeLanguage}
-                onChange={(e) => setCodeLanguage(e.target.value)}
+                onChange={e => setCodeLanguage(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '6px',
@@ -444,7 +467,7 @@ export default function MetadataPanel({
               </select>
               <textarea
                 value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value)}
+                onChange={e => setCodeInput(e.target.value)}
                 placeholder="Paste or type code here..."
                 rows={4}
                 style={{
@@ -477,8 +500,8 @@ export default function MetadataPanel({
                 </button>
                 <button
                   onClick={() => {
-                    setShowCodeInput(false);
-                    setCodeInput('');
+                    setShowCodeInput(false)
+                    setCodeInput('')
                   }}
                   style={{
                     flex: 1,
@@ -500,7 +523,7 @@ export default function MetadataPanel({
           {/* Attachments list */}
           {attachments.length > 0 && (
             <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-              {attachments.map((att) => (
+              {attachments.map(att => (
                 <div
                   key={att.id}
                   style={{
@@ -515,7 +538,14 @@ export default function MetadataPanel({
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div
+                      style={{
+                        fontWeight: 'bold',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {att.type === 'image' ? '🖼️ ' : '💻 '}
                       {att.name}
                     </div>
@@ -622,14 +652,14 @@ export default function MetadataPanel({
           />
           <IconPicker
             currentIcon={icon}
-            onSelect={(iconId) => {
-              onUpdateIcon?.(iconId);
-              setShowIconPicker(false);
+            onSelect={iconId => {
+              onUpdateIcon?.(iconId)
+              setShowIconPicker(false)
             }}
             onClose={() => setShowIconPicker(false)}
           />
         </>
       )}
     </div>
-  );
+  )
 }

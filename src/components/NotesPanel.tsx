@@ -21,6 +21,7 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
       role="dialog"
       aria-modal="true"
       aria-labelledby="notes-panel-title"
+      aria-label="Notes panel"
       style={{
         position: 'fixed',
         right: '16px',

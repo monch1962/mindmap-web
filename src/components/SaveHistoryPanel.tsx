@@ -18,6 +18,7 @@ export default function SaveHistoryPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby="save-history-title"
+      aria-label="Save history"
       style={{
         position: 'fixed',
         top: '50%',
