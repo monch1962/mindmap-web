@@ -4,10 +4,10 @@
  */
 
 export interface FreeMindIcon {
-  id: string;
-  emoji: string;
-  name: string;
-  category: 'status' | 'priority' | 'progress' | 'emotion' | 'time' | 'other';
+  id: string
+  emoji: string
+  name: string
+  category: 'status' | 'priority' | 'progress' | 'emotion' | 'time' | 'other'
 }
 
 export const FREE_MIND_ICONS: FreeMindIcon[] = [
@@ -74,23 +74,30 @@ export const FREE_MIND_ICONS: FreeMindIcon[] = [
   { id: 'music', emoji: '🎵', name: 'Music', category: 'other' },
   { id: 'password', emoji: '🔑', name: 'Password', category: 'other' },
   { id: 'pencil', emoji: '✏️', name: 'Pencil', category: 'other' },
-  { id: 'wizard', emoji: '🧙', name: 'Wizard', category: 'other' },
   { id: 'xmag', emoji: '🔍', name: 'Search', category: 'other' },
-];
+]
 
 export const ICON_CATEGORIES = [
   { id: 'status', name: 'Status', icons: FREE_MIND_ICONS.filter(i => i.category === 'status') },
-  { id: 'priority', name: 'Priority', icons: FREE_MIND_ICONS.filter(i => i.category === 'priority') },
-  { id: 'progress', name: 'Progress', icons: FREE_MIND_ICONS.filter(i => i.category === 'progress') },
+  {
+    id: 'priority',
+    name: 'Priority',
+    icons: FREE_MIND_ICONS.filter(i => i.category === 'priority'),
+  },
+  {
+    id: 'progress',
+    name: 'Progress',
+    icons: FREE_MIND_ICONS.filter(i => i.category === 'progress'),
+  },
   { id: 'emotion', name: 'Emotion', icons: FREE_MIND_ICONS.filter(i => i.category === 'emotion') },
   { id: 'time', name: 'Time', icons: FREE_MIND_ICONS.filter(i => i.category === 'time') },
   { id: 'other', name: 'Other', icons: FREE_MIND_ICONS.filter(i => i.category === 'other') },
-];
+]
 
 /**
  * Get emoji for icon ID
  */
 export function getIconEmoji(iconId: string): string {
-  const icon = FREE_MIND_ICONS.find(i => i.id === iconId);
-  return icon?.emoji || '';
+  const icon = FREE_MIND_ICONS.find(i => i.id === iconId)
+  return icon?.emoji || ''
 }

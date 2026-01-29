@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react'
 import PresentationMode from './PresentationMode'
 import type { MindMapTree } from '../types'
 
@@ -202,9 +202,11 @@ describe('PresentationMode', () => {
 
     // Navigate to last slide - reduce number of key presses since we only have 5 slides
     for (let i = 0; i < 5; i++) {
-      fireEvent.keyDown(window, { key: 'ArrowRight' })
-      // Wait a bit for animation to complete before next key press
-      await new Promise(resolve => setTimeout(resolve, 350))
+      await act(async () => {
+        fireEvent.keyDown(window, { key: 'ArrowRight' })
+        // Wait a bit for animation to complete before next key press
+        await new Promise(resolve => setTimeout(resolve, 350))
+      })
     }
 
     // Should be on last slide now
@@ -319,7 +321,9 @@ describe('PresentationMode', () => {
     expect(screen.getByLabelText(/Go to next slide/)).toBeInTheDocument()
 
     // Navigate to second slide
-    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
+    })
 
     await waitFor(
       () => {
@@ -338,9 +342,11 @@ describe('PresentationMode', () => {
 
     // Press next 5 times with delays between key presses to allow animations
     for (let i = 0; i < 5; i++) {
-      fireEvent.keyDown(window, { key: 'ArrowRight' })
-      // Wait for animation to complete before next key press
-      await new Promise(resolve => setTimeout(resolve, 350))
+      await act(async () => {
+        fireEvent.keyDown(window, { key: 'ArrowRight' })
+        // Wait for animation to complete before next key press
+        await new Promise(resolve => setTimeout(resolve, 350))
+      })
     }
 
     // Should be on slide 5 now (there are only 5 slides total: 1-5)

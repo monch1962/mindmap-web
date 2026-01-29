@@ -219,7 +219,7 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
           role="textbox"
           aria-label={isRichText ? undefined : `Node content: ${data.label}`}
           aria-multiline="true"
-          dangerouslySetInnerHTML={isRichText ? { __html: sanitizeHtml(data.label) } : undefined}
+          {...(isRichText ? { dangerouslySetInnerHTML: { __html: sanitizeHtml(data.label) } } : {})}
         >
           {!isRichText && data.label}
         </div>
