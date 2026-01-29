@@ -227,31 +227,92 @@ src/
 
 ## Agent Instructions
 
+### TDD (Test-Driven Development) Practices
+
+**STRICT REQUIREMENT: Always follow TDD practices when working on this project.**
+
+#### TDD Workflow (Red-Green-Refactor):
+
+1. **RED**: Write a failing test first
+2. **GREEN**: Write minimal code to make the test pass
+3. **REFACTOR**: Improve code while keeping tests green
+
+#### TDD Rules:
+
+1. **Never write production code without a failing test**
+2. **Write only enough test to fail (compilation failures count as failures)**
+3. **Write only enough production code to pass the current failing test**
+4. **Run tests after every small change**
+5. **Refactor only when all tests are green**
+
+#### TDD Implementation Steps:
+
+1. **Analyze requirements** and identify test cases
+2. **Write test file** with `.test.ts` or `.test.tsx` extension
+3. **Run test** to confirm it fails (RED)
+4. **Implement minimal solution** to pass test (GREEN)
+5. **Refactor** code for clarity and efficiency
+6. **Repeat** for each requirement
+
 ### Before Making Changes
 
 1. Run existing tests: `npm run test:run`
 2. Check linting: `npm run lint`
 3. Understand the existing code patterns
+4. **If adding new functionality, write tests first following TDD**
 
 ### After Making Changes
 
 1. Run tests: `npm run test:run`
 2. Fix any linting issues: `npm run lint`
 3. Ensure TypeScript compiles: `npm run build`
+4. **Verify all tests pass, including new ones**
 
 ### When Adding New Features
 
-1. Write tests first (TDD)
+1. **Write tests first (TDD)** - Create failing tests for all expected behaviors
 2. Follow existing patterns in similar files
 3. Update type definitions in `src/types.ts` if needed
 4. Add format parsers to `src/utils/formats/` for new import/export formats
+5. **Run tests after each small implementation step**
 
 ### When Fixing Bugs
 
-1. Create a failing test that reproduces the bug
-2. Fix the bug
+1. **Create a failing test that reproduces the bug** (TDD first step)
+2. Fix the bug with minimal changes
 3. Verify the test passes
 4. Ensure no regression in other tests
+5. **Add additional tests for edge cases related to the bug**
+
+### TDD Test Structure Guidelines
+
+```typescript
+// Example TDD test structure
+describe('FeatureName', () => {
+  describe('when condition A', () => {
+    it('should behave X', () => {
+      // Arrange
+      const input = 'test'
+
+      // Act
+      const result = functionUnderTest(input)
+
+      // Assert
+      expect(result).toBe('expected')
+    })
+
+    it('should handle edge case Y', () => {
+      // Test edge cases
+    })
+  })
+
+  describe('when condition B', () => {
+    it('should behave Z', () => {
+      // Another scenario
+    })
+  })
+})
+```
 
 ### Code Review Checklist
 

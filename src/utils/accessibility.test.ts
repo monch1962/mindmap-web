@@ -191,12 +191,12 @@ describe('accessibility', () => {
     })
 
     it('should get node attributes', () => {
-      const parent = getNodeAttributes('node-1', 'Parent Node', true, false)
+      const parent = getNodeAttributes('Parent Node', true, false)
       expect(parent['role']).toBe('treeitem')
       expect(parent['aria-label']).toBe('Parent Node')
       expect(parent['aria-expanded']).toBe('true')
 
-      const child = getNodeAttributes('node-2', 'Child Node', false)
+      const child = getNodeAttributes('Child Node', false)
       expect(child['aria-label']).toBe('Child Node')
       expect(child['aria-expanded']).toBeUndefined()
     })

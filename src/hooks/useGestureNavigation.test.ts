@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useGestureNavigation, useTouchControls, calculateFitZoom } from './useGestureNavigation'
 
 // Mock ReactFlow
@@ -33,7 +33,9 @@ describe('useGestureNavigation', () => {
 
       expect(result.current.resetGestures).toBeDefined()
 
-      result.current.resetGestures()
+      act(() => {
+        result.current.resetGestures()
+      })
       expect(result.current.gestureState).toEqual({
         scale: 1,
         rotation: 0,
@@ -215,9 +217,11 @@ describe('integration', () => {
     const { result } = renderHook(() => useGestureNavigation({}))
 
     // Trigger rapid state changes
-    for (let i = 0; i < 100; i++) {
-      result.current.resetGestures()
-    }
+    act(() => {
+      for (let i = 0; i < 100; i++) {
+        result.current.resetGestures()
+      }
+    })
 
     expect(result.current.gestureState.scale).toBe(1)
   })

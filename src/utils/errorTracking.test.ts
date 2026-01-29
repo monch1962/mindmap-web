@@ -7,8 +7,8 @@ import {
   clearErrorHistory,
   getErrorStats,
   exportErrorLog,
-  ErrorSeverity,
 } from './errorTracking'
+import type { ErrorSeverity } from './errorTracking'
 
 describe('errorTracking', () => {
   beforeEach(() => {
@@ -198,8 +198,6 @@ describe('errorTracking', () => {
     })
 
     it('should preserve chronological order', () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const now = Date.now()
       trackError(new Error('Error 1'))
       trackError(new Error('Error 2'))
       trackError(new Error('Error 3'))

@@ -37,7 +37,7 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
 
   // Generate accessibility label
   const ariaLabel = getNodeLabel(data.label, undefined, undefined)
-  const nodeAttrs = getNodeAttributes(id, ariaLabel, false, data.collapsed)
+  const nodeAttrs = getNodeAttributes(ariaLabel, false, data.collapsed)
 
   const handleDoubleClick = () => {
     setIsEditing(true)

@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
+  measureRender,
   trackWebVitals,
   getWebVitalsMetrics,
   getPerformanceStats,
-  measureRender,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  PerformanceEntry,
   clearPerformanceData,
 } from './performance'
 
@@ -46,7 +44,7 @@ describe('performance', () => {
 
   describe('trackWebVitals', () => {
     it('should track CLS metric', () => {
-      const metric = { name: 'CLS', value: 0.1, id: 'cls-1' }
+      const metric = { name: 'CLS' as const, value: 0.1, id: 'cls-1' }
       trackWebVitals(metric)
 
       const vitals = getWebVitalsMetrics()
@@ -59,7 +57,7 @@ describe('performance', () => {
     })
 
     it('should track FID metric', () => {
-      const metric = { name: 'FID', value: 100, id: 'fid-1' }
+      const metric = { name: 'FID' as const, value: 100, id: 'fid-1' }
       trackWebVitals(metric)
 
       const vitals = getWebVitalsMetrics()
@@ -72,7 +70,7 @@ describe('performance', () => {
     })
 
     it('should track LCP metric', () => {
-      const metric = { name: 'LCP', value: 2000, id: 'lcp-1' }
+      const metric = { name: 'LCP' as const, value: 2000, id: 'lcp-1' }
       trackWebVitals(metric)
 
       const vitals = getWebVitalsMetrics()
@@ -85,7 +83,7 @@ describe('performance', () => {
     })
 
     it('should track FCP metric', () => {
-      const metric = { name: 'FCP', value: 1500, id: 'fcp-1' }
+      const metric = { name: 'FCP' as const, value: 1500, id: 'fcp-1' }
       trackWebVitals(metric)
 
       const vitals = getWebVitalsMetrics()
@@ -98,7 +96,7 @@ describe('performance', () => {
     })
 
     it('should track TTFB metric', () => {
-      const metric = { name: 'TTFB', value: 500, id: 'ttfb-1' }
+      const metric = { name: 'TTFB' as const, value: 500, id: 'ttfb-1' }
       trackWebVitals(metric)
 
       const vitals = getWebVitalsMetrics()

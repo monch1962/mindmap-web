@@ -320,12 +320,7 @@ export function getNodeLabel(content: string, nodeCount?: number, depth?: number
 /**
  * Generate ARIA attributes for a mind map node
  */
-export function getNodeAttributes(
-  id: string,
-  label: string,
-  isParent: boolean,
-  collapsed?: boolean
-) {
+export function getNodeAttributes(label: string, isParent: boolean, collapsed?: boolean) {
   const attrs: Record<string, string> = {
     role: 'treeitem',
     'aria-label': label,

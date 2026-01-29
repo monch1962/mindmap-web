@@ -454,7 +454,7 @@ describe('d2Format', () => {
       const tree: MindMapTree = {
         id: 'root',
         content: 'Root',
-        style: { color: '#ff0000', backgroundColor: '#00ff00', fontSize: 14, fontWeight: 'bold' },
+        style: { color: '#ff0000', backgroundColor: '#00ff00', fontSize: 14, bold: true },
         children: [],
       }
 

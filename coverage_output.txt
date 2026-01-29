@@ -1,0 +1,1458 @@
+
+> mindmap-app@1.0.1 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/home/davidm/Projects/mindmap-web[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/components/AIAssistantPanel.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[33m 3377[2mms[22m[39m
+     [33m[2m✓[22m[39m should render AI assistant panel when visible [33m 534[2mms[22m[39m
+     [33m[2m✓[22m[39m should call onSuggestIdeas when ideas button is clicked [33m 304[2mms[22m[39m
+     [33m[2m✓[22m[39m should call onGenerateMindMap when text is submitted [33m 442[2mms[22m[39m
+     [33m[2m✓[22m[39m should clear response on new generation [33m 465[2mms[22m[39m
+ [32m✓[39m src/components/PresentationMode.test.tsx [2m([22m[2m29 tests[22m[2m | [22m[33m4 skipped[39m[2m)[22m[33m 4365[2mms[22m[39m
+     [33m[2m✓[22m[39m should render presentation mode when visible and tree provided [33m 682[2mms[22m[39m
+     [33m[2m✓[22m[39m should navigate slides with Space and Enter [33m 444[2mms[22m[39m
+     [33m[2m✓[22m[39m should navigate to slide when clicking in slide overview [33m 651[2mms[22m[39m
+     [33m[2m✓[22m[39m should have proper ARIA labels on navigation buttons [33m 371[2mms[22m[39m
+     [33m[2m✓[22m[39m should display level indicator for nested slides [33m 394[2mms[22m[39m
+     [33m[2m✓[22m[39m should update aria-label when slide changes [33m 373[2mms[22m[39m
+ [32m✓[39m src/components/MindMapCanvas.test.tsx [2m([22m[2m39 tests[22m[2m | [22m[33m8 skipped[39m[2m)[22m[33m 5533[2mms[22m[39m
+     [33m[2m✓[22m[39m should render canvas with initial data [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m should open metadata panel when node is selected [33m 305[2mms[22m[39m
+     [33m[2m✓[22m[39m should display keyboard shortcuts modal [33m 373[2mms[22m[39m
+     [33m[2m✓[22m[39m should show mobile toolbar on mobile devices [33m 342[2mms[22m[39m
+[90mstdout[2m | src/components/MindMapNode.test.tsx[2m > [22m[2mMindMapNode[2m > [22m[2mCollapse/Expand[2m > [22m[2mshould dispatch collapseAllDescendants event
+[22m[39mCollapse all clicked for node: node-1
+
+[90mstdout[2m | src/components/MindMapNode.test.tsx[2m > [22m[2mMindMapNode[2m > [22m[2mCollapse/Expand[2m > [22m[2mshould dispatch expandAllDescendants event
+[22m[39mExpand all clicked for node: node-1
+
+ [32m✓[39m src/components/MindMapNode.test.tsx [2m([22m[2m66 tests[22m[2m | [22m[33m7 skipped[39m[2m)[22m[33m 2053[2mms[22m[39m
+       [33m[2m✓[22m[39m should render with custom color [33m 308[2mms[22m[39m
+ [32m✓[39m src/components/ThreeDView.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 1762[2mms[22m[39m
+     [33m[2m✓[22m[39m should render 3D view when visible and tree provided [33m 377[2mms[22m[39m
+     [33m[2m✓[22m[39m should show selected node info when node is clicked [33m 364[2mms[22m[39m
+ [32m✓[39m src/components/ErrorBoundary.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 479[2mms[22m[39m
+ [32m✓[39m src/components/RichTextEditor.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 1814[2mms[22m[39m
+     [33m[2m✓[22m[39m should render editor with initial content [33m 536[2mms[22m[39m
+ [32m✓[39m src/components/FeatureErrorBoundary.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 427[2mms[22m[39m
+[90mstdout[2m | src/utils/errorTracking.test.ts[2m > [22m[2merrorTracking[2m > [22m[2mtrackInfo[2m > [22m[2mshould track info message
+[22m[39m[ErrorTracking] [TestContext] Info message
+
+[90mstdout[2m | src/utils/errorTracking.test.ts[2m > [22m[2merrorTracking[2m > [22m[2mgetErrorStats[2m > [22m[2mshould count errors by severity
+[22m[39m[ErrorTracking] Info 1
+[ErrorTracking] Info 2
+[ErrorTracking] Info 3
+
+[90mstdout[2m | src/utils/errorTracking.test.ts[2m > [22m[2merrorTracking[2m > [22m[2mintegration[2m > [22m[2mshould handle mixed severity tracking
+[22m[39m[ErrorTracking] [AuthContext] User logged in
+
+ [32m✓[39m src/utils/errorTracking.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 214[2mms[22m[39m
+[90mstdout[2m | src/hooks/useAutoSave.test.ts[2m > [22m[2museAutoSave[2m > [22m[2minitialization[2m > [22m[2mshould not trigger conflict for recent auto-save
+[22m[39mFound recent auto-saved mind map from just now
+
+ [32m✓[39m src/hooks/useKeyboardShortcuts.test.ts [2m([22m[2m46 tests[22m[2m)[22m[32m 224[2mms[22m[39m
+ [32m✓[39m src/hooks/useAutoSave.test.ts [2m([22m[2m23 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[32m 235[2mms[22m[39m
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2minitialization[2m > [22m[2mshould initialize with online status from navigator
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2minitialization[2m > [22m[2mshould initialize with online status from navigator
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2minitialization[2m > [22m[2mshould initialize with offline status from navigator
+[22m[39m[PWA] Offline
+[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2minitialization[2m > [22m[2mshould initialize with offline status from navigator
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2minitialization[2m > [22m[2mshould attempt to register service worker
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mapi methods[2m > [22m[2mshould provide all required methods
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mapi methods[2m > [22m[2mshould accept callbacks
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2moffline data storage[2m > [22m[2mshould store offline data
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2moffline data storage[2m > [22m[2mshould retrieve offline data
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2moffline data storage[2m > [22m[2mshould return null for non-existent data
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2moffline data storage[2m > [22m[2mshould clear specific offline data
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2moffline data storage[2m > [22m[2mshould clear all offline data
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mutility functions[2m > [22m[2mshould format bytes correctly
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mutility functions[2m > [22m[2mshould force reload
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2masync operations[2m > [22m[2mshould handle sync operations without crashing
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2masync operations[2m > [22m[2mshould handle checkPendingSync
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mintegration[2m > [22m[2mshould handle all operations without errors
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+[90mstdout[2m | src/hooks/useOfflineSync.test.ts[2m > [22m[2museOfflineSync[2m > [22m[2mintegration[2m > [22m[2mshould handle callbacks properly
+[22m[39m[PWA] Service worker registered: {
+  installing: [1mnull[22m,
+  waiting: [1mnull[22m,
+  active: [1mnull[22m,
+  addEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  },
+  removeEventListener: [Function: Mock] {
+    _isMockFunction: [33mtrue[39m,
+    getMockImplementation: [36m[Function (anonymous)][39m,
+    mock: {
+      calls: [],
+      contexts: [],
+      instances: [],
+      invocationCallOrder: [],
+      settledResults: [],
+      results: [],
+      lastCall: [36m[Getter][39m
+    },
+    mockImplementation: [36m[Function: mockImplementation][39m,
+    mockImplementationOnce: [36m[Function: mockImplementationOnce][39m,
+    withImplementation: [36m[Function: withImplementation][39m,
+    mockReturnThis: [36m[Function: mockReturnThis][39m,
+    mockReturnValue: [36m[Function: mockReturnValue][39m,
+    mockReturnValueOnce: [36m[Function: mockReturnValueOnce][39m,
+    mockResolvedValue: [36m[Function: mockResolvedValue][39m,
+    mockResolvedValueOnce: [36m[Function: mockResolvedValueOnce][39m,
+    mockRejectedValue: [36m[Function: mockRejectedValue][39m,
+    mockRejectedValueOnce: [36m[Function: mockRejectedValueOnce][39m,
+    mockClear: [36m[Function: mockClear][39m,
+    mockReset: [36m[Function: mockReset][39m,
+    mockRestore: [36m[Function: mockRestore][39m,
+    mockName: [36m[Function: mockName][39m,
+    getMockName: [36m[Function: getMockName][39m,
+    [[32mSymbol(nodejs.dispose)[39m]: [36m[Function (anonymous)][39m
+  }
+}
+
+ [32m✓[39m src/hooks/useOfflineSync.test.ts [2m([22m[2m22 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 194[2mms[22m[39m
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould execute async operation successfully
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould execute async operation successfully
+[22m[39m[ErrorTracking] [TestContext] Operation completed: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould handle async operation errors
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould reset state
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould reset state
+[22m[39m[ErrorTracking] [TestContext] Operation completed: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould handle operation with arguments
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould handle operation with arguments
+[22m[39m[ErrorTracking] [TestContext] Operation completed: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould track multiple operations sequentially
+[22m[39m[ErrorTracking] [Context1] Starting operation: Context1
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould track multiple operations sequentially
+[22m[39m[ErrorTracking] [Context1] Operation completed: Context1
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould track multiple operations sequentially
+[22m[39m[ErrorTracking] [Context2] Starting operation: Context2
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould track multiple operations sequentially
+[22m[39m[ErrorTracking] [Context2] Operation completed: Context2
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould handle synchronous errors
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould not start new operation while one is loading
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould clear previous error when new operation starts
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould clear previous error when new operation starts
+[22m[39m[ErrorTracking] [TestContext] Starting operation: TestContext
+
+[90mstdout[2m | src/hooks/useAsyncOperation.test.ts[2m > [22m[2museAsyncOperation[2m > [22m[2mshould clear previous error when new operation starts
+[22m[39m[ErrorTracking] [TestContext] Operation completed: TestContext
+
+ [32m✓[39m src/hooks/useAsyncOperation.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 172[2mms[22m[39m
+ [32m✓[39m src/hooks/useKeyboardNavigation.test.tsx [2m([22m[2m17 tests[22m[2m | [22m[33m8 skipped[39m[2m)[22m[32m 160[2mms[22m[39m
+ [32m✓[39m src/hooks/useFileOperations.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 149[2mms[22m[39m
+ [32m✓[39m src/utils/accessibility.test.ts [2m([22m[2m29 tests[22m[2m)[22m[32m 128[2mms[22m[39m
+ [32m✓[39m src/hooks/useGestureNavigation.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m src/hooks/useUndoRedo.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m src/utils/sanitize.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 97[2mms[22m[39m
+ [32m✓[39m src/utils/formats/freemindFormat.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m src/utils/formats/opmlFormat.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m src/utils/formats/yamlFormat.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/utils/mindmapConverter.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/utils/theme.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track CLS metric
+[22m[39m[Performance] CLS: 0.10 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track FID metric
+[22m[39m[Performance] FID: 100.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track LCP metric
+[22m[39m[Performance] LCP: 2000.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track FCP metric
+[22m[39m[Performance] FCP: 1500.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track TTFB metric
+[22m[39m[Performance] TTFB: 500.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould track multiple metrics
+[22m[39m[Performance] CLS: 0.10 (good)
+[Performance] LCP: 2000.00 (good)
+[Performance] FID: 100.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mtrackWebVitals[2m > [22m[2mshould include timestamp in metric
+[22m[39m[Performance] CLS: 0.10 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mgetPerformanceStats[2m > [22m[2mshould return stats with metric values
+[22m[39m[Performance] CLS: 0.10 (good)
+[Performance] LCP: 2000.00 (good)
+[Performance] FID: 100.00 (good)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mgetPerformanceStats[2m > [22m[2mshould use latest value for duplicate metrics
+[22m[39m[Performance] CLS: 0.10 (good)
+[Performance] CLS: 0.20 (needs improvement)
+
+[90mstdout[2m | src/utils/performance.test.ts[2m > [22m[2mperformance[2m > [22m[2mintegration[2m > [22m[2mshould track all web vitals and provide stats
+[22m[39m[Performance] CLS: 0.05 (good)
+[Performance] FID: 50.00 (good)
+[Performance] LCP: 1800.00 (good)
+[Performance] FCP: 1200.00 (good)
+[Performance] TTFB: 400.00 (good)
+
+ [32m✓[39m src/utils/performance.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/utils/formats/markdownFormat.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/utils/formats/d2Format.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/utils/formats/svgFormat.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m      Tests [22m [1m[32m597 passed[39m[22m[2m | [22m[33m30 skipped[39m[90m (627)[39m
+[2m   Start at [22m 20:00:53
+[2m   Duration [22m 26.96s[2m (transform 3.12s, setup 4.68s, import 6.40s, tests 22.02s, environment 29.95s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   61.18 |    58.42 |   51.77 |    62.5 |                   
+ components        |   48.16 |    52.35 |   36.72 |   49.95 |                   
+  ...tantPanel.tsx |   80.26 |    76.78 |     100 |   82.85 | ...18-122,473-498 
+  ...ionsPanel.tsx |     7.5 |        0 |       0 |    7.69 | 57-446            
+  ...ackground.tsx |   54.54 |    16.66 |   66.66 |   44.44 | 19-38             
+  ...tionModal.tsx |       0 |        0 |       0 |       0 | 14-16             
+  ...sLinkEdge.tsx |      50 |        0 |       0 |      50 | 16-25             
+  ...rBoundary.tsx |    92.3 |      100 |   83.33 |    92.3 | 150               
+  ...rBoundary.tsx |     100 |     90.9 |     100 |     100 | 44                
+  HistoryPanel.tsx |    7.69 |    15.51 |   14.28 |    9.09 | 17-26,168-223     
+  IconPicker.tsx   |       0 |        0 |       0 |       0 | 11-193            
+  ...cutsModal.tsx |    86.2 |       56 |      75 |   85.18 | 87,157-176,194    
+  ...dataPanel.tsx |   21.59 |       44 |    3.12 |   24.67 | ...22,126,185-645 
+  ...MapCanvas.tsx |   26.39 |    30.89 |   16.08 |   28.13 | ...1596,1667-1900 
+  MindMapNode.tsx  |   98.38 |       96 |   93.75 |     100 | ...99-202,220-222 
+  ...leToolbar.tsx |     100 |    66.66 |     100 |     100 | 94-107            
+  NotesPanel.tsx   |   66.66 |      100 |      50 |    62.5 | 73-103            
+  ...Indicator.tsx |   57.14 |     12.5 |      50 |      40 | 19-103            
+  ...ationMode.tsx |      75 |    73.91 |      72 |   76.74 | ...61-388,540-544 
+  ...extEditor.tsx |   83.05 |       75 |   70.58 |   83.05 | 128-149,194-237   
+  ...toryPanel.tsx |      25 |       50 |      25 |      25 | 84-123            
+  SearchPanel.tsx  |       0 |        0 |       0 |       0 | 33-312            
+  ...ticsPanel.tsx |   87.71 |    57.89 |   77.77 |      88 | ...72,105,411-458 
+  ThreeDView.tsx   |   88.57 |     88.4 |   82.35 |      90 | ...11-112,307-360 
+ hooks             |   67.64 |    63.63 |   70.63 |   68.32 |                   
+  ...cOperation.ts |     100 |       75 |     100 |     100 | 66                
+  useAutoSave.ts   |   91.89 |    71.79 |     100 |   92.66 | ...27,169-170,243 
+  ...Operations.ts |   59.82 |    61.53 |    62.5 |   61.26 | ...53-189,210-235 
+  ...Navigation.ts |   34.54 |    21.73 |    42.1 |   34.65 | ...93,232-237,281 
+  ...Navigation.ts |   79.24 |    79.59 |     100 |   77.08 | 62,102-116        
+  ...dShortcuts.ts |   93.33 |    79.69 |     100 |   93.29 | ...32,235,238,241 
+  ...fflineSync.ts |   52.48 |    35.82 |   63.88 |   50.86 | ...53-356,375-385 
+  useUndoRedo.ts   |      60 |     37.5 |   61.53 |   62.39 | ...07,213-223,246 
+ utils             |   63.68 |    49.09 |   70.34 |   63.48 |                   
+  accessibility.ts |   87.05 |     73.8 |   93.54 |   87.95 | 242-254,292,343   
+  aiParser.ts      |       0 |        0 |       0 |       0 | 9-93              
+  ...cedExports.ts |   41.75 |        5 |      44 |   41.37 | 16-46,152-244     
+  errorTracking.ts |   74.54 |    63.33 |   91.66 |   73.07 | 42-48,59,227-238  
+  icons.ts         |   72.72 |        0 |      75 |      80 | 94-95             
+  ...pConverter.ts |   90.72 |    77.58 |   92.85 |   90.36 | 44-49,114-122     
+  performance.ts   |      55 |    30.43 |      60 |   54.28 | ...01-215,232-297 
+  sanitize.ts      |   72.72 |     62.5 |   66.66 |      75 | 27-29             
+  theme.ts         |   56.16 |    38.23 |   52.38 |   55.71 | 316-416           
+ utils/formats     |   97.11 |    87.37 |   97.36 |   97.03 |                   
+  d2Format.ts      |   97.87 |    96.42 |     100 |   97.77 | 30                
+  ...mindFormat.ts |   94.23 |    74.11 |     100 |      94 | 56,136-139        
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  jsonFormat.ts    |      20 |      100 |      50 |      20 | 7-11              
+  ...downFormat.ts |     100 |      100 |     100 |     100 |                   
+  opmlFormat.ts    |     100 |      100 |     100 |     100 |                   
+  svgFormat.ts     |     100 |    94.59 |     100 |     100 | 157,189           
+  yamlFormat.ts    |     100 |    97.29 |     100 |     100 | 70                
+-------------------|---------|----------|---------|---------|-------------------

@@ -39,7 +39,7 @@ describe('useKeyboardShortcuts', () => {
     saveNow: vi.fn(),
     toggleDarkMode: vi.fn(),
     setCurrentTheme: vi.fn(),
-    getEffectiveTheme: vi.fn(() => 'light'),
+    getEffectiveTheme: vi.fn(() => 'light' as const),
   }
 
   const mockState = {
