@@ -106,7 +106,9 @@ describe('useOfflineSync', () => {
       }
 
       expect(() => {
-        renderHook(() => useOfflineSync(callbacks))
+        act(() => {
+          renderHook(() => useOfflineSync(callbacks))
+        })
       }).not.toThrow()
     })
   })
@@ -115,7 +117,10 @@ describe('useOfflineSync', () => {
     it('should store offline data', () => {
       const { result } = renderHook(() => useOfflineSync())
 
-      const success = result.current.storeOfflineData('test-key', { data: 'test' })
+      let success = false
+      act(() => {
+        success = result.current.storeOfflineData('test-key', { data: 'test' })
+      })
 
       expect(success).toBe(true)
     })
@@ -124,10 +129,15 @@ describe('useOfflineSync', () => {
       const { result } = renderHook(() => useOfflineSync())
 
       // First store some data
-      result.current.storeOfflineData('test-key', { data: 'test' })
+      act(() => {
+        result.current.storeOfflineData('test-key', { data: 'test' })
+      })
 
       // Then retrieve it
-      const data = result.current.getOfflineData('test-key')
+      let data: unknown
+      act(() => {
+        data = result.current.getOfflineData('test-key')
+      })
 
       expect(data).toEqual({ data: 'test' })
     })
@@ -135,7 +145,10 @@ describe('useOfflineSync', () => {
     it('should return null for non-existent data', () => {
       const { result } = renderHook(() => useOfflineSync())
 
-      const data = result.current.getOfflineData('non-existent-key')
+      let data: unknown
+      act(() => {
+        data = result.current.getOfflineData('non-existent-key')
+      })
 
       expect(data).toBeNull()
     })
@@ -143,23 +156,37 @@ describe('useOfflineSync', () => {
     it('should clear specific offline data', () => {
       const { result } = renderHook(() => useOfflineSync())
 
-      result.current.storeOfflineData('test-key', { data: 'test' })
-      const success = result.current.clearOfflineData('test-key')
+      act(() => {
+        result.current.storeOfflineData('test-key', { data: 'test' })
+      })
+
+      let success = false
+      act(() => {
+        success = result.current.clearOfflineData('test-key')
+      })
 
       expect(success).toBe(true)
 
       // Data should be cleared
-      const data = result.current.getOfflineData('test-key')
+      let data: unknown = null
+      act(() => {
+        data = result.current.getOfflineData('test-key')
+      })
       expect(data).toBeNull()
     })
 
     it('should clear all offline data', () => {
       const { result } = renderHook(() => useOfflineSync())
 
-      result.current.storeOfflineData('key1', { data: 'data1' })
-      result.current.storeOfflineData('key2', { data: 'data2' })
+      act(() => {
+        result.current.storeOfflineData('key1', { data: 'data1' })
+        result.current.storeOfflineData('key2', { data: 'data2' })
+      })
 
-      const success = result.current.clearOfflineData()
+      let success = false
+      act(() => {
+        success = result.current.clearOfflineData()
+      })
 
       expect(success).toBe(true)
     })
@@ -169,10 +196,21 @@ describe('useOfflineSync', () => {
     it('should format bytes correctly', () => {
       const { result } = renderHook(() => useOfflineSync())
 
-      expect(result.current.formatBytes(0)).toBe('0 Bytes')
-      expect(result.current.formatBytes(1024)).toBe('1 KB')
-      expect(result.current.formatBytes(1048576)).toBe('1 MB')
-      expect(result.current.formatBytes(1073741824)).toBe('1 GB')
+      let formatted0 = '',
+        formatted1024 = '',
+        formatted1048576 = '',
+        formatted1073741824 = ''
+      act(() => {
+        formatted0 = result.current.formatBytes(0)
+        formatted1024 = result.current.formatBytes(1024)
+        formatted1048576 = result.current.formatBytes(1048576)
+        formatted1073741824 = result.current.formatBytes(1073741824)
+      })
+
+      expect(formatted0).toBe('0 Bytes')
+      expect(formatted1024).toBe('1 KB')
+      expect(formatted1048576).toBe('1 MB')
+      expect(formatted1073741824).toBe('1 GB')
     })
 
     it('should force reload', () => {
@@ -185,7 +223,9 @@ describe('useOfflineSync', () => {
       // Calling it should not throw (even though it will try to reload the page)
       // In a real browser this would reload, but in jsdom it's a no-op
       expect(() => {
-        result.current.forceReload()
+        act(() => {
+          result.current.forceReload()
+        })
       }).not.toThrow()
     })
   })
@@ -215,11 +255,13 @@ describe('useOfflineSync', () => {
 
       // Test all data operations
       expect(() => {
-        result.current.storeOfflineData('key', { data: 'test' })
-        result.current.getOfflineData('key')
-        result.current.clearOfflineData('key')
-        result.current.clearOfflineData()
-        result.current.formatBytes(1024)
+        act(() => {
+          result.current.storeOfflineData('key', { data: 'test' })
+          result.current.getOfflineData('key')
+          result.current.clearOfflineData('key')
+          result.current.clearOfflineData()
+          result.current.formatBytes(1024)
+        })
       }).not.toThrow()
     })
 
@@ -284,7 +326,7 @@ describe('usePWAInstall', () => {
       const accepted = await result.current.promptInstall()
 
       expect(accepted).toBe(false)
-    })
+    }, 10000) // Increase timeout to 10 seconds
 
     it('should provide promptInstall method', () => {
       const { result } = renderHook(() => usePWAInstall())

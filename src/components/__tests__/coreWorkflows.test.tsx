@@ -80,6 +80,7 @@ describe('Core Mind Map Creation & Editing Workflows', () => {
           <div data-testid="mindmap-canvas">
             <div
               data-testid="central-topic"
+              suppressContentEditableWarning
               contentEditable
               onBlur={e => setTopic(e.currentTarget.textContent || '')}
             >

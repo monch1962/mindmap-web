@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { useState } from 'react'
 import { screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -238,37 +239,48 @@ describe('Templates & Productivity Tests (Stories 46-50)', () => {
       const mockChangeColor = vi.fn()
 
       // Mock the MindMapCanvas component
-      const MindMapCanvas = vi.fn(() => (
-        <div data-testid="mindmap-canvas">
-          <div data-testid="bulk-operations-toolbar">
-            <button data-testid="bulk-color-btn" onClick={() => mockChangeColor('#ff0000')}>
-              Change Color
-            </button>
+      const MindMapCanvas = vi.fn(() => {
+        const [color, setColor] = useState('#ff0000')
+
+        return (
+          <div data-testid="mindmap-canvas">
+            <div data-testid="bulk-operations-toolbar">
+              <button data-testid="bulk-color-btn" onClick={() => mockChangeColor(color)}>
+                Change Color
+              </button>
+            </div>
+            <div data-testid="color-picker">
+              <input
+                data-testid="color-input"
+                type="color"
+                value={color}
+                onChange={e => {
+                  const newColor = e.target.value
+                  setColor(newColor)
+                  mockChangeColor(newColor)
+                }}
+              />
+            </div>
           </div>
-          <div data-testid="color-picker">
-            <input
-              data-testid="color-input"
-              type="color"
-              defaultValue="#ff0000"
-              onChange={e => mockChangeColor(e.target.value)}
-            />
-          </div>
-        </div>
-      ))
+        )
+      })
 
       // Act
       customRender(<MindMapCanvas />)
 
-      // Click color button
+      // Change color by directly triggering change event
+      const colorInput = screen.getByTestId('color-input')
+      fireEvent.change(colorInput, { target: { value: '#00ff00' } })
+
+      // Click color button to apply
       const colorButton = screen.getByTestId('bulk-color-btn')
       await user.click(colorButton)
 
-      // Change color
-      const colorInput = screen.getByTestId('color-input')
-      await user.type(colorInput, '#00ff00')
-
-      // Assert
+      // Assert - mockChangeColor should be called twice:
+      // 1. When input changes (from fireEvent.change)
+      // 2. When button is clicked
       expect(mockChangeColor).toHaveBeenCalledWith('#00ff00')
+      expect(mockChangeColor).toHaveBeenCalledTimes(2)
     })
 
     it('should delete all selected nodes in bulk', async () => {
@@ -362,11 +374,13 @@ describe('Templates & Productivity Tests (Stories 46-50)', () => {
       customRender(<MindMapCanvas />)
 
       // Assert
-      const nodeCount = screen.getByTestId('stat-item[data-metric="node-count"]')
-      expect(nodeCount).toHaveTextContent('Total Nodes: 15')
-
       const statItems = screen.getAllByTestId('stat-item')
       expect(statItems).toHaveLength(3)
+
+      // Find the node count stat by its data-metric attribute
+      const nodeCount = statItems.find(item => item.getAttribute('data-metric') === 'node-count')
+      expect(nodeCount).toBeInTheDocument()
+      expect(nodeCount).toHaveTextContent('Total Nodes: 15')
     })
 
     it('should display depth and hierarchy statistics', async () => {
@@ -392,13 +406,20 @@ describe('Templates & Productivity Tests (Stories 46-50)', () => {
       customRender(<MindMapCanvas />)
 
       // Assert
-      const maxDepth = screen.getByTestId('stat-item[data-metric="depth"]')
+      const statItems = screen.getAllByTestId('stat-item')
+      expect(statItems).toHaveLength(3)
+
+      // Find stats by their data-metric attributes
+      const maxDepth = statItems.find(item => item.getAttribute('data-metric') === 'depth')
+      expect(maxDepth).toBeInTheDocument()
       expect(maxDepth).toHaveTextContent('Maximum Depth: 4')
 
-      const levels = screen.getByTestId('stat-item[data-metric="levels"]')
+      const levels = statItems.find(item => item.getAttribute('data-metric') === 'levels')
+      expect(levels).toBeInTheDocument()
       expect(levels).toHaveTextContent('Levels: 5')
 
-      const balance = screen.getByTestId('stat-item[data-metric="balance"]')
+      const balance = statItems.find(item => item.getAttribute('data-metric') === 'balance')
+      expect(balance).toBeInTheDocument()
       expect(balance).toHaveTextContent('Balance Score: 85%')
     })
 
@@ -425,13 +446,20 @@ describe('Templates & Productivity Tests (Stories 46-50)', () => {
       customRender(<MindMapCanvas />)
 
       // Assert
-      const connections = screen.getByTestId('stat-item[data-metric="connections"]')
+      const statItems = screen.getAllByTestId('stat-item')
+      expect(statItems).toHaveLength(3)
+
+      // Find stats by their data-metric attributes
+      const connections = statItems.find(item => item.getAttribute('data-metric') === 'connections')
+      expect(connections).toBeInTheDocument()
       expect(connections).toHaveTextContent('Total Connections: 14')
 
-      const crossLinks = screen.getByTestId('stat-item[data-metric="cross-links"]')
+      const crossLinks = statItems.find(item => item.getAttribute('data-metric') === 'cross-links')
+      expect(crossLinks).toBeInTheDocument()
       expect(crossLinks).toHaveTextContent('Cross Links: 3')
 
-      const density = screen.getByTestId('stat-item[data-metric="density"]')
+      const density = statItems.find(item => item.getAttribute('data-metric') === 'density')
+      expect(density).toBeInTheDocument()
       expect(density).toHaveTextContent('Connection Density: 65%')
     })
   })

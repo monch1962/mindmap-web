@@ -431,7 +431,7 @@ describe('Node Enhancement & Styling Workflows', () => {
             <button data-testid="bold-btn">B</button>
             <button data-testid="italic-btn">I</button>
           </div>
-          <div data-testid="editor-content" contentEditable={true}>
+          <div data-testid="editor-content" suppressContentEditableWarning contentEditable={true}>
             Enter notes here...
           </div>
         </div>
