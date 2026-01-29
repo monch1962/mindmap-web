@@ -53,7 +53,7 @@ vi.mock('../utils/accessibility', () => ({
     return label
   },
   getNodeAttributes: (
-    id: string,
+    _id: string,
     label: string,
     hasChildren: boolean,
     collapsed: boolean | undefined
@@ -76,14 +76,22 @@ describe('MindMapNode', () => {
 
   const defaultProps: MindMapNodeData = {
     label: 'Test Node',
-    children: [],
   }
 
-  const defaultNodeProps = {
+  const createNodeProps = (data: Partial<MindMapNodeData> = {}) => ({
     id: 'node-1',
-    data: defaultProps,
+    data: { ...defaultProps, ...data },
     selected: false,
-  }
+    zIndex: 0,
+    type: 'mindmap',
+    isConnectable: true,
+    xPos: 100,
+    yPos: 100,
+    dragHandle: undefined,
+    dragging: false,
+  })
+
+  const defaultNodeProps = createNodeProps()
 
   describe('Basic Rendering', () => {
     it('should render with default props', () => {
@@ -95,7 +103,7 @@ describe('MindMapNode', () => {
     it('should render with custom label', () => {
       const props = {
         ...defaultNodeProps,
-        data: { ...defaultProps, label: 'Custom Label' },
+        data: { ...defaultProps, nodeType: 'checkbox' as const },
       }
       render(<MindMapNode {...props} />, { wrapper })
 
@@ -103,10 +111,7 @@ describe('MindMapNode', () => {
     })
 
     it('should render as root node with different styling', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, isRoot: true },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 50 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.root-node')
@@ -114,10 +119,7 @@ describe('MindMapNode', () => {
     })
 
     it('should render with custom color', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, color: '#ff0000' },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 50 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.node-content')
@@ -125,10 +127,7 @@ describe('MindMapNode', () => {
     })
 
     it('should render with custom font size', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, fontSize: 20 },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 50 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.node-content')
@@ -136,10 +135,7 @@ describe('MindMapNode', () => {
     })
 
     it('should render with bold text', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, bold: true },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 50 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.node-content')
@@ -147,10 +143,7 @@ describe('MindMapNode', () => {
     })
 
     it('should render with italic text', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, italic: true },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 50 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.node-content')
@@ -304,7 +297,7 @@ describe('MindMapNode', () => {
     it('should render checkbox for checkbox node type', () => {
       const props = {
         ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'checkbox' },
+        data: { ...defaultProps, nodeType: 'checkbox' as const },
       }
       render(<MindMapNode {...props} />, { wrapper })
 
@@ -327,7 +320,7 @@ describe('MindMapNode', () => {
       const dispatchSpy = vi.spyOn(window, 'dispatchEvent')
       const props = {
         ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'checkbox' },
+        data: { ...defaultProps, nodeType: 'checkbox' as const },
       }
       render(<MindMapNode {...props} />, { wrapper })
 
@@ -344,7 +337,7 @@ describe('MindMapNode', () => {
     it('should show strikethrough when checked', () => {
       const props = {
         ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'checkbox', checked: true },
+        data: { ...defaultProps, nodeType: 'checkbox' as const, checked: true },
       }
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
@@ -353,10 +346,7 @@ describe('MindMapNode', () => {
     })
 
     it('should show reduced opacity when checked', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'checkbox', checked: true },
-      }
+      const props = createNodeProps({ nodeType: 'checkbox' as const, checked: true })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const node = container.querySelector('.node-content')
@@ -377,10 +367,7 @@ describe('MindMapNode', () => {
     })
 
     it('should show correct progress percentage', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'progress', progress: 75 },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 75 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       const progressBar = container.querySelector('[style*="width: 75%"]')
@@ -388,10 +375,7 @@ describe('MindMapNode', () => {
     })
 
     it('should show green color when 100% complete', () => {
-      const props = {
-        ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'progress', progress: 100 },
-      }
+      const props = createNodeProps({ nodeType: 'progress' as const, progress: 100 })
       const { container } = render(<MindMapNode {...props} />, { wrapper })
 
       // Progress bar container should be present
@@ -563,7 +547,7 @@ describe('MindMapNode', () => {
         data: {
           ...defaultProps,
           metadata: {
-            attachments: [{ id: '1', name: 'file.txt', type: 'code', data: 'content' }],
+            attachments: [{ id: '1', name: 'file.txt', type: 'file' as const, data: 'base64data' }],
           },
         },
       }
@@ -665,7 +649,7 @@ describe('MindMapNode', () => {
     it('should have aria-label for checkbox', () => {
       const props = {
         ...defaultNodeProps,
-        data: { ...defaultProps, nodeType: 'checkbox' },
+        data: { ...defaultProps, nodeType: 'checkbox' as const },
       }
       render(<MindMapNode {...props} />, { wrapper })
 

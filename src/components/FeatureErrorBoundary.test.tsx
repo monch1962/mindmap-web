@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import FeatureErrorBoundary from './FeatureErrorBoundary'
 
@@ -90,7 +90,6 @@ describe('FeatureErrorBoundary', () => {
     const ThrowError = () => {
       throw new Error('Test error')
     }
-     
 
     render(
       <FeatureErrorBoundary name="TestFeature">
@@ -109,7 +108,6 @@ describe('FeatureErrorBoundary', () => {
         throw new Error('Test error')
       }
       return <div>Recovered</div>
-       
     }
 
     render(

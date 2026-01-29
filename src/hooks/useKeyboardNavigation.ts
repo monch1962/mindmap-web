@@ -1,16 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react'
 
 interface UseKeyboardNavigationOptions {
   /** Whether the modal/panel is visible */
-  isOpen: boolean;
+  isOpen?: boolean
   /** Callback when Escape key is pressed */
-  onClose?: () => void;
+  onClose?: () => void
   /** Whether to trap focus within the container (default: true) */
-  trapFocus?: boolean;
+  trapFocus?: boolean
   /** Whether to focus the first element on open (default: true) */
-  autoFocus?: boolean;
+  autoFocus?: boolean
   /** Whether to restore focus on close (default: true) */
-  restoreFocus?: boolean;
+  restoreFocus?: boolean
 }
 
 /**
@@ -35,94 +35,94 @@ interface UseKeyboardNavigationOptions {
  * ```
  */
 export function useKeyboardNavigation<T extends HTMLElement>({
-  isOpen,
+  isOpen = false,
   onClose,
   trapFocus = true,
   autoFocus = true,
   restoreFocus = true,
 }: UseKeyboardNavigationOptions = {}) {
-  const containerRef = useRef<T>(null);
-  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const containerRef = useRef<T>(null)
+  const previousActiveElementRef = useRef<HTMLElement | null>(null)
 
   // Store the previously focused element when modal opens
   useEffect(() => {
     if (isOpen && restoreFocus) {
-      previousActiveElementRef.current = document.activeElement as HTMLElement;
+      previousActiveElementRef.current = document.activeElement as HTMLElement
     }
-  }, [isOpen, restoreFocus]);
+  }, [isOpen, restoreFocus])
 
   // Focus the first focusable element when modal opens
   useEffect(() => {
-    if (!isOpen || !autoFocus || !containerRef.current) return;
+    if (!isOpen || !autoFocus || !containerRef.current) return
 
     // Use setTimeout to ensure the modal is fully rendered
     const timeoutId = setTimeout(() => {
-      const focusableElements = getFocusableElements(containerRef.current!);
+      const focusableElements = getFocusableElements(containerRef.current!)
       if (focusableElements.length > 0) {
-        focusableElements[0].focus();
+        focusableElements[0].focus()
       }
-    }, 10);
+    }, 10)
 
-    return () => clearTimeout(timeoutId);
-  }, [isOpen, autoFocus]);
+    return () => clearTimeout(timeoutId)
+  }, [isOpen, autoFocus])
 
   // Restore focus when modal closes
   useEffect(() => {
-    if (!isOpen || !restoreFocus) return;
+    if (!isOpen || !restoreFocus) return
 
     return () => {
-      const previousElement = previousActiveElementRef.current;
+      const previousElement = previousActiveElementRef.current
       if (previousElement && document.contains(previousElement)) {
-        previousElement.focus();
+        previousElement.focus()
       }
-    };
-  }, [isOpen, restoreFocus]);
+    }
+  }, [isOpen, restoreFocus])
 
   // Handle keyboard events
   useEffect(() => {
-    if (!isOpen || !containerRef.current) return;
+    if (!isOpen || !containerRef.current) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Escape key - close the modal
       if (event.key === 'Escape' && onClose) {
-        event.preventDefault();
-        onClose();
-        return;
+        event.preventDefault()
+        onClose()
+        return
       }
 
       // Tab key - trap focus within the modal
       if (event.key === 'Tab' && trapFocus) {
-        const focusableElements = getFocusableElements(containerRef.current!);
+        const focusableElements = getFocusableElements(containerRef.current!)
 
         if (focusableElements.length === 0) {
-          event.preventDefault();
-          return;
+          event.preventDefault()
+          return
         }
 
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
 
         // If Shift+Tab on first element, cycle to last
         if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault();
-          lastElement.focus();
-          return;
+          event.preventDefault()
+          lastElement.focus()
+          return
         }
 
         // If Tab on last element, cycle to first
         if (!event.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault();
-          firstElement.focus();
-          return;
+          event.preventDefault()
+          firstElement.focus()
+          return
         }
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, trapFocus]);
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose, trapFocus])
 
-  return containerRef;
+  return containerRef
 }
 
 /**
@@ -138,19 +138,15 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
     'select:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
     '[contenteditable="true"]',
-  ].join(', ');
+  ].join(', ')
 
-  const elements = Array.from(
-    container.querySelectorAll<HTMLElement>(focusableSelectors)
-  );
+  const elements = Array.from(container.querySelectorAll<HTMLElement>(focusableSelectors))
 
   // Filter out elements that are not visible or are hidden
-  return elements.filter((element) => {
-    const style = window.getComputedStyle(element);
+  return elements.filter(element => {
+    const style = window.getComputedStyle(element)
     return (
-      style.display !== 'none' &&
-      style.visibility !== 'hidden' &&
-      element.offsetParent !== null
-    );
-  });
+      style.display !== 'none' && style.visibility !== 'hidden' && element.offsetParent !== null
+    )
+  })
 }

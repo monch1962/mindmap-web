@@ -164,7 +164,7 @@ describe('MindMapCanvas', () => {
     localStorage.clear()
 
     // Mock ResizeObserver for React Flow
-    global.ResizeObserver = class ResizeObserver {
+    window.ResizeObserver = class ResizeObserver {
       observe() {}
       unobserve() {}
       disconnect() {}

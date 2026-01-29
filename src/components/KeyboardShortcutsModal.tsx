@@ -61,7 +61,7 @@ export default function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsMod
   const [isMobile, setIsMobile] = useState(false)
 
   // Keyboard navigation for the modal
-  const modalRef = useKeyboardNavigation({
+  const modalRef = useKeyboardNavigation<HTMLDivElement>({
     isOpen: true,
     onClose,
     trapFocus: true,

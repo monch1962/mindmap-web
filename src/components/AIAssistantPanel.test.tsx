@@ -3,16 +3,34 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AIAssistantPanel from './AIAssistantPanel'
 
+// Declare global for TypeScript
+declare const global: typeof globalThis & {
+  fetch: ReturnType<typeof vi.fn>
+}
+
 // Mock fetch for API calls
-global.fetch = vi.fn()
+const mockFetch = vi.fn()
+global.fetch = mockFetch
 
 function createMockFetch(response: string) {
-  return vi.fn(
-    () =>
-      Promise.resolve({
-        ok: true,
-        json: async () => ({ choices: [{ message: { content: response } }] }),
-      }) as Response
+  return vi.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: response } }] }),
+      headers: new Headers(),
+      redirected: false,
+      status: 200,
+      statusText: 'OK',
+      type: 'basic' as ResponseType,
+      url: '',
+      clone: () => ({}) as Response,
+      body: null,
+      bodyUsed: false,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      blob: () => Promise.resolve(new Blob()),
+      formData: () => Promise.resolve(new FormData()),
+      text: () => Promise.resolve(''),
+    } as Response)
   )
 }
 
@@ -129,7 +147,7 @@ describe('AIAssistantPanel', () => {
   it('should call onSuggestIdeas when ideas button is clicked', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = createMockFetch('Idea 1\nIdea 2\nIdea 3')
+    mockFetch.mockImplementation(createMockFetch('Idea 1\nIdea 2\nIdea 3'))
 
     const handleSuggestIdeas = vi.fn()
     render(
@@ -147,7 +165,7 @@ describe('AIAssistantPanel', () => {
   it('should call onSummarizeBranch when summarize button is clicked', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = createMockFetch('Summary of the branch')
+    mockFetch.mockImplementation(createMockFetch('Summary of the branch'))
 
     const handleSummarizeBranch = vi.fn()
     render(
@@ -181,7 +199,7 @@ describe('AIAssistantPanel', () => {
   it('should call onGenerateMindMap when text is submitted', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = createMockFetch('Root\n  Child 1\n  Child 2')
+    mockFetch.mockImplementation(createMockFetch('Root\n  Child 1\n  Child 2'))
 
     const handleGenerate = vi.fn()
     render(<AIAssistantPanel {...defaultProps} onGenerateMindMap={handleGenerate} />)
@@ -200,7 +218,7 @@ describe('AIAssistantPanel', () => {
   it('should display AI response', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = createMockFetch('AI response text')
+    mockFetch.mockImplementation(createMockFetch('AI response text'))
 
     render(<AIAssistantPanel {...defaultProps} />)
 
@@ -230,13 +248,26 @@ describe('AIAssistantPanel', () => {
     localStorage.setItem('ai_provider', 'openai')
 
     // Mock a delayed response
-    global.fetch = vi.fn(
+    mockFetch.mockImplementation(
       () =>
         new Promise(resolve => {
           setTimeout(() => {
             resolve({
               ok: true,
               json: async () => ({ choices: [{ message: { content: 'Response' } }] }),
+              headers: new Headers(),
+              redirected: false,
+              status: 200,
+              statusText: 'OK',
+              type: 'basic' as ResponseType,
+              url: '',
+              clone: () => ({}) as Response,
+              body: null,
+              bodyUsed: false,
+              arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+              blob: () => Promise.resolve(new Blob()),
+              formData: () => Promise.resolve(new FormData()),
+              text: () => Promise.resolve(''),
             } as Response)
           }, 100)
         })
@@ -277,10 +308,23 @@ describe('AIAssistantPanel', () => {
   it('should handle fetch errors gracefully', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = vi.fn(() =>
+    mockFetch.mockImplementation(() =>
       Promise.resolve({
         ok: false,
         json: async () => ({ error: { message: 'Invalid API key' } }),
+        headers: new Headers(),
+        redirected: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        type: 'basic' as ResponseType,
+        url: '',
+        clone: () => ({}) as Response,
+        body: null,
+        bodyUsed: false,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+        blob: () => Promise.resolve(new Blob()),
+        formData: () => Promise.resolve(new FormData()),
+        text: () => Promise.resolve(''),
       } as Response)
     )
 
@@ -316,7 +360,7 @@ describe('AIAssistantPanel', () => {
   it('should clear response on new generation', async () => {
     localStorage.setItem('ai_api_key', 'test-key')
     localStorage.setItem('ai_provider', 'openai')
-    global.fetch = createMockFetch('First response')
+    mockFetch.mockImplementation(createMockFetch('First response'))
 
     render(<AIAssistantPanel {...defaultProps} />)
 
@@ -332,9 +376,7 @@ describe('AIAssistantPanel', () => {
     })
 
     // Change response for second generation
-    ;(global.fetch as ReturnType<typeof vi.fn>).mockImplementationOnce(
-      createMockFetch('Second response')
-    )
+    mockFetch.mockImplementationOnce(createMockFetch('Second response'))
 
     // Second generation
     await userEvent.clear(textarea)

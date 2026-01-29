@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useAutoSave } from './useAutoSave'
 import type { Node, Edge } from 'reactflow'
@@ -20,9 +20,9 @@ describe('useAutoSave', () => {
     localStorage.clear()
 
     // Mock localStorage methods
-    Storage.prototype.getItem = vi.fn(key => {
+    Storage.prototype.getItem = vi.fn((key: string) => {
       if (key in localStorage) {
-        return (localStorage as unknown as Record<string, unknown>)[key]
+        return (localStorage as unknown as Record<string, string>)[key] || null
       }
       return null
     })

@@ -31,7 +31,7 @@ export default function AIAssistantPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Keyboard navigation for the panel
-  const panelRef = useKeyboardNavigation({
+  const panelRef = useKeyboardNavigation<HTMLDivElement>({
     isOpen: visible,
     onClose,
     trapFocus: true,

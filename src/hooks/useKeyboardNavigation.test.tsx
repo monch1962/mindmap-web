@@ -16,7 +16,7 @@ function TestModal({
   autoFocus?: boolean
   restoreFocus?: boolean
 }) {
-  const modalRef = useKeyboardNavigation({
+  const modalRef = useKeyboardNavigation<HTMLDivElement>({
     isOpen,
     onClose,
     trapFocus,
@@ -71,7 +71,7 @@ describe('useKeyboardNavigation', () => {
 
   it('should return a ref', () => {
     function TestComponent() {
-      const ref = useKeyboardNavigation({ isOpen: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen: true })
       return (
         <div ref={ref} data-testid="container">
           Content
@@ -196,7 +196,7 @@ describe('useKeyboardNavigation', () => {
 
   it('should handle empty modal with no focusable elements', () => {
     function EmptyModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen })
 
       if (!isOpen) return null
       return (
@@ -218,7 +218,7 @@ describe('useKeyboardNavigation', () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state from previous tests interfering
     function TabindexModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen, autoFocus: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen, autoFocus: true })
 
       if (!isOpen) return null
       return (
@@ -243,7 +243,7 @@ describe('useKeyboardNavigation', () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state from previous tests interfering
     function DisabledModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen, autoFocus: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen, autoFocus: true })
 
       if (!isOpen) return null
       return (
@@ -268,7 +268,7 @@ describe('useKeyboardNavigation', () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state from previous tests interfering
     function HiddenModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen, autoFocus: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen, autoFocus: true })
 
       if (!isOpen) return null
       return (
@@ -291,7 +291,7 @@ describe('useKeyboardNavigation', () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state from previous tests interfering
     function LinkModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen, autoFocus: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen, autoFocus: true })
 
       if (!isOpen) return null
       return (
@@ -316,7 +316,7 @@ describe('useKeyboardNavigation', () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state from previous tests interfering
     function ContentEditableModal({ isOpen }: { isOpen: boolean }) {
-      const ref = useKeyboardNavigation({ isOpen, autoFocus: true })
+      const ref = useKeyboardNavigation<HTMLDivElement>({ isOpen, autoFocus: true })
 
       if (!isOpen) return null
       return (

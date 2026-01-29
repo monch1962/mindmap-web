@@ -46,7 +46,7 @@ export function useAsyncOperation<T = void, E = Error>(): UseAsyncOperationsRetu
     async <R = T>(operation: () => Promise<R>, context: string): Promise<R> => {
       // Prevent concurrent operations
       if (isLoadingRef.current) {
-        const error = new Error('Operation already in progress') as E
+        const error = new Error('Operation already in progress')
         trackError(error, `${context} - useAsyncOperation`)
         throw error
       }

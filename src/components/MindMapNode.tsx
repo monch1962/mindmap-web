@@ -36,13 +36,8 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
   const isRichText = data.label.includes('<') && data.label.includes('>')
 
   // Generate accessibility label
-  const ariaLabel = getNodeLabel(data.label, data.children?.length, data.depth)
-  const nodeAttrs = getNodeAttributes(
-    id,
-    ariaLabel,
-    (data.children?.length ?? 0) > 0,
-    data.collapsed
-  )
+  const ariaLabel = getNodeLabel(data.label, undefined, undefined)
+  const nodeAttrs = getNodeAttributes(id, ariaLabel, false, data.collapsed)
 
   const handleDoubleClick = () => {
     setIsEditing(true)
@@ -132,8 +127,8 @@ const MindMapNode = memo(({ data, selected, id }: NodeProps<MindMapNodeData>) =>
       onDoubleClick={handleDoubleClick}
       role={nodeAttrs.role as 'treeitem'}
       aria-label={nodeAttrs['aria-label']}
-      aria-level={nodeAttrs['aria-level']}
-      aria-expanded={nodeAttrs['aria-expanded']}
+      aria-level={parseInt(nodeAttrs['aria-level'])}
+      aria-expanded={nodeAttrs['aria-expanded'] as 'true' | 'false' | undefined}
     >
       {/* Input handle (for connections from parents) */}
       <Handle

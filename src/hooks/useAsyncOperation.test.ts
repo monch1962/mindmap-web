@@ -70,7 +70,7 @@ describe('useAsyncOperation', () => {
 
   it('should handle operation with arguments', async () => {
     const { result } = renderHook(() => useAsyncOperation<string, void>())
-    const mockOperation = vi.fn((arg1: string, arg2: number) => `${arg1}-${arg2}`)
+    const mockOperation = vi.fn((arg1: string, arg2: number) => Promise.resolve(`${arg1}-${arg2}`))
 
     await act(async () => {
       await result.current.execute(() => mockOperation('test', 42), 'TestContext')
