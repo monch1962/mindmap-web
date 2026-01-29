@@ -12,7 +12,9 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy": "npm run build && gh-pages -d dist",
+    "deploy:ci": "npm run build && echo 'Build complete. GitHub Actions will handle deployment.'"
   },
   "dependencies": {
     "js-yaml": "^4.1.1",
@@ -48,7 +50,8 @@
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^4.0.16",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "gh-pages": "^6.3.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

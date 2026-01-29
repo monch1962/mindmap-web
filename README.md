@@ -71,6 +71,7 @@ A modern, feature-rich mind mapping application built with React, TypeScript, an
 - **[Performance Guide](docs/performance.md)** - Optimization tips and best practices
 - **[Mobile Testing Guide](docs/mobile-testing.md)** - Mobile device testing strategies
 - **[Developer Onboarding](docs/onboarding.md)** - Get started contributing to the project
+- **[Deployment Guide](DEPLOYMENT.md)** - Deployment options and configuration
 
 ## Getting Started
 
@@ -101,6 +102,14 @@ npm run build
 ```
 
 Creates a single-file bundle in `dist/index.html` - self-contained with all assets embedded.
+
+### Deployment
+
+```bash
+npm run deploy
+```
+
+Deploys to GitHub Pages automatically. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment options.
 
 ### Testing
 
