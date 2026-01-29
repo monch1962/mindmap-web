@@ -1357,6 +1357,9 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
             <button onClick={() => saveToFile('yaml')} aria-label="Save as YAML">
               YAML
             </button>
+            <button onClick={() => saveToFile('svg')} aria-label="Save as SVG">
+              SVG
+            </button>
             <hr />
             <div>
               <strong>Enhanced Exports:</strong>

@@ -14,6 +14,7 @@ import {
   toD2,
   toYaml,
   parseYaml,
+  toSVG,
 } from '../utils/formats'
 import { exportToPDF, exportToPowerPoint, createPresentation } from '../utils/enhancedExports'
 import { trackError } from '../utils/errorTracking'
@@ -25,6 +26,7 @@ export type FileExportFormat =
   | 'markdown'
   | 'd2'
   | 'yaml'
+  | 'svg'
   | 'pdf'
   | 'powerpoint'
   | 'presentation'
@@ -108,6 +110,11 @@ export function useFileOperations({
           content = toYaml(tree)
           filename = 'mindmap.yaml'
           mimeType = 'text/yaml'
+          break
+        case 'svg':
+          content = toSVG(tree)
+          filename = 'mindmap.svg'
+          mimeType = 'image/svg+xml'
           break
         default:
           return
@@ -230,32 +237,21 @@ export function useFileOperations({
 
   /**
    * Export mind map as SVG image
+   * This is kept for backward compatibility, but saveToFile('svg') should be used instead
    */
   const exportAsSVG = useCallback(() => {
-    const svgElement = document.querySelector('.react-flow__viewport') as SVGElement
-    if (!svgElement) return
+    const tree = flowToTree(nodes as MindMapNode[], edges)
+    if (!tree) return
 
-    const serializer = new XMLSerializer()
-    let source = serializer.serializeToString(svgElement)
-
-    // Add namespaces
-    if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"')
-    }
-    if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
-      source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
-    }
-
-    // Add XML declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source
-
-    // Create blob and download
-    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source)
+    const content = toSVG(tree)
+    const blob = new Blob([content], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = 'mindmap.svg'
     a.click()
-  }, [])
+    URL.revokeObjectURL(url)
+  }, [nodes, edges])
 
   return {
     saveToFile,
