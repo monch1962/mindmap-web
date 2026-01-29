@@ -61,7 +61,7 @@ export const mockMatchMedia = (matches = false) => {
 /**
  * Mock fetch
  */
-export const mockFetch = (response: any, ok = true, status = 200) => {
+export const mockFetch = (response: unknown, ok = true, status = 200) => {
   return vi.fn().mockResolvedValue({
     ok,
     status,
@@ -110,12 +110,12 @@ export const mockWebSocket = () => {
  * Mock IndexedDB
  */
 export const mockIndexedDB = () => {
-  const store: Record<string, any> = {}
+  const store: Record<string, unknown> = {}
 
   return {
     open: vi.fn(),
     get: vi.fn((key: string) => store[key]),
-    put: vi.fn((key: string, value: any) => {
+    put: vi.fn((key: string, value: unknown) => {
       store[key] = value
     }),
     delete: vi.fn((key: string) => {
