@@ -2,7 +2,7 @@
 
 A modern, feature-rich mind mapping application built with React, TypeScript, and React Flow. Create, edit, and export mind maps with full FreeMind compatibility, AI-powered features, and real-time collaboration.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-358%20passing-success)
 ![Coverage](https://img.shields.io/badge/coverage-73.4%25-yellow)
