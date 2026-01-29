@@ -252,7 +252,8 @@ src/
 3. **Run test** to confirm it fails (RED)
 4. **Implement minimal solution** to pass test (GREEN)
 5. **Refactor** code for clarity and efficiency
-6. **Repeat** for each requirement
+6. **Update documentation** to reflect changes and ensure documentation tracks with features
+7. **Repeat** for each requirement
 
 ### Before Making Changes
 
@@ -267,6 +268,33 @@ src/
 2. Fix any linting issues: `npm run lint`
 3. Ensure TypeScript compiles: `npm run build`
 4. **Verify all tests pass, including new ones**
+5. **Update documentation** to reflect changes (AGENTS.md, README.md, code comments)
+
+### Documentation Updates
+
+**CRITICAL**: Documentation must be updated as part of the TDD process to ensure it tracks with features:
+
+1. **When adding new features**:
+   - Update AGENTS.md with new patterns, conventions, or instructions
+   - Update README.md with new functionality descriptions
+   - Add/update code comments for public APIs and complex logic
+
+2. **When modifying existing features**:
+   - Update relevant documentation sections
+   - Ensure examples in documentation match current implementation
+   - Update any affected user stories or test coverage documentation
+
+3. **When fixing bugs**:
+   - Document the fix in relevant sections
+   - Update troubleshooting guides if applicable
+   - Add test cases to prevent regression
+
+4. **Documentation types to maintain**:
+   - **AGENTS.md**: Development conventions, TDD practices, project patterns
+   - **README.md**: User-facing features, installation, usage
+   - **Code comments**: API documentation, complex algorithm explanations
+   - **Test documentation**: Test coverage status, skipped test reasons
+   - **Type definitions**: JSDoc comments for public functions and types
 
 ### When Adding New Features
 
