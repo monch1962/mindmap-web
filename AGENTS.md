@@ -324,3 +324,137 @@ describe('FeatureName', () => {
 - [ ] Error handling for edge cases
 - [ ] Accessibility considerations
 - [ ] Performance implications considered
+
+## User Stories & Test Coverage
+
+### Overview
+
+50 user stories organized into 10 categories, guiding comprehensive UI test implementation. These stories represent the complete user experience and should be used to drive test development.
+
+### User Stories by Category
+
+#### Category 1: Core Mind Map Creation & Editing (Stories 1-8)
+
+1. **As a user**, I want to create a new mind map with a central topic so that I can start organizing my ideas
+2. **As a user**, I want to add child and sibling nodes using keyboard shortcuts (Tab/Enter) so that I can quickly build my mind map structure
+3. **As a user**, I want to edit node content inline by double-clicking or pressing F2 so that I can modify text without opening panels
+4. **As a user**, I want to drag and drop nodes to reorganize the hierarchy so that I can refine my mind map structure visually
+5. **As a user**, I want to delete nodes using Delete/Backspace keys so that I can remove unwanted elements quickly
+6. **As a user**, I want to collapse/expand branches using Space key so that I can focus on specific sections of my mind map
+7. **As a user**, I want to zoom and pan the canvas using mouse wheel and drag so that I can navigate large mind maps
+8. **As a user**, I want to select multiple nodes using Shift+Click so that I can perform bulk operations
+
+#### Category 2: Node Enhancement & Styling (Stories 9-15)
+
+9. **As a user**, I want to add icons to nodes using the icon picker so that I can visually categorize and highlight important nodes
+10. **As a user**, I want to change node colors, fonts, and backgrounds so that I can create visual hierarchies and themes
+11. **As a user**, I want to add clouds to group related nodes so that I can create visual clusters for organization
+12. **As a user**, I want to add links to external resources so that I can reference related materials
+13. **As a user**, I want to add rich text notes to nodes so that I can include detailed information and formatting
+14. **As a user**, I want to attach files (images, code, documents) to nodes so that I can include supporting materials
+15. **As a user**, I want to add tags and custom metadata to nodes so that I can categorize and search effectively
+
+#### Category 3: AI-Powered Features (Stories 16-19)
+
+16. **As a user**, I want to generate a mind map from a text prompt using AI so that I can quickly create structured content
+17. **As a user**, I want to get creative ideas for a selected node using AI so that I can overcome creative blocks
+18. **As a user**, I want to summarize a branch of my mind map using AI so that I can get concise overviews of complex sections
+19. **As a user**, I want to configure my AI provider (OpenAI/Anthropic) and API key so that I can use my preferred AI service
+
+#### Category 4: Search & Navigation (Stories 20-23)
+
+20. **As a user**, I want to search for nodes by text content so that I can quickly find specific information
+21. **As a user**, I want to use advanced search filters (regex, case-sensitive, date ranges) so that I can perform precise searches
+22. **As a user**, I want to navigate search results using Ctrl+G so that I can cycle through matches efficiently
+23. **As a user**, I want to filter nodes by icons, tags, or clouds so that I can view specific subsets of my mind map
+
+#### Category 5: Import & Export (Stories 24-29)
+
+24. **As a user**, I want to import FreeMind (.mm) files so that I can work with existing mind maps
+25. **As a user**, I want to export my mind map as JSON so that I can back up or transfer my work
+26. **As a user**, I want to export my mind map as SVG/PNG/PDF so that I can share visual representations
+27. **As a user**, I want to export my mind map as Markdown so that I can use the content in documentation
+28. **As a user**, I want to export to calendar format (iCal) so that I can schedule tasks from my mind map
+29. **As a user**, I want to email my mind map directly from the app so that I can share with colleagues
+
+#### Category 6: Collaboration & Sharing (Stories 30-33)
+
+30. **As a user**, I want to see other users' cursors and selections in real-time so that I can collaborate effectively
+31. **As a user**, I want to add comments to specific nodes so that I can discuss ideas with collaborators
+32. **As a user**, I want to resolve comment threads so that I can track discussion completion
+33. **As a user**, I want to configure webhooks for node changes so that I can integrate with automation tools
+
+#### Category 7: Presentation & Visualization (Stories 34-37)
+
+34. **As a user**, I want to enter presentation mode so that I can present my mind map as slides
+35. **As a user**, I want to navigate presentation slides using arrow keys so that I can control the flow
+36. **As a user**, I want to view my mind map in 3D so that I can explore relationships spatially
+37. **As a user**, I want to apply different themes (light/dark/custom) so that I can customize the visual appearance
+
+#### Category 8: Mobile & Offline Usage (Stories 38-41)
+
+38. **As a user**, I want to install the app as a PWA on my mobile device so that I can access it like a native app
+39. **As a user**, I want to use touch gestures (pinch-to-zoom, drag) on mobile so that I can navigate intuitively
+40. **As a user**, I want to work offline and have changes sync when back online so that I can use the app anywhere
+41. **As a user**, I want to see online/offline status so that I know when I'm connected
+
+#### Category 9: History & Version Control (Stories 42-45)
+
+42. **As a user**, I want to undo/redo changes using Ctrl+Z/Ctrl+Y so that I can correct mistakes
+43. **As a user**, I want to view a visual history timeline so that I can see changes over time
+44. **As a user**, I want to restore from previous auto-save versions so that I can recover lost work
+45. **As a user**, I want to resolve save conflicts when working on multiple devices so that I can maintain data consistency
+
+#### Category 10: Templates & Productivity (Stories 46-50)
+
+46. **As a user**, I want to start from a template (SWOT, project planning) so that I can save setup time
+47. **As a user**, I want to perform bulk operations on multiple nodes so that I can efficiently manage large mind maps
+48. **As a user**, I want to view statistics about my mind map (node count, depth, etc.) so that I can analyze complexity
+49. **As a user**, I want to access keyboard shortcuts reference so that I can learn efficient workflows
+50. **As a user**, I want to use the mobile toolbar on touch devices so that I can access essential functions easily
+
+### Test Implementation Strategy
+
+- **TDD Approach**: Red-Green-Refactor for all tests
+- **Parallel Workstreams**: 6 parallel workstreams for efficiency
+- **Coverage Target**: 90%+ overall test coverage
+- **Accessibility**: WCAG 2.1 AA compliance for all features
+- **Performance**: Critical workflows under 2-second response time
+
+### Priority Order for Test Development
+
+1. **Core creation/editing workflows** (Stories 1-8) - Foundation
+2. **Import/export functionality** (Stories 24-29) - Data persistence
+3. **AI-powered features** (Stories 16-19) - Advanced functionality
+4. **Collaboration features** (Stories 30-33) - Multi-user support
+5. **Mobile/PWA features** (Stories 38-41) - Cross-platform compatibility
+
+### Test File Structure
+
+- `src/components/__tests__/` - UI workflow tests organized by category
+- `src/test/` - Test infrastructure (utilities, factories, mocks)
+- `TESTING.md` - Comprehensive testing guide
+- Coverage reports in `coverage/` directory
+
+### Success Metrics
+
+- **Coverage**: Achieve 90%+ test coverage
+- **User Stories**: All 50 stories have comprehensive tests
+- **Performance**: Tests run under 2 minutes
+- **Accessibility**: 100% compliance with WCAG 2.1 AA
+- **Documentation**: Complete TESTING.md guide
+
+### Implementation Guidelines
+
+1. **Follow TDD strictly**: Write failing test first, then implement
+2. **Use existing patterns**: Match code style and test structure
+3. **Test edge cases**: Include error states and boundary conditions
+4. **Verify accessibility**: All interactions should be keyboard-navigable
+5. **Maintain performance**: Tests should not degrade build times
+
+### Current Status (2026-01-29)
+
+- **606 tests passing**, 30 skipped (636 total)
+- **73.4% coverage** with 90% target
+- **3 test categories** implemented (Core, AI, Search in progress)
+- **Next phase**: Comprehensive UI test implementation for all 50 stories
