@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { ThemeMode } from '../utils/theme';
+import { useState, useEffect } from 'react'
+import type { ThemeMode } from '../utils/theme'
 import {
   colorSchemes,
   getThemeMode,
@@ -16,115 +16,122 @@ import {
   createCustomColorScheme,
   watchSystemTheme,
   type ColorScheme,
-} from '../utils/theme';
+} from '../utils/theme'
 
 interface ThemeSettingsPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  onThemeChange?: () => void;
+  visible: boolean
+  onClose: () => void
+  onThemeChange?: () => void
 }
 
-export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: ThemeSettingsPanelProps) {
-  const [themeMode, setLocalThemeMode] = useState<ThemeMode>(getThemeMode());
-  const [currentScheme, setCurrentScheme] = useState<ColorScheme>(getColorScheme());
-  const [customSchemes, setCustomSchemes] = useState<ColorScheme[]>(getCustomColorSchemes());
-  const [showCustomEditor, setShowCustomEditor] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+export default function ThemeSettingsPanel({
+  visible,
+  onClose,
+  onThemeChange,
+}: ThemeSettingsPanelProps) {
+  const [themeMode, setLocalThemeMode] = useState<ThemeMode>(getThemeMode())
+  const [currentScheme, setCurrentScheme] = useState<ColorScheme>(getColorScheme())
+  const [customSchemes, setCustomSchemes] = useState<ColorScheme[]>(getCustomColorSchemes())
+  const [showCustomEditor, setShowCustomEditor] = useState(false)
+  const [statusMessage, setStatusMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
-  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (visible) {
-      setLocalThemeMode(getThemeMode());
-      setCurrentScheme(getColorScheme());
-      setCustomSchemes(getCustomColorSchemes());
+      setLocalThemeMode(getThemeMode())
+      setCurrentScheme(getColorScheme())
+      setCustomSchemes(getCustomColorSchemes())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }, [visible])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    const cleanup = watchSystemTheme((mode) => {
-      applyTheme(mode);
-      onThemeChange?.();
-    });
+    const cleanup = watchSystemTheme(mode => {
+      applyTheme(mode)
+      onThemeChange?.()
+    })
 
-    return cleanup;
-  }, [onThemeChange]);
+    return cleanup
+  }, [onThemeChange])
 
   const showStatus = (type: 'success' | 'error', text: string) => {
-    setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 3000);
-  };
+    setStatusMessage({ type, text })
+    setTimeout(() => setStatusMessage(null), 3000)
+  }
 
   const handleThemeModeChange = (mode: ThemeMode) => {
-    setLocalThemeMode(mode);
-    setThemeMode(mode);
-    applyTheme(mode);
-    onThemeChange?.();
-  };
+    setLocalThemeMode(mode)
+    setThemeMode(mode)
+    applyTheme(mode)
+    onThemeChange?.()
+  }
 
   const handleColorSchemeChange = (schemeId: string) => {
-    const allSchemes = [...colorSchemes, ...customSchemes];
-    const scheme = allSchemes.find(s => s.id === schemeId);
+    const allSchemes = [...colorSchemes, ...customSchemes]
+    const scheme = allSchemes.find(s => s.id === schemeId)
     if (scheme) {
-      setCurrentScheme(scheme);
-      setColorScheme(schemeId);
-      applyColorScheme(scheme);
-      onThemeChange?.();
+      setCurrentScheme(scheme)
+      setColorScheme(schemeId)
+      applyColorScheme(scheme)
+      onThemeChange?.()
     }
-  };
+  }
 
   const handleDeleteCustomScheme = (schemeId: string) => {
     if (confirm('Are you sure you want to delete this color scheme?')) {
-      deleteCustomColorScheme(schemeId);
-      setCustomSchemes(getCustomColorSchemes());
+      deleteCustomColorScheme(schemeId)
+      setCustomSchemes(getCustomColorSchemes())
       if (currentScheme.id === schemeId) {
-        const defaultScheme = colorSchemes[0];
-        setCurrentScheme(defaultScheme);
-        setColorScheme(defaultScheme.id);
-        applyColorScheme(defaultScheme);
+        const defaultScheme = colorSchemes[0]
+        setCurrentScheme(defaultScheme)
+        setColorScheme(defaultScheme.id)
+        applyColorScheme(defaultScheme)
       }
-      showStatus('success', 'Color scheme deleted');
+      showStatus('success', 'Color scheme deleted')
     }
-  };
+  }
 
   const handleExport = () => {
-    const json = exportThemeSettings();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'theme-settings.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showStatus('success', 'Theme settings exported');
-  };
+    const json = exportThemeSettings()
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'theme-settings.json'
+    a.click()
+    URL.revokeObjectURL(url)
+    showStatus('success', 'Theme settings exported')
+  }
 
   const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = e => {
+      const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const json = event.target?.result as string;
+        const reader = new FileReader()
+        reader.onload = event => {
+          const json = event.target?.result as string
           if (importThemeSettings(json)) {
-            setLocalThemeMode(getThemeMode());
-            setCurrentScheme(getColorScheme());
-            setCustomSchemes(getCustomColorSchemes());
-            showStatus('success', 'Theme settings imported');
+            setLocalThemeMode(getThemeMode())
+            setCurrentScheme(getColorScheme())
+            setCustomSchemes(getCustomColorSchemes())
+            showStatus('success', 'Theme settings imported')
           } else {
-            showStatus('error', 'Invalid theme settings file');
+            showStatus('error', 'Invalid theme settings file')
           }
-        };
-        reader.readAsText(file);
+        }
+        reader.readAsText(file)
       }
-    };
-    input.click();
-  };
+    }
+    input.click()
+  }
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div
@@ -159,9 +166,7 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '20px' }}>🎨</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-            Theme Settings
-          </h2>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Theme Settings</h2>
         </div>
         <button
           onClick={onClose}
@@ -199,11 +204,13 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
 
         {/* Theme Mode */}
         <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+          <h3
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Theme Mode
           </h3>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {(['light', 'dark', 'auto'] as ThemeMode[]).map((mode) => (
+            {(['light', 'dark', 'auto'] as ThemeMode[]).map(mode => (
               <button
                 key={mode}
                 onClick={() => handleThemeModeChange(mode)}
@@ -239,7 +246,14 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
 
         {/* Color Schemes */}
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px',
+            }}
+          >
             <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#374151' }}>
               Color Scheme
             </h3>
@@ -261,7 +275,7 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-            {colorSchemes.map((scheme) => (
+            {colorSchemes.map(scheme => (
               <ColorSchemeCard
                 key={scheme.id}
                 scheme={scheme}
@@ -270,7 +284,7 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
               />
             ))}
 
-            {customSchemes.map((scheme) => (
+            {customSchemes.map(scheme => (
               <div key={scheme.id} style={{ position: 'relative' }}>
                 <ColorSchemeCard
                   scheme={scheme}
@@ -307,11 +321,11 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
         {/* Custom Scheme Editor */}
         {showCustomEditor && (
           <CustomSchemeEditor
-            onSave={(scheme) => {
-              saveCustomColorScheme(scheme);
-              setCustomSchemes(getCustomColorSchemes());
-              setShowCustomEditor(false);
-              showStatus('success', 'Custom scheme created');
+            onSave={scheme => {
+              saveCustomColorScheme(scheme)
+              setCustomSchemes(getCustomColorSchemes())
+              setShowCustomEditor(false)
+              showStatus('success', 'Custom scheme created')
             }}
             onCancel={() => setShowCustomEditor(false)}
           />
@@ -319,7 +333,9 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
 
         {/* Import/Export */}
         <div>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}>
+          <h3
+            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+          >
             Share Settings
           </h3>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -359,7 +375,7 @@ export default function ThemeSettingsPanel({ visible, onClose, onThemeChange }: 
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 /**
@@ -370,9 +386,9 @@ function ColorSchemeCard({
   isSelected,
   onClick,
 }: {
-  scheme: ColorScheme;
-  isSelected: boolean;
-  onClick: () => void;
+  scheme: ColorScheme
+  isSelected: boolean
+  onClick: () => void
 }) {
   return (
     <div
@@ -385,11 +401,11 @@ function ColorSchemeCard({
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = isSelected ? '#3b82f6' : '#d1d5db';
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = isSelected ? '#3b82f6' : '#d1d5db'
       }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = isSelected ? '#3b82f6' : '#e5e7eb';
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = isSelected ? '#3b82f6' : '#e5e7eb'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -401,15 +417,13 @@ function ColorSchemeCard({
             background: `linear-gradient(135deg, ${scheme.preview[0]} 0%, ${scheme.preview[1]} 100%)`,
           }}
         />
-        <span style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>
-          {scheme.name}
-        </span>
+        <span style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>{scheme.name}</span>
       </div>
       <p style={{ fontSize: '11px', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>
         {scheme.description}
       </p>
     </div>
-  );
+  )
 }
 
 /**
@@ -419,26 +433,26 @@ function CustomSchemeEditor({
   onSave,
   onCancel,
 }: {
-  onSave: (scheme: ColorScheme) => void;
-  onCancel: () => void;
+  onSave: (scheme: ColorScheme) => void
+  onCancel: () => void
 }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState('')
   const [colors, setColors] = useState({
     primary: '#667eea',
     secondary: '#764ba2',
     background: '#ffffff',
     text: '#111827',
-  });
+  })
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert('Please enter a name for your color scheme');
-      return;
+      alert('Please enter a name for your color scheme')
+      return
     }
 
-    const scheme = createCustomColorScheme(name, colors);
-    onSave(scheme);
-  };
+    const scheme = createCustomColorScheme(name, colors)
+    onSave(scheme)
+  }
 
   return (
     <div
@@ -457,7 +471,7 @@ function CustomSchemeEditor({
       <input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
         placeholder="Scheme name..."
         style={{
           width: '100%',
@@ -469,23 +483,43 @@ function CustomSchemeEditor({
         }}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '8px',
+          marginBottom: '12px',
+        }}
+      >
         {Object.entries(colors).map(([key, value]) => (
           <div key={key}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '4px', color: '#374151' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+                color: '#374151',
+              }}
+            >
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </label>
             <div style={{ display: 'flex', gap: '4px' }}>
               <input
                 type="color"
                 value={value}
-                onChange={(e) => setColors({ ...colors, [key]: e.target.value })}
-                style={{ width: '40px', height: '32px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                onChange={e => setColors({ ...colors, [key]: e.target.value })}
+                style={{
+                  width: '40px',
+                  height: '32px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                }}
               />
               <input
                 type="text"
                 value={value}
-                onChange={(e) => setColors({ ...colors, [key]: e.target.value })}
+                onChange={e => setColors({ ...colors, [key]: e.target.value })}
                 style={{
                   flex: 1,
                   padding: '6px 8px',
@@ -551,5 +585,5 @@ function CustomSchemeEditor({
         </button>
       </div>
     </div>
-  );
+  )
 }

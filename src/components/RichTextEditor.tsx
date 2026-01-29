@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { sanitizeHtml } from '../utils/sanitize';
+import { useState, useRef, useEffect } from 'react'
+import { sanitizeHtml } from '../utils/sanitize'
 
 interface RichTextEditorProps {
-  content: string;
-  onChange: (content: string) => void;
-  onSave: (newContent: string) => void;
-  onCancel: () => void;
-  placeholder?: string;
+  content: string
+  onChange: (content: string) => void
+  onSave: (newContent: string) => void
+  onCancel: () => void
+  placeholder?: string
 }
 
 export default function RichTextEditor({
@@ -16,63 +16,62 @@ export default function RichTextEditor({
   onCancel,
   placeholder = 'Enter text...',
 }: RichTextEditorProps) {
-  const [text, setText] = useState(content);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
+  const [text, setText] = useState(content)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const initializedRef = useRef(false)
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
 
   // Sync local state with props when content changes
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // Sanitize content on initialization
-    const sanitizedContent = sanitizeHtml(content);
+    const sanitizedContent = sanitizeHtml(content)
 
     if (editorRef.current) {
       // Only set innerHTML if content has actually changed
       if (!initializedRef.current || editorRef.current.innerHTML !== sanitizedContent) {
-        editorRef.current.innerHTML = sanitizedContent;
-        initializedRef.current = true;
+        editorRef.current.innerHTML = sanitizedContent
+        initializedRef.current = true
       }
-      setText(sanitizedContent);
+      setText(sanitizedContent)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
+  }, [content])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const execCommand = (command: string, value: string = '') => {
-    document.execCommand(command, false, value);
-    editorRef.current?.focus();
-  };
+    document.execCommand(command, false, value)
+    editorRef.current?.focus()
+  }
 
   const handleInput = () => {
     if (editorRef.current) {
-      const html = editorRef.current.innerHTML;
-      const sanitized = sanitizeHtml(html);
-      setText(sanitized);
-      onChange(sanitized);
+      const html = editorRef.current.innerHTML
+      const sanitized = sanitizeHtml(html)
+      setText(sanitized)
+      onChange(sanitized)
     }
-  };
+  }
 
   const handleLink = () => {
     if (linkUrl) {
-      execCommand('createLink', linkUrl);
-      setShowLinkModal(false);
-      setLinkUrl('');
+      execCommand('createLink', linkUrl)
+      setShowLinkModal(false)
+      setLinkUrl('')
       // Sanitize after adding link
-      setTimeout(handleInput, 0);
+      setTimeout(handleInput, 0)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSave(text);
+      e.preventDefault()
+      onSave(text)
     } else if (e.key === 'Escape') {
-      e.preventDefault();
-      onCancel();
+      e.preventDefault()
+      onCancel()
     }
-  };
+  }
 
   return (
     <div
@@ -105,9 +104,9 @@ export default function RichTextEditor({
       >
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('bold');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('bold')
           }}
           aria-label="Make text bold (Ctrl+B)"
           style={{
@@ -125,9 +124,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('italic');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('italic')
           }}
           aria-label="Make text italic (Ctrl+I)"
           style={{
@@ -145,9 +144,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('underline');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('underline')
           }}
           aria-label="Underline text (Ctrl+U)"
           style={{
@@ -163,12 +162,16 @@ export default function RichTextEditor({
         >
           U
         </button>
-        <div role="separator" aria-orientation="vertical" style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }}
+        />
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('foreColor', '#ef4444');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('foreColor', '#ef4444')
           }}
           aria-label="Apply red color to text"
           style={{
@@ -187,9 +190,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('foreColor', '#3b82f6');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('foreColor', '#3b82f6')
           }}
           aria-label="Apply blue color to text"
           style={{
@@ -208,9 +211,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('foreColor', '#10b981');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('foreColor', '#10b981')
           }}
           aria-label="Apply green color to text"
           style={{
@@ -229,9 +232,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('foreColor', '#f59e0b');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('foreColor', '#f59e0b')
           }}
           aria-label="Apply orange color to text"
           style={{
@@ -250,9 +253,9 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand('removeFormat');
+          onMouseDown={e => {
+            e.preventDefault()
+            execCommand('removeFormat')
           }}
           aria-label="Clear text formatting"
           style={{
@@ -267,7 +270,11 @@ export default function RichTextEditor({
         >
           Clear
         </button>
-        <div role="separator" aria-orientation="vertical" style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }} />
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          style={{ width: '1px', background: '#d1d5db', margin: '2px 4px' }}
+        />
         <button
           type="button"
           onClick={() => setShowLinkModal(true)}
@@ -336,16 +343,16 @@ export default function RichTextEditor({
             id="link-url-input"
             type="text"
             value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
+            onChange={e => setLinkUrl(e.target.value)}
             placeholder="https://example.com"
             aria-label="Enter link URL"
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter') {
-                e.preventDefault();
-                handleLink();
+                e.preventDefault()
+                handleLink()
               } else if (e.key === 'Escape') {
-                setShowLinkModal(false);
-                setLinkUrl('');
+                setShowLinkModal(false)
+                setLinkUrl('')
               }
             }}
             style={{
@@ -393,5 +400,5 @@ export default function RichTextEditor({
         <span>Enter to save, Escape to cancel</span>
       </div>
     </div>
-  );
+  )
 }

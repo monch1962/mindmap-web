@@ -2,15 +2,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { onCLS, onFID, onLCP, onFCP, onTTFB } from 'web-vitals'
+import { onCLS, onFCP, onLCP, onTTFB } from 'web-vitals'
 import { trackWebVitals } from './utils/performance'
 
 // Initialize Web Vitals tracking
 if (import.meta.env.DEV) {
   onCLS(trackWebVitals)
-  onFID(trackWebVitals)
-  onLCP(trackWebVitals)
   onFCP(trackWebVitals)
+  onLCP(trackWebVitals)
   onTTFB(trackWebVitals)
 }
 

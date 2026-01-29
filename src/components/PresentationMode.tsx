@@ -1,111 +1,110 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { MindMapTree } from '../types';
+import { useState, useEffect, useCallback } from 'react'
+import type { MindMapTree } from '../types'
 
 interface PresentationModeProps {
-  visible: boolean;
-  onClose: () => void;
-  tree: MindMapTree | null;
+  visible: boolean
+  onClose: () => void
+  tree: MindMapTree | null
 }
 
 interface Slide {
-  id: string;
-  content: string;
-  level: number;
-  children?: Slide[];
+  id: string
+  content: string
+  level: number
+  children?: Slide[]
   metadata?: {
-    notes?: string;
-    link?: string;
-    image?: string;
-  };
+    notes?: string
+    link?: string
+    image?: string
+  }
 }
 
 export default function PresentationMode({ visible, onClose, tree }: PresentationModeProps) {
-  const [slides, setSlides] = useState<Slide[]>([]);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [showNotes, setShowNotes] = useState(false);
+  const [slides, setSlides] = useState<Slide[]>([])
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
+  const [direction, setDirection] = useState<'next' | 'prev' | null>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
 
   // Reset slides when tree changes
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (tree) {
-      const generatedSlides = generateSlides(tree);
-      setSlides(generatedSlides);
-      setCurrentSlideIndex(0);
+      const generatedSlides = generateSlides(tree)
+      setSlides(generatedSlides)
+      setCurrentSlideIndex(0)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tree]);
+  }, [tree])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // Navigation callbacks (must be declared before the keyboard effect)
   const nextSlide = useCallback(() => {
-    if (isAnimating || currentSlideIndex >= slides.length - 1) return;
-    setIsAnimating(true);
-    setDirection('next');
+    if (isAnimating || currentSlideIndex >= slides.length - 1) return
+    setIsAnimating(true)
+    setDirection('next')
     setTimeout(() => {
-      setCurrentSlideIndex(prev => prev + 1);
-      setIsAnimating(false);
-    }, 300);
-  }, [currentSlideIndex, slides.length, isAnimating]);
+      setCurrentSlideIndex(prev => prev + 1)
+      setIsAnimating(false)
+    }, 300)
+  }, [currentSlideIndex, slides.length, isAnimating])
 
   const prevSlide = useCallback(() => {
-    if (isAnimating || currentSlideIndex <= 0) return;
-    setIsAnimating(true);
-    setDirection('prev');
+    if (isAnimating || currentSlideIndex <= 0) return
+    setIsAnimating(true)
+    setDirection('prev')
     setTimeout(() => {
-      setCurrentSlideIndex(prev => prev - 1);
-      setIsAnimating(false);
-    }, 300);
-  }, [currentSlideIndex, isAnimating]);
+      setCurrentSlideIndex(prev => prev - 1)
+      setIsAnimating(false)
+    }, 300)
+  }, [currentSlideIndex, isAnimating])
 
   // Keyboard navigation
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowRight':
         case ' ':
         case 'Enter':
-          e.preventDefault();
-          nextSlide();
-          break;
+          e.preventDefault()
+          nextSlide()
+          break
         case 'ArrowLeft':
-          e.preventDefault();
-          prevSlide();
-          break;
+          e.preventDefault()
+          prevSlide()
+          break
         case 'Escape':
-          e.preventDefault();
-          onClose();
-          break;
+          e.preventDefault()
+          onClose()
+          break
         case 'n':
           if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            setShowNotes(!showNotes);
+            e.preventDefault()
+            setShowNotes(!showNotes)
           }
-          break;
+          break
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [visible, currentSlideIndex, slides.length, showNotes, nextSlide, prevSlide, onClose]);
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [visible, currentSlideIndex, slides.length, showNotes, nextSlide, prevSlide, onClose])
 
   const goToSlide = (index: number) => {
-    if (isAnimating || index === currentSlideIndex) return;
-    setIsAnimating(true);
-    setDirection(index > currentSlideIndex ? 'next' : 'prev');
+    if (isAnimating || index === currentSlideIndex) return
+    setIsAnimating(true)
+    setDirection(index > currentSlideIndex ? 'next' : 'prev')
     setTimeout(() => {
-      setCurrentSlideIndex(index);
-      setIsAnimating(false);
-    }, 300);
-  };
+      setCurrentSlideIndex(index)
+      setIsAnimating(false)
+    }, 300)
+  }
 
-  if (!visible || !tree || slides.length === 0) return null;
+  if (!visible || !tree || slides.length === 0) return null
 
-  const currentSlide = slides[currentSlideIndex];
-  const progress = ((currentSlideIndex + 1) / slides.length) * 100;
+  const currentSlide = slides[currentSlideIndex]
+  const progress = ((currentSlideIndex + 1) / slides.length) * 100
 
   return (
     <div
@@ -137,12 +136,8 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>
-            🎯 Presentation Mode
-          </h1>
-          <span style={{ fontSize: '14px', opacity: 0.8 }}>
-            {tree.content}
-          </span>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>🎯 Presentation Mode</h1>
+          <span style={{ fontSize: '14px', opacity: 0.8 }}>{tree.content}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -343,11 +338,18 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
             overflowY: 'auto',
           }}
         >
-          <h3 id="slides-overview-title" style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', opacity: 0.8 }}>
+          <h3
+            id="slides-overview-title"
+            style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 'bold', opacity: 0.8 }}
+          >
             Slides ({slides.length})
           </h3>
 
-          <div role="list" aria-label="All slides" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            role="list"
+            aria-label="All slides"
+            style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+          >
             {slides.map((slide, index) => (
               <div
                 key={slide.id}
@@ -355,33 +357,35 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
                 aria-label={`Slide ${index + 1}: ${slide.content}${index === currentSlideIndex ? ' (current)' : ''}`}
                 tabIndex={0}
                 onClick={() => goToSlide(index)}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    goToSlide(index);
+                    e.preventDefault()
+                    goToSlide(index)
                   }
                 }}
                 style={{
                   padding: '12px',
-                  background: index === currentSlideIndex
-                    ? 'rgba(102, 126, 234, 0.5)'
-                    : 'rgba(255,255,255,0.05)',
-                  border: index === currentSlideIndex
-                    ? '2px solid #667eea'
-                    : '1px solid rgba(255,255,255,0.1)',
+                  background:
+                    index === currentSlideIndex
+                      ? 'rgba(102, 126, 234, 0.5)'
+                      : 'rgba(255,255,255,0.05)',
+                  border:
+                    index === currentSlideIndex
+                      ? '2px solid #667eea'
+                      : '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   fontSize: '13px',
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                   if (index !== currentSlideIndex) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
                   }
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   if (index !== currentSlideIndex) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
                   }
                 }}
               >
@@ -451,7 +455,10 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
           }
           style={{
             padding: '12px 24px',
-            background: currentSlideIndex < slides.length - 1 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+            background:
+              currentSlideIndex < slides.length - 1
+                ? 'rgba(255,255,255,0.1)'
+                : 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.2)',
             color: 'white',
             borderRadius: '8px',
@@ -481,14 +488,14 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
         }
       `}</style>
     </div>
-  );
+  )
 }
 
 /**
  * Generate slides from mind map tree
  */
 function generateSlides(tree: MindMapTree): Slide[] {
-  const slides: Slide[] = [];
+  const slides: Slide[] = []
 
   const traverse = (node: MindMapTree, level: number = 0): Slide => {
     const slide: Slide = {
@@ -496,43 +503,43 @@ function generateSlides(tree: MindMapTree): Slide[] {
       content: node.content,
       level,
       metadata: node.metadata,
-    };
-
-    if (node.children && node.children.length > 0) {
-      slide.children = node.children.map(child => traverse(child, level + 1));
     }
 
-    return slide;
-  };
+    if (node.children && node.children.length > 0) {
+      slide.children = node.children.map(child => traverse(child, level + 1))
+    }
+
+    return slide
+  }
 
   // Add root slide
-  slides.push(traverse(tree));
+  slides.push(traverse(tree))
 
   // Add child slides breadth-first
-  const queue = [...(tree.children || [])];
+  const queue = [...(tree.children || [])]
   while (queue.length > 0) {
-    const node = queue.shift()!;
-    slides.push(traverse(node));
+    const node = queue.shift()!
+    slides.push(traverse(node))
 
     if (node.children) {
-      queue.push(...node.children);
+      queue.push(...node.children)
     }
   }
 
-  return slides;
+  return slides
 }
 
 /**
  * Get slide transform based on direction
  */
 function getSlideTransform(direction: 'next' | 'prev' | null, isAnimating: boolean): string {
-  if (!isAnimating) return 'translateX(0)';
+  if (!isAnimating) return 'translateX(0)'
 
   if (direction === 'next') {
-    return 'translateX(-100%)';
+    return 'translateX(-100%)'
   } else if (direction === 'prev') {
-    return 'translateX(100%)';
+    return 'translateX(100%)'
   }
 
-  return 'translateX(0)';
+  return 'translateX(0)'
 }
