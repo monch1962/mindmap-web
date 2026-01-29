@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import { useKeyboardNavigation } from './useKeyboardNavigation'
 
 // Test component that uses the hook
@@ -67,6 +67,7 @@ describe('useKeyboardNavigation', () => {
 
   afterEach(() => {
     activeElementMock = null
+    cleanup()
   })
 
   it('should return a ref', () => {
@@ -134,7 +135,7 @@ describe('useKeyboardNavigation', () => {
     expect(handleClose).toHaveBeenCalledTimes(1)
   })
 
-  it.skip('should trap focus within modal on Tab', async () => {
+  it('should trap focus within modal on Tab', async () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state or event listeners from previous tests interfering
     render(<TestModal isOpen={true} trapFocus={true} />)
@@ -154,7 +155,7 @@ describe('useKeyboardNavigation', () => {
     expect(input1).toHaveFocus()
   })
 
-  it.skip('should trap focus within modal on Shift+Tab', async () => {
+  it('should trap focus within modal on Shift+Tab', async () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to focus state or event listeners from previous tests interfering
     render(<TestModal isOpen={true} trapFocus={true} />)

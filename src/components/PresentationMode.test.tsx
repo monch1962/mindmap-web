@@ -1,9 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import PresentationMode from './PresentationMode'
 import type { MindMapTree } from '../types'
 
 describe('PresentationMode', () => {
+  let cleanupFunctions: Array<() => void> = []
+
+  beforeEach(() => {
+    cleanupFunctions = []
+    // Clean up any existing event listeners
+    window.removeEventListener('keydown', () => {})
+  })
+
+  afterEach(() => {
+    // Clean up any event listeners added during tests
+    cleanupFunctions.forEach(cleanup => cleanup())
+    cleanupFunctions = []
+    cleanup() // Clean up React Testing Library render
+  })
+
   const mockTree: MindMapTree = {
     id: 'root',
     content: 'Presentation Root',
@@ -127,9 +142,7 @@ describe('PresentationMode', () => {
     expect(screen.getByText('Presenter notes for the root')).toBeInTheDocument()
   })
 
-  it.skip('should navigate slides with arrow keys', async () => {
-    // TODO: Fix test isolation - passes when run individually but fails in full suite
-    // Likely due to event listeners from previous tests interfering
+  it('should navigate slides with arrow keys', async () => {
     render(<PresentationMode {...defaultProps} />)
 
     const slideCounter = screen.getByRole('status') // Slide counter is now role="status"
@@ -182,7 +195,7 @@ describe('PresentationMode', () => {
     expect(prevButton).toBeDisabled()
   })
 
-  it.skip('should disable next button on last slide', async () => {
+  it('should disable next button on last slide', async () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to event listeners from previous tests interfering
     render(<PresentationMode {...defaultProps} />)
@@ -316,7 +329,7 @@ describe('PresentationMode', () => {
     )
   })
 
-  it.skip('should handle rapid keyboard navigation', async () => {
+  it('should handle rapid keyboard navigation', async () => {
     // TODO: Fix test isolation - passes when run individually but fails in full suite
     // Likely due to event listeners from previous tests interfering
     render(<PresentationMode {...defaultProps} />)
