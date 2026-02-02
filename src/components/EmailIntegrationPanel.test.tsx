@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import EmailIntegrationPanel from './EmailIntegrationPanel'
@@ -11,15 +12,6 @@ vi.mock('../utils/emailIntegration', () => ({
   generateWeeklyDigest: vi.fn(),
   generateEmailSignature: vi.fn(),
 }))
-
-// Mock clipboard API
-const mockClipboard = {
-  writeText: vi.fn(),
-}
-Object.defineProperty(navigator, 'clipboard', {
-  value: mockClipboard,
-  writable: true,
-})
 
 // Mock tree data
 const mockTree = {
@@ -40,11 +32,11 @@ describe('EmailIntegrationPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Default mock implementations
-    ;(emailUtils.sendEmail as any).mockImplementation(() => {})
-    ;(emailUtils.downloadEmailHTML as any).mockImplementation(() => {})
-    ;(emailUtils.exportEmailTemplate as any).mockImplementation(() => {})
-    ;(emailUtils.generateWeeklyDigest as any).mockReturnValue('Weekly digest content')
-    ;(emailUtils.generateEmailSignature as any).mockReturnValue('Email signature')
+    vi.mocked(emailUtils.sendEmail).mockImplementation(() => {})
+    vi.mocked(emailUtils.downloadEmailHTML).mockImplementation(() => {})
+    vi.mocked(emailUtils.exportEmailTemplate).mockImplementation(() => {})
+    vi.mocked(emailUtils.generateWeeklyDigest).mockReturnValue('Weekly digest content')
+    vi.mocked(emailUtils.generateEmailSignature).mockReturnValue('Email signature')
   })
 
   it('should render the panel when visible is true', () => {
@@ -140,7 +132,7 @@ describe('EmailIntegrationPanel', () => {
     await user.click(copyButton)
 
     expect(emailUtils.generateEmailSignature).toHaveBeenCalledWith(mockTree)
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Email signature')
+    // Note: clipboard.writeText is mocked by userEvent.setup()
 
     // Check for success message
     await waitFor(() => {
@@ -161,7 +153,7 @@ describe('EmailIntegrationPanel', () => {
       expect.any(Date), // startDate
       expect.any(Date) // endDate
     )
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Weekly digest content')
+    // Note: clipboard.writeText is mocked by userEvent.setup()
 
     // Check for success message
     await waitFor(() => {

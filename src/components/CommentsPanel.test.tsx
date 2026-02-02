@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CommentsPanel from './CommentsPanel'
@@ -77,9 +78,9 @@ describe('CommentsPanel', () => {
         />
       )
 
-      expect(screen.getByRole('region')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
       expect(screen.getByText('Comments')).toBeInTheDocument()
-      expect(screen.getByLabelText('Close comments panel')).toBeInTheDocument()
+      expect(screen.getByLabelText('Close panel')).toBeInTheDocument()
     })
 
     it('should display node information when nodeId is provided', () => {
@@ -119,7 +120,7 @@ describe('CommentsPanel', () => {
         />
       )
 
-      const closeButton = screen.getByLabelText('Close comments panel')
+      const closeButton = screen.getByLabelText('Close panel')
       await user.click(closeButton)
 
       expect(mockOnClose).toHaveBeenCalledTimes(1)
@@ -485,7 +486,7 @@ describe('CommentsPanel', () => {
         />
       )
 
-      expect(screen.getByRole('region')).toHaveAttribute('aria-labelledby', 'comments-panel-title')
+      expect(screen.getByRole('dialog')).toHaveAttribute('aria-label', 'Comments panel')
       expect(screen.getByRole('list')).toHaveAttribute('aria-label', 'Comments for Test Node')
       expect(screen.getAllByRole('listitem')).toHaveLength(2)
     })
@@ -504,7 +505,7 @@ describe('CommentsPanel', () => {
         />
       )
 
-      expect(screen.getByLabelText('Close comments panel')).toBeInTheDocument()
+      expect(screen.getByLabelText('Close panel')).toBeInTheDocument()
       expect(screen.getByLabelText('Add a new comment')).toBeInTheDocument()
       expect(screen.getByLabelText('Resolve comment from Alice')).toBeInTheDocument()
       expect(screen.getByLabelText('Delete comment from Alice')).toBeInTheDocument()
