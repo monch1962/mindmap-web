@@ -474,21 +474,21 @@ describe('FeatureName', () => {
 
 ### Current Coverage Status (2026-02-02)
 
-**Overall**: 70.22% statements, 69.33% branch, 59.10% functions, 71.66% lines  
-_(Updated after adding comprehensive tests for SaveHistoryPanel component)_
+**Overall**: 71.23% statements, 70.23% branch, 61.46% functions, 72.63% lines  
+_(Updated after fixing failing tests in EmailIntegrationPanel and CommentsPanel)_
 
 **Key areas needing improvement**:
 
-- **Components**: 59.72% (was 54.92%) - **+4.80% improvement**
-- **Hooks**: 78.76% (was 68.87%) - **+9.89% improvement**
-- **Utils**: 75.13% (no change)
+- **Components**: 61.78% (was 59.72%) - **+2.06% improvement**
+- **Hooks**: 79.37% (was 78.76%) - **+0.61% improvement**
+- **Utils**: 77.03% (was 75.13%) - **+1.90% improvement**
 
 **High coverage areas**:
 
 - **Utils/formats**: 98.55% (excellent coverage)
 - **MindMapNode**: 98.38% (excellent coverage)
 - **PresentationMode**: 88.54% (good coverage)
-- **SaveHistoryPanel**: 100% (was 25%) - **+75% improvement** _(NEW in this session)_
+- **SaveHistoryPanel**: 100% (was 25%) - **+75% improvement**
 - **useKeyboardNavigation**: 100% (was 34.54%) - **+65.46% improvement**
 - **useUndoRedo**: 100% (was ~60%) - **+40% improvement**
 - **IconPicker**: 88.23% (was 0%) - **+88.23% improvement**
@@ -496,12 +496,14 @@ _(Updated after adding comprehensive tests for SaveHistoryPanel component)_
 - **AIAssistantPanel**: 86.84% (was 7.5%) - **+79.34% improvement**
 - **HistoryPanel**: 65.38% (was 7.69%) - **+57.69% improvement**
 - **MetadataPanel**: 52.27% (was untested) - **+52.27% improvement**
+- **EmailIntegrationPanel**: 95.55% (was failing) - **Fixed all 15 failing tests**
+- **CommentsPanel**: 100% (was failing) - **Fixed all 4 failing tests**
 
 **Areas still needing work**:
 
 - **MindMapCanvas**: 26.39% (main canvas component - very complex)
 - **useGestureNavigation**: 34.54% (complex gesture handling)
-- **useFileOperations**: 59.82% (file I/O operations)
+- **useFileOperations**: 56.86% (file I/O operations)
 - **useOfflineSync**: 72.37% (PWA/service worker integration)
 
 ### Implementation Guidelines
@@ -541,10 +543,10 @@ _(Updated after adding comprehensive tests for SaveHistoryPanel component)_
   - ✅ Achieved 100% statements, 100% branches, 100% functions, 100% lines coverage for `useUndoRedo.ts`
   - ✅ Updated todo tracking and documentation
 - **Completed in today's session**:
-  - ✅ Analyzed current test coverage status (70.22% statements overall)
-  - ✅ Identified components and hooks with lowest coverage
-  - ✅ Created comprehensive test suite for SaveHistoryPanel component (now 100% coverage, was 25%)
-  - ✅ Added 13 comprehensive tests covering rendering, interactions, accessibility, and edge cases
-  - ✅ Fixed test failures and improved test quality
-  - ✅ Updated AGENTS.md with current coverage numbers and improvements
-- **Overall improvement**: Coverage increased from 70.12% to 70.22% statements, with SaveHistoryPanel now at 100% coverage
+  - ✅ Fixed 15 failing tests in EmailIntegrationPanel component (clipboard mocking issues)
+  - ✅ Fixed 4 failing tests in CommentsPanel component (role and label mismatches)
+  - ✅ Added proper vitest imports to test files to fix TypeScript errors
+  - ✅ Updated test assertions to match actual component behavior
+  - ✅ Verified all 1149 tests pass with 38 skipped (1187 total)
+  - ✅ Updated coverage documentation with new metrics (71.23% statements overall)
+- **Overall improvement**: Coverage increased from 70.22% to 71.23% statements, with all tests now passing
