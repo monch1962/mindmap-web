@@ -5,13 +5,19 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useReactFlow } from 'reactflow'
-
-export interface GestureState {
-  scale: number
-  rotation: number
-  panX: number
-  panY: number
-}
+import type { PointerPosition, GestureState } from './gestureUtils'
+import {
+  getDistance,
+  getAngle,
+  calculatePinchScale,
+  calculateRotation,
+  calculatePan,
+  getTwoPointers,
+  shouldProcessGesture,
+  updatePointerPosition,
+  addPointer,
+  removePointer,
+} from './gestureUtils'
 
 interface UseGestureNavigationOptions {
   onGestureChange?: (state: GestureState) => void
@@ -19,12 +25,6 @@ interface UseGestureNavigationOptions {
   onRotate?: (angle: number) => void
   onPan?: (x: number, y: number) => void
   enabled?: boolean
-}
-
-interface PointerPosition {
-  x: number
-  y: number
-  identifier: number
 }
 
 export function useGestureNavigation({
@@ -48,32 +48,22 @@ export function useGestureNavigation({
   const lastPanPositionRef = useRef<{ x: number; y: number } | null>(null)
 
   // Calculate distance between two pointers
-  const getDistance = (p1: PointerPosition, p2: PointerPosition): number => {
-    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
-  }
-
-  // Calculate angle between two pointers
-  const getAngle = (p1: PointerPosition, p2: PointerPosition): number => {
-    return Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI)
-  }
-
   // Handle pointer down
   const handlePointerDown = (e: PointerEvent) => {
     if (!enabled) return
 
-    pointersRef.current.set(e.pointerId, {
-      x: e.clientX,
-      y: e.clientY,
-      identifier: e.pointerId,
-    })
+    pointersRef.current = addPointer(pointersRef.current, e.pointerId, e.clientX, e.clientY)
 
     const pointers = pointersRef.current
 
     // Two-finger gestures
     if (pointers.size === 2) {
-      const [p1, p2] = Array.from(pointers.values())
-      initialPinchDistanceRef.current = getDistance(p1, p2)
-      initialAngleRef.current = getAngle(p1, p2)
+      const twoPointers = getTwoPointers(pointers)
+      if (twoPointers) {
+        const [p1, p2] = twoPointers
+        initialPinchDistanceRef.current = getDistance(p1, p2)
+        initialAngleRef.current = getAngle(p1, p2)
+      }
     }
 
     // Single-finger pan
@@ -86,56 +76,70 @@ export function useGestureNavigation({
 
   // Handle pointer move
   const handlePointerMove = (e: PointerEvent) => {
-    if (!enabled) return
+    if (!shouldProcessGesture(enabled, pointersRef.current)) return
+
+    // Update pointer position
+    pointersRef.current = updatePointerPosition(
+      pointersRef.current,
+      e.pointerId,
+      e.clientX,
+      e.clientY
+    )
 
     const pointers = pointersRef.current
 
-    // Update pointer position
-    if (pointers.has(e.pointerId)) {
-      pointers.set(e.pointerId, {
-        x: e.clientX,
-        y: e.clientY,
-        identifier: e.pointerId,
-      })
-    }
-
-    // Two-finger pinch zoom
+    // Two-finger pinch zoom and rotation
     if (pointers.size === 2) {
-      const [p1, p2] = Array.from(pointers.values())
-      const currentDistance = getDistance(p1, p2)
-      const currentAngle = getAngle(p1, p2)
+      const twoPointers = getTwoPointers(pointers)
+      if (twoPointers) {
+        const [p1, p2] = twoPointers
+        const currentDistance = getDistance(p1, p2)
+        const currentAngle = getAngle(p1, p2)
 
-      // Calculate pinch scale
-      if (initialPinchDistanceRef.current > 0) {
-        const scaleDelta = currentDistance / initialPinchDistanceRef.current
-        const newScale = Math.max(0.1, Math.min(5, gestureState.scale * scaleDelta))
+        // Calculate pinch scale
+        if (initialPinchDistanceRef.current > 0) {
+          const { scaleDelta, newScale } = calculatePinchScale({
+            initialDistance: initialPinchDistanceRef.current,
+            currentDistance,
+            currentScale: gestureState.scale,
+          })
 
-        zoomTo(newScale)
+          zoomTo(newScale)
 
-        if (onPinch) {
-          onPinch(scaleDelta)
+          if (onPinch) {
+            onPinch(scaleDelta)
+          }
+
+          setGestureState(prev => ({ ...prev, scale: newScale }))
         }
 
-        setGestureState(prev => ({ ...prev, scale: newScale }))
-      }
+        // Calculate rotation
+        if (initialAngleRef.current !== null) {
+          const { newRotation } = calculateRotation({
+            initialAngle: initialAngleRef.current,
+            currentAngle,
+            currentRotation: gestureState.rotation,
+          })
 
-      // Calculate rotation
-      if (initialAngleRef.current !== null) {
-        const rotationDelta = currentAngle - initialAngleRef.current
-        const newRotation = gestureState.rotation + rotationDelta
+          if (onRotate) {
+            onRotate(newRotation)
+          }
 
-        if (onRotate) {
-          onRotate(newRotation)
+          setGestureState(prev => ({ ...prev, rotation: newRotation }))
         }
-
-        setGestureState(prev => ({ ...prev, rotation: newRotation }))
       }
     }
 
     // Single-finger pan
     if (pointers.size === 1 && lastPanPositionRef.current) {
-      const deltaX = e.clientX - lastPanPositionRef.current.x
-      const deltaY = e.clientY - lastPanPositionRef.current.y
+      const { deltaX, deltaY, newPanX, newPanY } = calculatePan({
+        lastX: lastPanPositionRef.current.x,
+        lastY: lastPanPositionRef.current.y,
+        currentX: e.clientX,
+        currentY: e.clientY,
+        currentPanX: gestureState.panX,
+        currentPanY: gestureState.panY,
+      })
 
       const viewport = getViewport()
       setViewport({
@@ -150,8 +154,8 @@ export function useGestureNavigation({
 
       setGestureState(prev => ({
         ...prev,
-        panX: prev.panX + deltaX,
-        panY: prev.panY + deltaY,
+        panX: newPanX,
+        panY: newPanY,
       }))
 
       lastPanPositionRef.current = { x: e.clientX, y: e.clientY }
@@ -166,7 +170,7 @@ export function useGestureNavigation({
   const handlePointerUp = (e: PointerEvent) => {
     if (!enabled) return
 
-    pointersRef.current.delete(e.pointerId)
+    pointersRef.current = removePointer(pointersRef.current, e.pointerId)
     lastPanPositionRef.current = null
     initialPinchDistanceRef.current = 0
     initialAngleRef.current = 0
