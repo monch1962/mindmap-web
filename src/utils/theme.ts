@@ -3,25 +3,25 @@
  * Supports light/dark modes and custom color schemes
  */
 
-export type ThemeMode = 'light' | 'dark' | 'auto';
+export type ThemeMode = 'light' | 'dark' | 'auto'
 
 export interface ColorScheme {
-  id: string;
-  name: string;
-  description: string;
-  preview: string[];
+  id: string
+  name: string
+  description: string
+  preview: string[]
   colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    surface: string;
-    text: string;
-    textSecondary: string;
-    border: string;
-    nodeBackground: string;
-    nodeBorder: string;
-    edge: string;
-  };
+    primary: string
+    secondary: string
+    background: string
+    surface: string
+    text: string
+    textSecondary: string
+    border: string
+    nodeBackground: string
+    nodeBorder: string
+    edge: string
+  }
 }
 
 /**
@@ -208,60 +208,63 @@ export const colorSchemes: ColorScheme[] = [
       edge: '#94a3b8',
     },
   },
-];
+]
 
 /**
  * Get current theme mode
  */
 export function getThemeMode(): ThemeMode {
-  const saved = localStorage.getItem('theme_mode');
-  return (saved as ThemeMode) || 'auto';
+  const saved = localStorage.getItem('theme_mode')
+  if (saved === 'light' || saved === 'dark' || saved === 'auto') {
+    return saved
+  }
+  return 'auto'
 }
 
 /**
  * Set theme mode
  */
 export function setThemeMode(mode: ThemeMode): void {
-  localStorage.setItem('theme_mode', mode);
-  applyTheme(mode);
+  localStorage.setItem('theme_mode', mode)
+  applyTheme(mode)
 }
 
 /**
  * Toggle between light and dark mode
  */
 export function toggleDarkMode(): void {
-  const current = getThemeMode();
-  const newMode: ThemeMode = current === 'dark' ? 'light' : 'dark';
-  setThemeMode(newMode);
+  const current = getThemeMode()
+  const newMode: ThemeMode = current === 'dark' ? 'light' : 'dark'
+  setThemeMode(newMode)
 }
 
 /**
  * Get current effective theme (resolves 'auto' to actual mode)
  */
 export function getEffectiveTheme(): 'light' | 'dark' {
-  const mode = getThemeMode();
+  const mode = getThemeMode()
   if (mode === 'auto') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
-  return mode;
+  return mode
 }
 
 /**
  * Get current color scheme
  */
 export function getColorScheme(): ColorScheme {
-  const saved = localStorage.getItem('color_scheme');
-  return colorSchemes.find(s => s.id === saved) || colorSchemes[0];
+  const saved = localStorage.getItem('color_scheme')
+  return colorSchemes.find(s => s.id === saved) || colorSchemes[0]
 }
 
 /**
  * Set color scheme
  */
 export function setColorScheme(schemeId: string): void {
-  const scheme = colorSchemes.find(s => s.id === schemeId);
+  const scheme = colorSchemes.find(s => s.id === schemeId)
   if (scheme) {
-    localStorage.setItem('color_scheme', schemeId);
-    applyColorScheme(scheme);
+    localStorage.setItem('color_scheme', schemeId)
+    applyColorScheme(scheme)
   }
 }
 
@@ -269,13 +272,13 @@ export function setColorScheme(schemeId: string): void {
  * Apply theme to document
  */
 export function applyTheme(mode: ThemeMode): void {
-  const root = document.documentElement;
+  const root = document.documentElement
 
   if (mode === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
   } else {
-    root.setAttribute('data-theme', mode);
+    root.setAttribute('data-theme', mode)
   }
 }
 
@@ -283,49 +286,49 @@ export function applyTheme(mode: ThemeMode): void {
  * Apply color scheme to CSS variables
  */
 export function applyColorScheme(scheme: ColorScheme): void {
-  const root = document.documentElement;
-  const colors = scheme.colors;
+  const root = document.documentElement
+  const colors = scheme.colors
 
-  root.style.setProperty('--color-primary', colors.primary);
-  root.style.setProperty('--color-secondary', colors.secondary);
-  root.style.setProperty('--color-background', colors.background);
-  root.style.setProperty('--color-surface', colors.surface);
-  root.style.setProperty('--color-text', colors.text);
-  root.style.setProperty('--color-text-secondary', colors.textSecondary);
-  root.style.setProperty('--color-border', colors.border);
-  root.style.setProperty('--color-node-background', colors.nodeBackground);
-  root.style.setProperty('--color-node-border', colors.nodeBorder);
-  root.style.setProperty('--color-edge', colors.edge);
+  root.style.setProperty('--color-primary', colors.primary)
+  root.style.setProperty('--color-secondary', colors.secondary)
+  root.style.setProperty('--color-background', colors.background)
+  root.style.setProperty('--color-surface', colors.surface)
+  root.style.setProperty('--color-text', colors.text)
+  root.style.setProperty('--color-text-secondary', colors.textSecondary)
+  root.style.setProperty('--color-border', colors.border)
+  root.style.setProperty('--color-node-background', colors.nodeBackground)
+  root.style.setProperty('--color-node-border', colors.nodeBorder)
+  root.style.setProperty('--color-edge', colors.edge)
 }
 
 /**
  * Initialize theme on app load
  */
 export function initializeTheme(): void {
-  const mode = getThemeMode();
-  const scheme = getColorScheme();
+  const mode = getThemeMode()
+  const scheme = getColorScheme()
 
-  applyTheme(mode);
-  applyColorScheme(scheme);
+  applyTheme(mode)
+  applyColorScheme(scheme)
 }
 
 /**
  * Listen for system theme changes
  */
 export function watchSystemTheme(callback: (mode: 'light' | 'dark') => void): () => void {
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
   const handler = (e: MediaQueryListEvent) => {
     if (getThemeMode() === 'auto') {
-      callback(e.matches ? 'dark' : 'light');
+      callback(e.matches ? 'dark' : 'light')
     }
-  };
+  }
 
-  mediaQuery.addEventListener('change', handler);
+  mediaQuery.addEventListener('change', handler)
 
   return () => {
-    mediaQuery.removeEventListener('change', handler);
-  };
+    mediaQuery.removeEventListener('change', handler)
+  }
 }
 
 /**
@@ -335,27 +338,30 @@ export function createCustomColorScheme(
   name: string,
   colors: Partial<ColorScheme['colors']>
 ): ColorScheme {
-  const defaultScheme = colorSchemes[0];
+  const defaultScheme = colorSchemes[0]
 
   return {
-    id: `custom_${Date.now()}`,
+    id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name,
     description: 'Custom color scheme',
-    preview: [colors.primary || defaultScheme.colors.primary, colors.secondary || defaultScheme.colors.secondary],
+    preview: [
+      colors.primary || defaultScheme.colors.primary,
+      colors.secondary || defaultScheme.colors.secondary,
+    ],
     colors: {
       ...defaultScheme.colors,
       ...colors,
     },
-  };
+  }
 }
 
 /**
  * Save custom color scheme
  */
 export function saveCustomColorScheme(scheme: ColorScheme): void {
-  const customSchemes = getCustomColorSchemes();
-  customSchemes.push(scheme);
-  localStorage.setItem('custom_color_schemes', JSON.stringify(customSchemes));
+  const customSchemes = getCustomColorSchemes()
+  customSchemes.push(scheme)
+  localStorage.setItem('custom_color_schemes', JSON.stringify(customSchemes))
 }
 
 /**
@@ -363,10 +369,10 @@ export function saveCustomColorScheme(scheme: ColorScheme): void {
  */
 export function getCustomColorSchemes(): ColorScheme[] {
   try {
-    const saved = localStorage.getItem('custom_color_schemes');
-    return saved ? JSON.parse(saved) : [];
+    const saved = localStorage.getItem('custom_color_schemes')
+    return saved ? JSON.parse(saved) : []
   } catch {
-    return [];
+    return []
   }
 }
 
@@ -374,9 +380,9 @@ export function getCustomColorSchemes(): ColorScheme[] {
  * Delete custom color scheme
  */
 export function deleteCustomColorScheme(schemeId: string): void {
-  const customSchemes = getCustomColorSchemes();
-  const filtered = customSchemes.filter(s => s.id !== schemeId);
-  localStorage.setItem('custom_color_schemes', JSON.stringify(filtered));
+  const customSchemes = getCustomColorSchemes()
+  const filtered = customSchemes.filter(s => s.id !== schemeId)
+  localStorage.setItem('custom_color_schemes', JSON.stringify(filtered))
 }
 
 /**
@@ -387,9 +393,9 @@ export function exportThemeSettings(): string {
     mode: getThemeMode(),
     colorScheme: getColorScheme().id,
     customSchemes: getCustomColorSchemes(),
-  };
+  }
 
-  return JSON.stringify(settings, null, 2);
+  return JSON.stringify(settings, null, 2)
 }
 
 /**
@@ -397,22 +403,22 @@ export function exportThemeSettings(): string {
  */
 export function importThemeSettings(json: string): boolean {
   try {
-    const settings = JSON.parse(json);
+    const settings = JSON.parse(json)
 
     if (settings.mode) {
-      setThemeMode(settings.mode);
+      setThemeMode(settings.mode)
     }
 
     if (settings.colorScheme) {
-      setColorScheme(settings.colorScheme);
+      setColorScheme(settings.colorScheme)
     }
 
     if (settings.customSchemes && Array.isArray(settings.customSchemes)) {
-      localStorage.setItem('custom_color_schemes', JSON.stringify(settings.customSchemes));
+      localStorage.setItem('custom_color_schemes', JSON.stringify(settings.customSchemes))
     }
 
-    return true;
+    return true
   } catch {
-    return false;
+    return false
   }
 }

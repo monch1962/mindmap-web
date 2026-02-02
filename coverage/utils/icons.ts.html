@@ -159,7 +159,14 @@
 <a name='L94'></a><a href='#L94'>94</a>
 <a name='L95'></a><a href='#L95'>95</a>
 <a name='L96'></a><a href='#L96'>96</a>
-<a name='L97'></a><a href='#L97'>97</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,7 +178,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -238,14 +245,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">106x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">54x</span>
-<span class="cline-any cline-yes">54x</span>
-<span class="cline-any cline-yes">54x</span>
-<span class="cline-any cline-yes">54x</span>
-<span class="cline-any cline-yes">54x</span>
-<span class="cline-any cline-yes">54x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">106x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">106x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">106x</span>
+<span class="cline-any cline-yes">106x</span>
+<span class="cline-any cline-yes">106x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -261,10 +275,10 @@
  */
 &nbsp;
 export interface FreeMindIcon {
-  id: string;
-  emoji: string;
-  name: string;
-  category: 'status' | 'priority' | 'progress' | 'emotion' | 'time' | 'other';
+  id: string
+  emoji: string
+  name: string
+  category: 'status' | 'priority' | 'progress' | 'emotion' | 'time' | 'other'
 }
 &nbsp;
 export const FREE_MIND_ICONS: FreeMindIcon[] = [
@@ -331,25 +345,32 @@ export const FREE_MIND_ICONS: FreeMindIcon[] = [
   { id: 'music', emoji: '🎵', name: 'Music', category: 'other' },
   { id: 'password', emoji: '🔑', name: 'Password', category: 'other' },
   { id: 'pencil', emoji: '✏️', name: 'Pencil', category: 'other' },
-  { id: 'wizard', emoji: '🧙', name: 'Wizard', category: 'other' },
   { id: 'xmag', emoji: '🔍', name: 'Search', category: 'other' },
-];
+]
 &nbsp;
 export const ICON_CATEGORIES = [
   { id: 'status', name: 'Status', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'status') },
-  { id: 'priority', name: 'Priority', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'priority') },
-  { id: 'progress', name: 'Progress', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'progress') },
+  {
+    id: 'priority',
+    name: 'Priority',
+    icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'priority'),
+  },
+  {
+    id: 'progress',
+    name: 'Progress',
+    icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'progress'),
+  },
   { id: 'emotion', name: 'Emotion', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'emotion') },
   { id: 'time', name: 'Time', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'time') },
   { id: 'other', name: 'Other', icons: FREE_MIND_ICONS.filter(i =&gt; i.category === 'other') },
-];
+]
 &nbsp;
 /**
  * Get emoji for icon ID
  */
 export function <span class="fstat-no" title="function not covered" >getIconEmoji(i</span>conId: string): string {
-  const icon = <span class="cstat-no" title="statement not covered" >FREE_MIND_ICONS.find(<span class="fstat-no" title="function not covered" >i =&gt; <span class="cstat-no" title="statement not covered" >i</span>.id === iconId)</span>;</span>
-<span class="cstat-no" title="statement not covered" >  return icon?.emoji || '';</span>
+  const icon = <span class="cstat-no" title="statement not covered" >FREE_MIND_ICONS.find(<span class="fstat-no" title="function not covered" >i =&gt; <span class="cstat-no" title="statement not covered" >i</span>.id === iconId)</span></span>
+<span class="cstat-no" title="statement not covered" >  return icon?.emoji || ''</span>
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -358,7 +379,7 @@ export function <span class="fstat-no" title="function not covered" >getIconEmoj
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-29T09:05:46.860Z
+                at 2026-02-02T02:49:48.391Z
             </div>
         <script src="../prettify.js"></script>
         <script>

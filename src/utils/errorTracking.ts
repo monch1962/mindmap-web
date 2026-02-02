@@ -91,7 +91,7 @@ export function trackError(error: Error | string, context?: string): void {
   addEntry(entry)
 
   // Log to console in development
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && !import.meta.env.VITEST) {
     console.error(`[ErrorTracking] ${context ? `[${context}] ` : ''}${message}`, error)
   }
 
@@ -119,7 +119,7 @@ export function trackWarning(message: string, context?: string): void {
   addEntry(entry)
 
   // Log to console in development
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && !import.meta.env.VITEST) {
     console.warn(`[ErrorTracking] ${context ? `[${context}] ` : ''}${message}`)
   }
 }
@@ -144,7 +144,7 @@ export function trackInfo(message: string, context?: string): void {
   addEntry(entry)
 
   // Log to console in development
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && !import.meta.env.VITEST) {
     console.info(`[ErrorTracking] ${context ? `[${context}] ` : ''}${message}`)
   }
 }
