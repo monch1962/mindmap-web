@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import BasePanel from './common/BasePanel'
+import type { PanelProps } from '../types/common'
 
 interface Comment {
   id: string
@@ -10,9 +12,7 @@ interface Comment {
   resolved: boolean
 }
 
-interface CommentsPanelProps {
-  visible: boolean
-  onClose: () => void
+interface CommentsPanelProps extends PanelProps {
   nodeId: string | null
   nodeLabel: string
   comments: Comment[]
@@ -50,73 +50,34 @@ export default function CommentsPanel({
     setNewComment('')
   }
 
+  const title = unresolvedCount > 0 ? `Comments (${unresolvedCount} unresolved)` : 'Comments'
+
   return (
-    <div
-      role="region"
-      aria-labelledby="comments-panel-title"
-      style={{
-        position: 'fixed',
-        right: '20px',
-        top: '50%',
-        transform: 'translateY(-50%)',
+    <BasePanel
+      visible={visible}
+      onClose={onClose}
+      title={title}
+      ariaLabel="Comments panel"
+      position="right"
+      size="md"
+      customStyles={{
         width: '350px',
         maxHeight: '70vh',
-        background: 'white',
-        border: '1px solid #d1d5db',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: '12px 12px 0 0',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>💬</span>
-          <div>
-            <h2
-              id="comments-panel-title"
-              style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        <span style={{ fontSize: '20px' }}>💬</span>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Comments</h2>
+          {unresolvedCount > 0 && (
+            <span
+              style={{ fontSize: '11px', opacity: 0.9 }}
+              aria-label={`${unresolvedCount} unresolved comments`}
             >
-              Comments
-            </h2>
-            {unresolvedCount > 0 && (
-              <span
-                style={{ fontSize: '11px', opacity: 0.9 }}
-                aria-label={`${unresolvedCount} unresolved comments`}
-              >
-                {unresolvedCount} unresolved
-              </span>
-            )}
-          </div>
+              {unresolvedCount} unresolved
+            </span>
+          )}
         </div>
-        <button
-          onClick={onClose}
-          aria-label="Close comments panel"
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            color: 'white',
-            fontSize: '20px',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '4px',
-          }}
-        >
-          ×
-        </button>
       </div>
 
       {/* Node Info */}
@@ -327,6 +288,6 @@ export default function CommentsPanel({
           </button>
         </form>
       )}
-    </div>
+    </BasePanel>
   )
 }
