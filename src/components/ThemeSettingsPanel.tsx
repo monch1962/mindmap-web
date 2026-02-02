@@ -17,6 +17,9 @@ import {
   watchSystemTheme,
   type ColorScheme,
 } from '../utils/theme'
+import BasePanel from './common/BasePanel'
+import { useStatusMessage } from '../hooks/useStatusMessage'
+import { downloadFile } from '../utils/fileDownload'
 
 interface ThemeSettingsPanelProps {
   visible: boolean
@@ -33,10 +36,7 @@ export default function ThemeSettingsPanel({
   const [currentScheme, setCurrentScheme] = useState<ColorScheme>(getColorScheme())
   const [customSchemes, setCustomSchemes] = useState<ColorScheme[]>(getCustomColorSchemes())
   const [showCustomEditor, setShowCustomEditor] = useState(false)
-  const [statusMessage, setStatusMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
+  const { statusMessage, showStatus } = useStatusMessage()
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -56,11 +56,6 @@ export default function ThemeSettingsPanel({
 
     return cleanup
   }, [onThemeChange])
-
-  const showStatus = (type: 'success' | 'error', text: string) => {
-    setStatusMessage({ type, text })
-    setTimeout(() => setStatusMessage(null), 3000)
-  }
 
   const handleThemeModeChange = (mode: ThemeMode) => {
     setLocalThemeMode(mode)
@@ -96,13 +91,7 @@ export default function ThemeSettingsPanel({
 
   const handleExport = () => {
     const json = exportThemeSettings()
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'theme-settings.json'
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadFile(json, 'theme-settings.json', { mimeType: 'application/json' })
     showStatus('success', 'Theme settings exported')
   }
 
@@ -131,250 +120,203 @@ export default function ThemeSettingsPanel({
     input.click()
   }
 
-  if (!visible) return null
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        right: '20px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '450px',
-        maxHeight: '80vh',
-        background: 'white',
-        border: '1px solid #d1d5db',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+    <BasePanel
+      visible={visible}
+      onClose={onClose}
+      title="🎨 Theme Settings"
+      position="right"
+      size="lg"
+      customStyles={{ width: '450px' }}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: '12px 12px 0 0',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🎨</span>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Theme Settings</h2>
-        </div>
-        <button
-          onClick={onClose}
+      {/* Status Message */}
+      {statusMessage && (
+        <div
           style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            color: 'white',
-            fontSize: '20px',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '4px',
+            padding: '12px',
+            marginBottom: '16px',
+            borderRadius: '6px',
+            background: statusMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
+            color: statusMessage.type === 'success' ? '#065f46' : '#991b1b',
+            fontSize: '13px',
           }}
         >
-          ×
-        </button>
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
-        {/* Status Message */}
-        {statusMessage && (
-          <div
-            style={{
-              padding: '12px',
-              marginBottom: '16px',
-              borderRadius: '6px',
-              background: statusMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
-              color: statusMessage.type === 'success' ? '#065f46' : '#991b1b',
-              fontSize: '13px',
-            }}
-          >
-            {statusMessage.text}
-          </div>
-        )}
-
-        {/* Theme Mode */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3
-            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
-          >
-            Theme Mode
-          </h3>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {(['light', 'dark', 'auto'] as ThemeMode[]).map(mode => (
-              <button
-                key={mode}
-                onClick={() => handleThemeModeChange(mode)}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  background: themeMode === mode ? '#667eea' : '#f3f4f6',
-                  color: themeMode === mode ? 'white' : '#374151',
-                  border: themeMode === mode ? '2px solid #667eea' : '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  opacity: themeMode === mode ? 1 : 0.7,
-                }}
-              >
-                {mode === 'light' && '☀️ Light'}
-                {mode === 'dark' && '🌙 Dark'}
-                {mode === 'auto' && '🔄 Auto'}
-              </button>
-            ))}
-          </div>
-          {themeMode === 'auto' && (
-            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
-              Automatically switches based on your system preferences
-            </p>
-          )}
+          {statusMessage.text}
         </div>
+      )}
 
-        {/* Color Schemes */}
-        <div style={{ marginBottom: '24px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px',
-            }}
-          >
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#374151' }}>
-              Color Scheme
-            </h3>
+      {/* Theme Mode */}
+      <div style={{ marginBottom: '24px' }}>
+        <h3
+          style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+        >
+          Theme Mode
+        </h3>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {(['light', 'dark', 'auto'] as ThemeMode[]).map(mode => (
             <button
-              onClick={() => setShowCustomEditor(!showCustomEditor)}
+              key={mode}
+              onClick={() => handleThemeModeChange(mode)}
               style={{
-                padding: '6px 12px',
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
+                flex: 1,
+                padding: '10px',
+                background: themeMode === mode ? '#667eea' : '#f3f4f6',
+                color: themeMode === mode ? 'white' : '#374151',
+                border: themeMode === mode ? '2px solid #667eea' : '1px solid #d1d5db',
+                borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '11px',
-                fontWeight: 'bold',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                opacity: themeMode === mode ? 1 : 0.7,
               }}
             >
-              {showCustomEditor ? '−' : '+'} Custom
+              {mode === 'light' && '☀️ Light'}
+              {mode === 'dark' && '🌙 Dark'}
+              {mode === 'auto' && '🔄 Auto'}
             </button>
-          </div>
+          ))}
+        </div>
+        {themeMode === 'auto' && (
+          <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
+            Automatically switches based on your system preferences
+          </p>
+        )}
+      </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-            {colorSchemes.map(scheme => (
+      {/* Color Schemes */}
+      <div style={{ marginBottom: '24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#374151' }}>
+            Color Scheme
+          </h3>
+          <button
+            onClick={() => setShowCustomEditor(!showCustomEditor)}
+            style={{
+              padding: '6px 12px',
+              background: '#8b5cf6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 'bold',
+            }}
+          >
+            {showCustomEditor ? '−' : '+'} Custom
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+          {colorSchemes.map(scheme => (
+            <ColorSchemeCard
+              key={scheme.id}
+              scheme={scheme}
+              isSelected={currentScheme.id === scheme.id}
+              onClick={() => handleColorSchemeChange(scheme.id)}
+            />
+          ))}
+
+          {customSchemes.map(scheme => (
+            <div key={scheme.id} style={{ position: 'relative' }}>
               <ColorSchemeCard
-                key={scheme.id}
                 scheme={scheme}
                 isSelected={currentScheme.id === scheme.id}
                 onClick={() => handleColorSchemeChange(scheme.id)}
               />
-            ))}
-
-            {customSchemes.map(scheme => (
-              <div key={scheme.id} style={{ position: 'relative' }}>
-                <ColorSchemeCard
-                  scheme={scheme}
-                  isSelected={currentScheme.id === scheme.id}
-                  onClick={() => handleColorSchemeChange(scheme.id)}
-                />
-                <button
-                  onClick={() => handleDeleteCustomScheme(scheme.id)}
-                  style={{
-                    position: 'absolute',
-                    top: '4px',
-                    right: '4px',
-                    width: '20px',
-                    height: '20px',
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title="Delete custom scheme"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Custom Scheme Editor */}
-        {showCustomEditor && (
-          <CustomSchemeEditor
-            onSave={scheme => {
-              saveCustomColorScheme(scheme)
-              setCustomSchemes(getCustomColorSchemes())
-              setShowCustomEditor(false)
-              showStatus('success', 'Custom scheme created')
-            }}
-            onCancel={() => setShowCustomEditor(false)}
-          />
-        )}
-
-        {/* Import/Export */}
-        <div>
-          <h3
-            style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
-          >
-            Share Settings
-          </h3>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={handleExport}
-              style={{
-                flex: 1,
-                padding: '10px',
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 'bold',
-              }}
-            >
-              📥 Export
-            </button>
-            <button
-              onClick={handleImport}
-              style={{
-                flex: 1,
-                padding: '10px',
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 'bold',
-              }}
-            >
-              📤 Import
-            </button>
-          </div>
+              <button
+                onClick={() => handleDeleteCustomScheme(scheme.id)}
+                style={{
+                  position: 'absolute',
+                  top: '4px',
+                  right: '4px',
+                  width: '20px',
+                  height: '20px',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                title="Delete custom scheme"
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Custom Scheme Editor */}
+      {showCustomEditor && (
+        <CustomSchemeEditor
+          onSave={scheme => {
+            saveCustomColorScheme(scheme)
+            setCustomSchemes(getCustomColorSchemes())
+            setShowCustomEditor(false)
+            showStatus('success', 'Custom scheme created')
+          }}
+          onCancel={() => setShowCustomEditor(false)}
+        />
+      )}
+
+      {/* Import/Export */}
+      <div>
+        <h3
+          style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#374151' }}
+        >
+          Share Settings
+        </h3>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleExport}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 'bold',
+            }}
+          >
+            📥 Export
+          </button>
+          <button
+            onClick={handleImport}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 'bold',
+            }}
+          >
+            📤 Import
+          </button>
+        </div>
+      </div>
+    </BasePanel>
   )
 }
 

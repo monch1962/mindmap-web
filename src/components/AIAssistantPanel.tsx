@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { trackError } from '../utils/errorTracking'
+import BasePanel from './common/BasePanel'
 
 interface AIAssistantPanelProps {
   visible: boolean
@@ -29,15 +29,6 @@ export default function AIAssistantPanel({
   const [aiResponse, setAiResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Keyboard navigation for the panel
-  const panelRef = useKeyboardNavigation<HTMLDivElement>({
-    isOpen: visible,
-    onClose,
-    trapFocus: true,
-    autoFocus: true,
-    restoreFocus: true,
-  })
 
   useEffect(() => {
     localStorage.setItem('ai_api_key', apiKey)
@@ -125,67 +116,17 @@ export default function AIAssistantPanel({
     }
   }
 
-  if (!visible) return null
-
   return (
-    <div
-      ref={panelRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="ai-assistant-title"
-      style={{
-        position: 'fixed',
-        right: '20px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '400px',
-        maxWidth: '90vw',
-        background: 'white',
-        border: '1px solid #d1d5db',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        maxHeight: '80vh',
-      }}
+    <BasePanel
+      visible={visible}
+      onClose={onClose}
+      title="AI Assistant"
+      position="right"
+      size="md"
+      ariaLabel="AI Assistant panel"
+      trapFocus={true}
+      closeOnEscape={true}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: '12px 12px 0 0',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🤖</span>
-          <h2 id="ai-assistant-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-            AI Assistant
-          </h2>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close AI assistant panel"
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            color: 'white',
-            fontSize: '20px',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '4px',
-          }}
-        >
-          ×
-        </button>
-      </div>
-
       {/* Content */}
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* API Key Input */}
@@ -419,7 +360,7 @@ export default function AIAssistantPanel({
 
         <div ref={messagesEndRef} />
       </div>
-    </div>
+    </BasePanel>
   )
 }
 

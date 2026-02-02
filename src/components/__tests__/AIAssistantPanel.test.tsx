@@ -48,7 +48,7 @@ describe('AIAssistantPanel', () => {
 
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveAttribute('aria-modal', 'true')
-      expect(dialog).toHaveAttribute('aria-labelledby', 'ai-assistant-title')
+      expect(dialog).toHaveAttribute('aria-label', 'AI Assistant panel')
     })
   })
 
@@ -368,7 +368,7 @@ describe('AIAssistantPanel', () => {
     it('should call onClose when close button is clicked', () => {
       render(<AIAssistantPanel {...defaultProps} />)
 
-      const closeButton = screen.getByLabelText('Close AI assistant panel')
+      const closeButton = screen.getByLabelText('Close panel')
       fireEvent.click(closeButton)
 
       expect(mockOnClose).toHaveBeenCalledTimes(1)

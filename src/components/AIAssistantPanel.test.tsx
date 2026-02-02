@@ -59,7 +59,6 @@ describe('AIAssistantPanel', () => {
     render(<AIAssistantPanel {...defaultProps} />)
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('🤖')).toBeInTheDocument()
     expect(screen.getByText('AI Assistant')).toBeInTheDocument()
   })
 
@@ -67,7 +66,7 @@ describe('AIAssistantPanel', () => {
     const handleClose = vi.fn()
     render(<AIAssistantPanel {...defaultProps} onClose={handleClose} />)
 
-    const closeButton = screen.getByLabelText('Close AI assistant panel')
+    const closeButton = screen.getByLabelText('Close panel')
     fireEvent.click(closeButton)
 
     expect(handleClose).toHaveBeenCalledTimes(1)
@@ -288,11 +287,16 @@ describe('AIAssistantPanel', () => {
   it('should have proper accessibility attributes', () => {
     render(<AIAssistantPanel {...defaultProps} />)
 
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true')
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'ai-assistant-title')
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog).toHaveAttribute('aria-label', 'AI Assistant panel')
+
+    // BasePanel uses aria-label instead of aria-labelledby
+    expect(dialog).not.toHaveAttribute('aria-labelledby')
 
     const title = screen.getByText('AI Assistant')
-    expect(title).toHaveAttribute('id', 'ai-assistant-title')
+    // Title doesn't need ID since we use aria-label
+    expect(title).not.toHaveAttribute('id')
   })
 
   it('should have privacy note for API key', () => {
@@ -613,12 +617,13 @@ describe('AIAssistantPanel', () => {
     render(<AIAssistantPanel {...defaultProps} />)
 
     const dialog = screen.getByRole('dialog')
-    // The useKeyboardNavigation hook returns a ref that should be attached to the dialog
-    // The hook manages focus programmatically rather than setting tabindex
+    // BasePanel handles keyboard navigation internally
     expect(dialog).toBeInTheDocument()
-    // Check that the dialog has proper ARIA attributes instead
+    // Check that the dialog has proper ARIA attributes
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(dialog).toHaveAttribute('aria-labelledby', 'ai-assistant-title')
+    expect(dialog).toHaveAttribute('aria-label', 'AI Assistant panel')
+    // BasePanel sets tabindex for focus management
+    expect(dialog).toHaveAttribute('tabindex', '-1')
   })
 
   it('should persist API key and provider across renders', () => {
