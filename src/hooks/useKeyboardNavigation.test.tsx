@@ -41,11 +41,18 @@ describe('useKeyboardNavigation', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
     document.body.innerHTML = ''
+    activeElementMock = null
 
     // Mock HTMLElement.prototype.focus to track focused element
+    const originalFocus = HTMLElement.prototype.focus
     HTMLElement.prototype.focus = function () {
       activeElementMock = this as HTMLElement
+      // Call original if it exists
+      if (originalFocus) {
+        originalFocus.call(this)
+      }
     }
 
     // Mock document.activeElement getter
@@ -66,6 +73,7 @@ describe('useKeyboardNavigation', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     activeElementMock = null
     cleanup()
   })
@@ -94,21 +102,16 @@ describe('useKeyboardNavigation', () => {
     expect(screen.getByTestId('test-modal')).toBeInTheDocument()
   })
 
-  it.skip('should focus the first focusable element on open when autoFocus is true', async () => {
-    // TODO: Fix test isolation - passes when run individually but fails in full suite
-    // Likely due to focus state from previous tests interfering
+  it('should focus the first focusable element on open when autoFocus is true', () => {
     render(<TestModal isOpen={true} autoFocus={true} />)
 
     // First focusable element should be the first input
     const firstInput = screen.getByTestId('input-1')
 
-    // Wait for the autoFocus setTimeout to execute (10ms delay)
-    await waitFor(
-      () => {
-        expect(firstInput).toHaveFocus()
-      },
-      { timeout: 100 }
-    )
+    // Advance timers to trigger autoFocus
+    vi.advanceTimersByTime(20)
+
+    expect(firstInput).toHaveFocus()
   })
 
   it('should not focus any element on open when autoFocus is false', () => {
@@ -135,39 +138,43 @@ describe('useKeyboardNavigation', () => {
     expect(handleClose).toHaveBeenCalledTimes(1)
   })
 
-  it('should trap focus within modal on Tab', async () => {
-    // TODO: Fix test isolation - passes when run individually but fails in full suite
-    // Likely due to focus state or event listeners from previous tests interfering
+  it('should trap focus within modal on Tab', () => {
     render(<TestModal isOpen={true} trapFocus={true} />)
 
     const input1 = screen.getByTestId('input-1')
     const button2 = screen.getByTestId('button-2')
 
-    // Wait for initial focus
-    await waitFor(() => expect(input1).toHaveFocus(), { timeout: 100 })
+    // Advance timers to trigger autoFocus
+    vi.advanceTimersByTime(20)
+
+    // Check initial focus
+    expect(input1).toHaveFocus()
 
     // Simulate being on the first element - Shift+Tab should cycle to last
-    fireEvent.keyDown(input1, { key: 'Tab', shiftKey: true })
+    // Fire event on document since that's where the listener is attached
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
     expect(button2).toHaveFocus()
 
     // Now on the last element - Tab should cycle to first
-    fireEvent.keyDown(button2, { key: 'Tab' })
+    fireEvent.keyDown(document, { key: 'Tab' })
     expect(input1).toHaveFocus()
   })
 
-  it('should trap focus within modal on Shift+Tab', async () => {
-    // TODO: Fix test isolation - passes when run individually but fails in full suite
-    // Likely due to focus state or event listeners from previous tests interfering
+  it('should trap focus within modal on Shift+Tab', () => {
     render(<TestModal isOpen={true} trapFocus={true} />)
 
     const input1 = screen.getByTestId('input-1')
     const button2 = screen.getByTestId('button-2')
 
-    // Wait for initial focus
-    await waitFor(() => expect(input1).toHaveFocus(), { timeout: 100 })
+    // Advance timers to trigger autoFocus
+    vi.advanceTimersByTime(20)
+
+    // Check initial focus
+    expect(input1).toHaveFocus()
 
     // Shift+Tab on first element should cycle to last
-    fireEvent.keyDown(input1, { key: 'Tab', shiftKey: true })
+    // Fire event on document since that's where the listener is attached
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
     expect(button2).toHaveFocus()
   })
 
