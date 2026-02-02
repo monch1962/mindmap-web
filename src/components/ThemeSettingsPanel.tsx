@@ -18,6 +18,7 @@ import {
   type ColorScheme,
 } from '../utils/theme'
 import BasePanel from './common/BasePanel'
+import StatusMessage from './common/StatusMessage'
 import { useStatusMessage } from '../hooks/useStatusMessage'
 import { downloadFile } from '../utils/fileDownload'
 
@@ -36,7 +37,7 @@ export default function ThemeSettingsPanel({
   const [currentScheme, setCurrentScheme] = useState<ColorScheme>(getColorScheme())
   const [customSchemes, setCustomSchemes] = useState<ColorScheme[]>(getCustomColorSchemes())
   const [showCustomEditor, setShowCustomEditor] = useState(false)
-  const { statusMessage, showStatus } = useStatusMessage()
+  const { statusMessage, showStatus, clearStatus } = useStatusMessage()
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -130,20 +131,12 @@ export default function ThemeSettingsPanel({
       customStyles={{ width: '450px' }}
     >
       {/* Status Message */}
-      {statusMessage && (
-        <div
-          style={{
-            padding: '12px',
-            marginBottom: '16px',
-            borderRadius: '6px',
-            background: statusMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
-            color: statusMessage.type === 'success' ? '#065f46' : '#991b1b',
-            fontSize: '13px',
-          }}
-        >
-          {statusMessage.text}
-        </div>
-      )}
+      <StatusMessage
+        message={statusMessage}
+        className="mb-4"
+        autoDismiss={true}
+        onDismiss={clearStatus}
+      />
 
       {/* Theme Mode */}
       <div style={{ marginBottom: '24px' }}>

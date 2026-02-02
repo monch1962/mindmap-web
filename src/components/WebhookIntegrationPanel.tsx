@@ -9,6 +9,7 @@ import {
   type WebhookConfig,
 } from '../utils/webhookIntegration'
 import BasePanel from './common/BasePanel'
+import StatusMessage from './common/StatusMessage'
 import { useStatusMessage } from '../hooks/useStatusMessage'
 import type { PanelProps, WithTreeProps } from '../types/common'
 
@@ -30,7 +31,7 @@ export default function WebhookIntegrationPanel({
   const [testPayload, setTestPayload] = useState<string>('')
   const [incomingData, setIncomingData] = useState<string>('')
   const [lastTriggered, setLastTriggered] = useState<string>('')
-  const { statusMessage, showStatus } = useStatusMessage()
+  const { statusMessage, showStatus, clearStatus } = useStatusMessage()
 
   useEffect(() => {
     const savedConfig = getWebhookConfig()
@@ -107,22 +108,12 @@ export default function WebhookIntegrationPanel({
       }}
     >
       {/* Status Message */}
-      {statusMessage && (
-        <div
-          role="alert"
-          aria-live="polite"
-          style={{
-            padding: '12px',
-            marginBottom: '16px',
-            borderRadius: '6px',
-            background: statusMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
-            color: statusMessage.type === 'success' ? '#065f46' : '#991b1b',
-            fontSize: '13px',
-          }}
-        >
-          {statusMessage.text}
-        </div>
-      )}
+      <StatusMessage
+        message={statusMessage}
+        className="mb-4"
+        autoDismiss={true}
+        onDismiss={clearStatus}
+      />
 
       {/* Webhook Configuration */}
       <div role="group" aria-labelledby="webhook-config-title" style={{ marginBottom: '20px' }}>
