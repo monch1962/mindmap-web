@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
+import BasePanel from './common/BasePanel'
+import type { PanelProps } from '../types/common'
 
-interface NotesPanelProps {
-  visible: boolean
-  onClose: () => void
+interface NotesPanelProps extends PanelProps {
   notes: string
   onSave: (notes: string) => void
 }
@@ -17,55 +17,18 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
   if (!visible) return null
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="notes-panel-title"
-      aria-label="Notes panel"
-      style={{
-        position: 'fixed',
-        right: '16px',
-        top: '50%',
-        transform: 'translateY(-50%)',
+    <BasePanel
+      visible={visible}
+      onClose={onClose}
+      title="Notes"
+      ariaLabel="Notes panel"
+      position="right"
+      size="md"
+      customStyles={{
         width: '350px',
         maxHeight: '70vh',
-        background: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: '12px 16px',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h3 id="notes-panel-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-          Notes
-        </h3>
-        <button
-          onClick={onClose}
-          aria-label="Close notes panel"
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '20px',
-            cursor: 'pointer',
-            color: '#6b7280',
-            padding: '0 4px',
-          }}
-        >
-          ×
-        </button>
-      </div>
-
       {/* Content */}
       <textarea
         id="notes-content"
@@ -117,6 +80,6 @@ export default function NotesPanel({ visible, onClose, notes, onSave }: NotesPan
           Save
         </button>
       </div>
-    </div>
+    </BasePanel>
   )
 }

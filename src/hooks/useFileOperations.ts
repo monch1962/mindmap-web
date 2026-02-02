@@ -18,6 +18,7 @@ import {
 } from '../utils/formats'
 import { exportToPDF, exportToPowerPoint, createPresentation } from '../utils/enhancedExports'
 import { trackError } from '../utils/errorTracking'
+import { downloadFile } from '../utils/fileDownload'
 
 export type FileExportFormat =
   | 'json'
@@ -120,13 +121,7 @@ export function useFileOperations({
           return
       }
 
-      const blob = new Blob([content], { type: mimeType })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      a.click()
-      URL.revokeObjectURL(url)
+      downloadFile(content, filename, { mimeType })
     },
     [nodes, edges]
   )
@@ -226,10 +221,7 @@ export function useFileOperations({
 
       // Download the image
       const pngUrl = canvas.toDataURL('image/png')
-      const a = document.createElement('a')
-      a.href = pngUrl
-      a.download = 'mindmap.png'
-      a.click()
+      downloadFile(pngUrl, 'mindmap.png')
     }
 
     img.src = url
@@ -244,13 +236,7 @@ export function useFileOperations({
     if (!tree) return
 
     const content = toSVG(tree)
-    const blob = new Blob([content], { type: 'image/svg+xml' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'mindmap.svg'
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadFile(content, 'mindmap.svg', { mimeType: 'image/svg+xml' })
   }, [nodes, edges])
 
   return {

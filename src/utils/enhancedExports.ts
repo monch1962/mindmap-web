@@ -3,26 +3,27 @@
  * Supports PDF, PowerPoint, Notion/Obsidian, and Google Docs formats
  */
 
-import type { MindMapTree } from '../types';
+import type { MindMapTree } from '../types'
+import { downloadFile } from './fileDownload'
 
 /**
  * Export mind map to PDF (using browser print with PDF optimization)
  */
 export function exportToPDF(tree: MindMapTree): void {
   // Create a print-friendly version
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return
 
-  const html = generatePrintableHTML(tree);
-  printWindow.document.write(html);
-  printWindow.document.close();
+  const html = generatePrintableHTML(tree)
+  printWindow.document.write(html)
+  printWindow.document.close()
 
   // Wait for content to load, then print
   printWindow.onload = () => {
     setTimeout(() => {
-      printWindow.print();
-    }, 250);
-  };
+      printWindow.print()
+    }, 250)
+  }
 }
 
 /**
@@ -30,18 +31,16 @@ export function exportToPDF(tree: MindMapTree): void {
  */
 function generatePrintableHTML(tree: MindMapTree): string {
   const renderNode = (node: MindMapTree, level: number = 0): string => {
-    const indent = level * 20;
-    const children = node.children
-      .map(child => renderNode(child, level + 1))
-      .join('');
+    const indent = level * 20
+    const children = node.children.map(child => renderNode(child, level + 1)).join('')
 
     return `
       <div style="margin-left: ${indent}px; margin-bottom: 8px;">
         <strong>${escapeHtml(node.content)}</strong>
       </div>
       ${children}
-    `;
-  };
+    `
+  }
 
   return `
     <!DOCTYPE html>
@@ -81,7 +80,7 @@ function generatePrintableHTML(tree: MindMapTree): string {
       </div>
     </body>
     </html>
-  `;
+  `
 }
 
 /**
@@ -90,15 +89,9 @@ function generatePrintableHTML(tree: MindMapTree): string {
  */
 export async function exportToPowerPoint(tree: MindMapTree): Promise<void> {
   // For PPTX, we'll create a simple HTML presentation that can be opened in PowerPoint
-  const slides = generatePowerPointSlides(tree);
+  const slides = generatePowerPointSlides(tree)
 
-  const blob = new Blob([slides], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mindmap.ppt';
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadFile(slides, 'mindmap.ppt', { mimeType: 'text/html' })
 }
 
 /**
@@ -106,10 +99,8 @@ export async function exportToPowerPoint(tree: MindMapTree): Promise<void> {
  */
 function generatePowerPointSlides(tree: MindMapTree): string {
   const renderSlide = (node: MindMapTree): string => {
-    const children = node.children.slice(0, 6); // Max 6 bullet points per slide
-    const bullets = children
-      .map(child => `<li>${escapeHtml(child.content)}</li>`)
-      .join('');
+    const children = node.children.slice(0, 6) // Max 6 bullet points per slide
+    const bullets = children.map(child => `<li>${escapeHtml(child.content)}</li>`).join('')
 
     return `
       <div style="slide: true;">
@@ -118,8 +109,8 @@ function generatePowerPointSlides(tree: MindMapTree): string {
           ${bullets}
         </ul>
       </div>
-    `;
-  };
+    `
+  }
 
   return `
     <!DOCTYPE html>
@@ -139,43 +130,43 @@ function generatePowerPointSlides(tree: MindMapTree): string {
     </head>
     <body>
       ${renderSlide(tree)}
-      ${tree.children.map((child) => renderSlide(child)).join('')}
+      ${tree.children.map(child => renderSlide(child)).join('')}
     </body>
     </html>
-  `;
+  `
 }
 
 /**
  * Export mind map to Notion/Obsidian markdown format
  */
 export function exportToNotionObsidian(tree: MindMapTree, format: 'notion' | 'obsidian'): string {
-  const lines: string[] = [];
+  const lines: string[] = []
 
   if (format === 'notion') {
-    lines.push(`# ${tree.content}`);
-    lines.push('');
-    renderNodeForNotion(tree, lines, 0);
+    lines.push(`# ${tree.content}`)
+    lines.push('')
+    renderNodeForNotion(tree, lines, 0)
   } else {
     // Obsidian format with wikilinks
-    lines.push(`# ${tree.content}`);
-    lines.push('');
-    renderNodeForObsidian(tree, lines, 0);
+    lines.push(`# ${tree.content}`)
+    lines.push('')
+    renderNodeForObsidian(tree, lines, 0)
   }
 
-  return lines.join('\n');
+  return lines.join('\n')
 }
 
 /**
  * Render node for Notion format
  */
 function renderNodeForNotion(node: MindMapTree, lines: string[], level: number): void {
-  const indent = '  '.repeat(level);
-  const prefix = level === 0 ? '' : `${indent}- `;
+  const indent = '  '.repeat(level)
+  const prefix = level === 0 ? '' : `${indent}- `
 
-  lines.push(`${prefix}${node.content}`);
+  lines.push(`${prefix}${node.content}`)
 
   if (node.children.length > 0) {
-    node.children.forEach(child => renderNodeForNotion(child, lines, level + 1));
+    node.children.forEach(child => renderNodeForNotion(child, lines, level + 1))
   }
 }
 
@@ -183,13 +174,13 @@ function renderNodeForNotion(node: MindMapTree, lines: string[], level: number):
  * Render node for Obsidian format
  */
 function renderNodeForObsidian(node: MindMapTree, lines: string[], level: number): void {
-  const indent = level > 0 ? '\t'.repeat(level) : '';
-  const prefix = level === 0 ? '' : '-';
+  const indent = level > 0 ? '\t'.repeat(level) : ''
+  const prefix = level === 0 ? '' : '-'
 
-  lines.push(`${indent}${prefix} ${node.content}`);
+  lines.push(`${indent}${prefix} ${node.content}`)
 
   if (node.children.length > 0) {
-    node.children.forEach(child => renderNodeForObsidian(child, lines, level + 1));
+    node.children.forEach(child => renderNodeForObsidian(child, lines, level + 1))
   }
 }
 
@@ -197,14 +188,8 @@ function renderNodeForObsidian(node: MindMapTree, lines: string[], level: number
  * Export mind map as downloadable markdown file
  */
 export function downloadMarkdown(tree: MindMapTree, filename: string = 'mindmap.md'): void {
-  const markdown = exportToNotionObsidian(tree, 'obsidian');
-  const blob = new Blob([markdown], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  const markdown = exportToNotionObsidian(tree, 'obsidian')
+  downloadFile(markdown, filename, { mimeType: 'text/markdown' })
 }
 
 /**
@@ -212,78 +197,76 @@ export function downloadMarkdown(tree: MindMapTree, filename: string = 'mindmap.
  * Google Docs exports to HTML, which we can parse
  */
 export async function importFromGoogleDocs(htmlContent: string): Promise<MindMapTree> {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlContent, 'text/html');
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(htmlContent, 'text/html')
 
   // Try to extract structure from headings and lists
-  const rootContent = doc.querySelector('h1')?.textContent || 'Imported Mind Map';
+  const rootContent = doc.querySelector('h1')?.textContent || 'Imported Mind Map'
 
   const buildTreeFromElement = (element: Element): MindMapTree => {
-    const children: MindMapTree[] = [];
+    const children: MindMapTree[] = []
 
     // Process list items
-    const listItems = element.querySelectorAll(':scope > li, :scope > p');
+    const listItems = element.querySelectorAll(':scope > li, :scope > p')
     listItems.forEach(item => {
-      const text = item.textContent?.trim();
+      const text = item.textContent?.trim()
       if (text) {
         children.push({
           id: Date.now().toString() + Math.random(),
           content: text,
           children: [],
-        });
+        })
       }
-    });
+    })
 
     return {
       id: Date.now().toString(),
       content: rootContent,
       children,
-    };
-  };
+    }
+  }
 
-  return buildTreeFromElement(doc.body);
+  return buildTreeFromElement(doc.body)
 }
 
 /**
  * Helper function to escape HTML
  */
 function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
 }
 
 /**
  * Create a presentation from mind map (series of slides)
  */
 export function createPresentation(tree: MindMapTree): void {
-  const slides: string[] = [];
+  const slides: string[] = []
 
   const createSlide = (node: MindMapTree): void => {
-    const children = node.children.slice(0, 5);
-    const bulletPoints = children
-      .map(child => `  - ${child.content}`)
-      .join('\n');
+    const children = node.children.slice(0, 5)
+    const bulletPoints = children.map(child => `  - ${child.content}`).join('\n')
 
     slides.push(`
 ---
 # ${node.content}
 
 ${bulletPoints}
-`);
+`)
 
-    node.children.forEach(child => createSlide(child));
-  };
+    node.children.forEach(child => createSlide(child))
+  }
 
-  createSlide(tree);
+  createSlide(tree)
 
   // Download as markdown presentation
-  const markdown = slides.join('\n');
-  const blob = new Blob([markdown], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mindmap-presentation.md';
-  a.click();
-  URL.revokeObjectURL(url);
+  const markdown = slides.join('\n')
+  const blob = new Blob([markdown], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'mindmap-presentation.md'
+  a.click()
+  URL.revokeObjectURL(url)
 }
