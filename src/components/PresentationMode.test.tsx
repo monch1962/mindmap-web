@@ -145,30 +145,72 @@ describe('PresentationMode', () => {
   it('should navigate slides with arrow keys', async () => {
     render(<PresentationMode {...defaultProps} />)
 
-    const slideCounter = screen.getByRole('status') // Slide counter is now role="status"
+    // Wait for component to be fully initialized
+    await waitFor(
+      () => {
+        expect(screen.getByRole('status')).toBeInTheDocument()
+      },
+      { timeout: 500 }
+    )
+
+    const slideCounter = screen.getByRole('status')
+
+    // Get initial slide (whatever it is)
+    await waitFor(
+      () => {
+        expect(slideCounter.textContent).toMatch(/\d+ \/ \d+/)
+      },
+      { timeout: 500 }
+    )
+
     const initialText = slideCounter.textContent
+    const [initialSlide] = initialText.split(' / ').map(Number)
 
-    // Go to next slide
-    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    // Go to next slide (if not on last slide)
+    if (initialSlide < 5) {
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
 
-    await waitFor(
-      () => {
-        const nextText = slideCounter.textContent
-        expect(nextText).not.toBe(initialText)
-      },
-      { timeout: 500 }
-    )
+      await waitFor(
+        () => {
+          const nextText = slideCounter.textContent
+          expect(nextText).not.toBe(initialText)
+        },
+        { timeout: 500 }
+      )
 
-    // Go to previous slide
-    fireEvent.keyDown(window, { key: 'ArrowLeft' })
+      // Go to previous slide
+      fireEvent.keyDown(window, { key: 'ArrowLeft' })
 
-    await waitFor(
-      () => {
-        const prevText = slideCounter.textContent
-        expect(prevText).toBe(initialText)
-      },
-      { timeout: 500 }
-    )
+      await waitFor(
+        () => {
+          const prevText = slideCounter.textContent
+          expect(prevText).toBe(initialText)
+        },
+        { timeout: 500 }
+      )
+    } else {
+      // If we start on last slide, test going backward first
+      fireEvent.keyDown(window, { key: 'ArrowLeft' })
+
+      await waitFor(
+        () => {
+          const prevText = slideCounter.textContent
+          expect(prevText).not.toBe(initialText)
+        },
+        { timeout: 500 }
+      )
+
+      // Go back to original slide
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
+
+      await waitFor(
+        () => {
+          const nextText = slideCounter.textContent
+          expect(nextText).toBe(initialText)
+        },
+        { timeout: 500 }
+      )
+    }
   })
 
   it('should navigate slides with Space and Enter', async () => {

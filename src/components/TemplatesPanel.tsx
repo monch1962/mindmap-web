@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { templates, getTemplatesByCategory, type Template } from '../utils/mindmapTemplates'
 import type { MindMapTree } from '../types'
 
@@ -12,6 +12,20 @@ export default function TemplatesPanel({ visible, onClose, onApplyTemplate }: Te
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
+
+  // Handle Escape key to close panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && visible) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [visible, onClose])
 
   if (!visible) return null
 

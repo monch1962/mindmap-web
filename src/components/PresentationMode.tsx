@@ -26,15 +26,18 @@ export default function PresentationMode({ visible, onClose, tree }: Presentatio
   const [isAnimating, setIsAnimating] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
 
-  // Reset slides when tree changes
+  // Reset slides when tree changes or when component becomes visible
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (tree) {
+    if (tree && visible) {
       const generatedSlides = generateSlides(tree)
       setSlides(generatedSlides)
       setCurrentSlideIndex(0)
+      setShowNotes(false)
+      setIsAnimating(false)
+      setDirection(null)
     }
-  }, [tree])
+  }, [tree, visible])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // Navigation callbacks (must be declared before the keyboard effect)
