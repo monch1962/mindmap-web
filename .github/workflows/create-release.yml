@@ -1,0 +1,132 @@
+name: Create Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Tag version: $VERSION"
+
+      - name: Verify package.json version matches tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch!"
+            echo "Package.json version: $PACKAGE_VERSION"
+            echo "Git tag version: $TAG_VERSION"
+            exit 1
+          fi
+          echo "✅ Version matches: $PACKAGE_VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build application
+        run: npm run build
+
+      - name: Create release artifacts
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          mkdir -p release-artifacts
+
+          # Create production build archives
+          cd dist
+          zip -r ../release-artifacts/mindmap-web-v$VERSION.zip .
+          tar -czf ../release-artifacts/mindmap-web-v$VERSION.tar.gz .
+          cd ..
+
+          # Create source code archive
+          git archive --format=zip --output=release-artifacts/mindmap-web-v$VERSION-source.zip HEAD
+          git archive --format=tar.gz --output=release-artifacts/mindmap-web-v$VERSION-source.tar.gz HEAD
+
+          # Create release notes
+          cat > release-artifacts/CHANGELOG.md << EOF
+          # Mind Map Web v$VERSION
+
+          ## Release Notes
+
+          ### What's New
+          - Production build of the Mind Map Web application
+          - Includes all dependencies and assets
+          - Ready to deploy as a static website
+
+          ### Installation
+          1. Download \`mindmap-web-v$VERSION.zip\` or \`mindmap-web-v$VERSION.tar.gz\`
+          2. Extract the archive
+          3. Serve the \`dist/\` directory using any static file server
+
+          ### Quick Start
+          \`\`\`bash
+          # Extract
+          unzip mindmap-web-v$VERSION.zip
+
+          # Serve with Python
+          cd mindmap-web-v$VERSION
+          python3 -m http.server 8000
+
+          # Or with Node.js
+          npx serve@latest -s . -p 8000
+          \`\`\`
+
+          Then visit http://localhost:8000
+
+          ### File Structure
+          \`\`\`
+          mindmap-web-v$VERSION/
+          ├── index.html          # Main application
+          ├── assets/             # Bundled JavaScript, CSS, images
+          ├── manifest.json       # PWA configuration
+          └── sw.js              # Service worker for offline support
+          \`\`\`
+
+          ### Source Code
+          The source code is available in \`mindmap-web-v$VERSION-source.zip\` for developers.
+
+          ## Build Information
+          - Build date: $(date)
+          - Node version: $(node --version)
+          - Commit: $(git rev-parse HEAD)
+          EOF
+
+          # List all artifacts
+          echo "## Release Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -la release-artifacts/ >> $GITHUB_STEP_SUMMARY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-artifacts/*
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          body_path: release-artifacts/CHANGELOG.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true

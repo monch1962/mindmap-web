@@ -1,0 +1,195 @@
+name: Build Artifacts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build application
+        run: npm run build
+
+      - name: Create versioned artifacts
+        run: |
+          # Get version and commit info
+          VERSION=$(node -p "require('./package.json').version")
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+
+          # Create artifacts directory
+          mkdir -p artifacts
+
+          # Create README with build info
+          cat > artifacts/README.md << EOF
+          # Mind Map Web Application - Build $VERSION
+
+          ## Build Information
+          - **Version**: $VERSION
+          - **Commit**: $COMMIT_HASH
+          - **Build Date**: $(date)
+          - **Node Version**: $(node --version)
+          - **Build ID**: $TIMESTAMP
+
+          ## How to Use
+          1. Download one of the archive files below
+          2. Extract the archive
+          3. Serve the files using any static file server
+
+          ### Quick Start Examples
+
+          **With Python:**
+          \`\`\`bash
+          # Extract
+          unzip mindmap-web-v$VERSION.zip -d mindmap-web
+
+          # Serve
+          cd mindmap-web
+          python3 -m http.server 8000
+          \`\`\`
+
+          **With Node.js:**
+          \`\`\`bash
+          # Extract  
+          tar -xzf mindmap-web-v$VERSION.tar.gz
+
+          # Install serve (if not installed)
+          npm install -g serve
+
+          # Serve
+          serve -s . -p 8000
+          \`\`\`
+
+          **With npx (no installation):**
+          \`\`\`bash
+          tar -xzf mindmap-web-v$VERSION.tar.gz
+          npx serve@latest -s . -p 8000
+          \`\`\`
+
+          Then open http://localhost:8000 in your browser.
+
+          ## Features
+          - Production-ready React application
+          - PWA (Progressive Web App) support
+          - Offline capability
+          - All dependencies bundled
+          - Minified and optimized assets
+
+          ## File Structure
+          \`\`\`
+          dist/
+          ├── index.html          # Main entry point
+          ├── assets/             # JavaScript, CSS, images
+          ├── manifest.json       # PWA manifest
+          └── sw.js              # Service worker
+          \`\`\`
+          EOF
+
+          # Create zip archive
+          cd dist
+          zip -r ../artifacts/mindmap-web-v$VERSION.zip .
+          zip -r ../artifacts/mindmap-web-latest-$COMMIT_HASH.zip .
+
+          # Create tar.gz archive  
+          tar -czf ../artifacts/mindmap-web-v$VERSION.tar.gz .
+          tar -czf ../artifacts/mindmap-web-latest-$COMMIT_HASH.tar.gz .
+
+          # Create standalone HTML for quick testing
+          cd ..
+          cat > artifacts/quick-test.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Mind Map Web - Quick Test</title>
+              <style>
+                  body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                  .container { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+                  h1 { color: #333; }
+                  .artifact { background: white; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #4CAF50; }
+                  .artifact h3 { margin-top: 0; }
+                  .artifact a { display: inline-block; margin-right: 10px; padding: 8px 16px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
+                  .artifact a:hover { background: #45a049; }
+                  code { background: #eee; padding: 2px 4px; border-radius: 3px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Mind Map Web Application</h1>
+                  <p>Version: <strong>$VERSION</strong> | Commit: <code>$COMMIT_HASH</code> | Built: $(date)</p>
+                  
+                  <div class="artifact">
+                      <h3>Versioned Builds</h3>
+                      <p>Stable releases with version numbers:</p>
+                      <a href="mindmap-web-v$VERSION.zip">Download ZIP (v$VERSION)</a>
+                      <a href="mindmap-web-v$VERSION.tar.gz">Download TAR.GZ (v$VERSION)</a>
+                  </div>
+                  
+                  <div class="artifact">
+                      <h3>Latest Build</h3>
+                      <p>Most recent build from main branch:</p>
+                      <a href="mindmap-web-latest-$COMMIT_HASH.zip">Download ZIP (latest)</a>
+                      <a href="mindmap-web-latest-$COMMIT_HASH.tar.gz">Download TAR.GZ (latest)</a>
+                  </div>
+                  
+                  <h2>Quick Start Instructions</h2>
+                  <ol>
+                      <li>Download one of the archives above</li>
+                      <li>Extract it: <code>unzip mindmap-web-v$VERSION.zip</code> or <code>tar -xzf mindmap-web-v$VERSION.tar.gz</code></li>
+                      <li>Serve the files:
+                          <ul>
+                              <li><strong>Python</strong>: <code>python3 -m http.server 8000</code></li>
+                              <li><strong>Node.js</strong>: <code>npx serve@latest -s . -p 8000</code></li>
+                              <li><strong>PHP</strong>: <code>php -S localhost:8000</code></li>
+                          </ul>
+                      </li>
+                      <li>Open <a href="http://localhost:8000">http://localhost:8000</a> in your browser</li>
+                  </ol>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifacts to workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: mindmap-web-artifacts
+          path: artifacts/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Output artifact download info
+        run: |
+          echo "## Build Artifacts Created 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Available Artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Versioned builds**: mindmap-web-v\$VERSION.zip and .tar.gz" >> $GITHUB_STEP_SUMMARY
+          echo "- **Latest build**: mindmap-web-latest-\$COMMIT_HASH.zip and .tar.gz" >> $GITHUB_STEP_SUMMARY
+          echo "- **Quick test page**: quick-test.html" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Download Instructions:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go to the 'Artifacts' section of this workflow run" >> $GITHUB_STEP_SUMMARY
+          echo "2. Download 'mindmap-web-artifacts'" >> $GITHUB_STEP_SUMMARY
+          echo "3. Extract to get all build files" >> $GITHUB_STEP_SUMMARY

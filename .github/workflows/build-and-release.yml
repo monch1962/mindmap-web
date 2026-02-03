@@ -1,0 +1,138 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build application
+        run: npm run build
+
+      - name: Create build artifacts
+        run: |
+          # Create timestamp for artifact naming
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+
+          # Create directory for artifacts
+          mkdir -p artifacts
+
+          # Create zip archive of dist directory
+          cd dist
+          zip -r ../artifacts/mindmap-web-$COMMIT_HASH-$TIMESTAMP.zip .
+
+          # Create tar.gz archive
+          tar -czf ../artifacts/mindmap-web-$COMMIT_HASH-$TIMESTAMP.tar.gz .
+
+          # Also create a versioned artifact
+          VERSION=$(node -p "require('../package.json').version")
+          zip -r ../artifacts/mindmap-web-v$VERSION.zip .
+          tar -czf ../artifacts/mindmap-web-v$VERSION.tar.gz .
+
+          cd ..
+
+          # Create a simple README for the artifacts
+          cat > artifacts/README.md << EOF
+          # Mind Map Web Application Build Artifacts
+
+          ## Build Information
+          - Version: $VERSION
+          - Commit: $COMMIT_HASH
+          - Build Date: $(date)
+          - Node Version: $(node --version)
+
+          ## Artifacts
+          1. **mindmap-web-$COMMIT_HASH-$TIMESTAMP.zip** - Latest build with commit hash
+          2. **mindmap-web-$COMMIT_HASH-$TIMESTAMP.tar.gz** - Latest build (compressed)
+          3. **mindmap-web-v$VERSION.zip** - Versioned build
+          4. **mindmap-web-v$VERSION.tar.gz** - Versioned build (compressed)
+
+          ## Installation
+          Extract the archive and serve the files using any static file server.
+
+          ### Quick Start with Python
+          \`\`\`bash
+          # Extract the archive
+          unzip mindmap-web-v$VERSION.zip -d mindmap-web
+
+          # Serve with Python
+          cd mindmap-web
+          python3 -m http.server 8000
+          \`\`\`
+
+          Then open http://localhost:8000 in your browser.
+
+          ### Quick Start with Node.js
+          \`\`\`bash
+          # Extract the archive
+          tar -xzf mindmap-web-v$VERSION.tar.gz
+
+          # Install serve globally
+          npm install -g serve
+
+          # Serve the application
+          serve -s . -p 8000
+          \`\`\`
+
+          ## Contents
+          The build contains a production-ready React application with:
+          - Minified JavaScript and CSS
+          - Optimized assets
+          - PWA support
+          - All dependencies bundled
+          EOF
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mindmap-web-build-${{ github.sha }}
+          path: artifacts/
+          retention-days: 30
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          prerelease: false
+
+      - name: Upload to GitHub Pages (optional)
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          cname: mindmap-web.example.com # Update with your domain if needed
+          keep_files: false
