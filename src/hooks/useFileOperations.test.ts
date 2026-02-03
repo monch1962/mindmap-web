@@ -136,6 +136,25 @@ describe('useFileOperations', () => {
         result.current.saveToFile('json')
       }).not.toThrow()
     })
+
+    it('should handle default case in switch statement', () => {
+      const { result } = renderHook(() =>
+        useFileOperations({
+          nodes: mockNodes,
+          edges: mockEdges,
+          setNodes: mockSetNodes,
+          setEdges: mockSetEdges,
+          fitView: mockFitView,
+        })
+      )
+
+      // This tests the default case in the switch statement
+      // We can't directly test it, but we can verify the function doesn't crash
+      expect(() => {
+        // @ts-expect-error - Testing invalid format to trigger default case
+        result.current.saveToFile('invalid-format')
+      }).not.toThrow()
+    })
   })
 
   describe('loadFromFile', () => {
@@ -164,6 +183,76 @@ describe('useFileOperations', () => {
         }).not.toThrow()
       })
     })
+
+    it('should handle file input creation', () => {
+      const { result } = renderHook(() =>
+        useFileOperations({
+          nodes: mockNodes,
+          edges: mockEdges,
+          setNodes: mockSetNodes,
+          setEdges: mockSetEdges,
+          fitView: mockFitView,
+        })
+      )
+
+      // Mock document.createElement to verify it's called
+      const mockInput = {
+        type: '',
+        accept: '',
+        click: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      } as unknown as HTMLInputElement
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockInput)
+
+      result.current.loadFromFile('json')
+
+      expect(createElementSpy).toHaveBeenCalledWith('input')
+      expect(mockInput.type).toBe('file')
+      expect(mockInput.accept).toBe('.json')
+      expect(mockInput.click).toHaveBeenCalled()
+
+      createElementSpy.mockRestore()
+    })
+
+    it('should set correct accept attribute for each format', () => {
+      const { result } = renderHook(() =>
+        useFileOperations({
+          nodes: mockNodes,
+          edges: mockEdges,
+          setNodes: mockSetNodes,
+          setEdges: mockSetEdges,
+          fitView: mockFitView,
+        })
+      )
+
+      const formatTests = [
+        { format: 'json' as const, expectedAccept: '.json' },
+        { format: 'freemind' as const, expectedAccept: '.mm' },
+        { format: 'opml' as const, expectedAccept: '.opml' },
+        { format: 'yaml' as const, expectedAccept: '.yaml,.yml' },
+        { format: 'markdown' as const, expectedAccept: '.md' },
+      ]
+
+      formatTests.forEach(({ format, expectedAccept }) => {
+        const mockInput = {
+          type: 'file',
+          accept: '',
+          click: vi.fn(),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        } as unknown as HTMLInputElement
+        const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockInput)
+
+        result.current.loadFromFile(format)
+
+        expect(mockInput.accept).toBe(expectedAccept)
+
+        createElementSpy.mockRestore()
+      })
+    })
   })
 
   describe('exportAsPNG', () => {
@@ -181,6 +270,76 @@ describe('useFileOperations', () => {
       expect(() => {
         result.current.exportAsPNG()
       }).not.toThrow()
+    })
+
+    it('should handle missing canvas context', () => {
+      const { result } = renderHook(() =>
+        useFileOperations({
+          nodes: mockNodes,
+          edges: mockEdges,
+          setNodes: mockSetNodes,
+          setEdges: mockSetEdges,
+          fitView: mockFitView,
+        })
+      )
+
+      // Mock canvas.getContext to return null
+      const mockCanvas = {
+        width: 1920,
+        height: 1080,
+        getContext: vi.fn().mockReturnValue(null),
+        toDataURL: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      } as unknown as HTMLCanvasElement
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockCanvas)
+
+      result.current.exportAsPNG()
+
+      expect(mockCanvas.getContext).toHaveBeenCalledWith('2d')
+
+      createElementSpy.mockRestore()
+    })
+
+    it('should handle missing SVG element', () => {
+      const { result } = renderHook(() =>
+        useFileOperations({
+          nodes: mockNodes,
+          edges: mockEdges,
+          setNodes: mockSetNodes,
+          setEdges: mockSetEdges,
+          fitView: mockFitView,
+        })
+      )
+
+      // Mock canvas context
+      const mockCtx = {
+        fillStyle: '',
+        fillRect: vi.fn(),
+        drawImage: vi.fn(),
+      }
+      const mockCanvas = {
+        width: 1920,
+        height: 1080,
+        getContext: vi.fn().mockReturnValue(mockCtx),
+        toDataURL: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      } as unknown as HTMLCanvasElement
+
+      // Mock querySelector to return null
+      const querySelectorSpy = vi.spyOn(document, 'querySelector').mockReturnValue(null)
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockCanvas)
+
+      result.current.exportAsPNG()
+
+      expect(querySelectorSpy).toHaveBeenCalledWith('.react-flow__viewport')
+      expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 1920, 1080)
+
+      querySelectorSpy.mockRestore()
+      createElementSpy.mockRestore()
     })
   })
 

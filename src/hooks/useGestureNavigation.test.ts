@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useGestureNavigation, useTouchControls, calculateFitZoom } from './useGestureNavigation'
 
@@ -436,6 +436,265 @@ describe('edge cases', () => {
     })
 
     expect(result.current.gestureState.scale).toBe(1)
+  })
+})
+
+// Tests for pointer event handling
+describe('pointer event handling', () => {
+  let mockContainer: HTMLElement
+  let mockSetPointerCapture: ReturnType<typeof vi.fn>
+  let mockZoomTo: ReturnType<typeof vi.fn>
+  let mockSetViewport: ReturnType<typeof vi.fn>
+  let mockGetViewport: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockContainer = document.createElement('div')
+    mockContainer.classList.add('react-flow')
+    mockSetPointerCapture = vi.fn()
+    mockZoomTo = vi.fn()
+    mockSetViewport = vi.fn()
+    mockGetViewport = vi.fn(() => ({ x: 0, y: 0, zoom: 1 }))
+
+    vi.spyOn(document, 'querySelector').mockReturnValue(mockContainer)
+
+    // Mock ReactFlow
+    vi.doMock('reactflow', () => ({
+      useReactFlow: () => ({
+        getViewport: mockGetViewport,
+        setViewport: mockSetViewport,
+        zoomTo: mockZoomTo,
+      }),
+    }))
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should set up event listeners on mount', () => {
+    const addEventListenerSpy = vi.spyOn(mockContainer, 'addEventListener')
+
+    renderHook(() => useGestureNavigation({}))
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointerdown', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointerup', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointercancel', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointerout', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('pointerleave', expect.any(Function))
+  })
+
+  it('should clean up event listeners on unmount', () => {
+    const removeEventListenerSpy = vi.spyOn(mockContainer, 'removeEventListener')
+
+    const { unmount } = renderHook(() => useGestureNavigation({}))
+    unmount()
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointerdown', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointerup', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointercancel', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointerout', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('pointerleave', expect.any(Function))
+  })
+
+  it('should handle pointer down event', () => {
+    renderHook(() => useGestureNavigation({}))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    // Simulate pointer down event
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Should set pointer capture
+    expect(mockSetPointerCapture).toHaveBeenCalledWith(1)
+  })
+
+  it('should handle pointer down when disabled', () => {
+    renderHook(() => useGestureNavigation({ enabled: false }))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Should not set pointer capture when disabled
+    expect(mockSetPointerCapture).not.toHaveBeenCalled()
+  })
+
+  it('should handle pointer up event', () => {
+    const { result } = renderHook(() => useGestureNavigation({}))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    // First simulate pointer down to set up state
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Then simulate pointer up
+    const pointerUpEvent = new PointerEvent('pointerup', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerUpEvent)
+
+    // Should reset gesture state
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
+  })
+
+  it('should handle pointer up when disabled', () => {
+    const { result } = renderHook(() => useGestureNavigation({ enabled: false }))
+
+    const pointerUpEvent = new PointerEvent('pointerup', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerUpEvent)
+
+    // Should maintain initial state
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
+  })
+
+  it('should handle pointer move when disabled', () => {
+    const { result } = renderHook(() => useGestureNavigation({ enabled: false }))
+
+    const pointerMoveEvent = new PointerEvent('pointermove', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerMoveEvent)
+
+    // Should not process gesture when disabled
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
+  })
+
+  it('should handle pointer cancel event', () => {
+    const { result } = renderHook(() => useGestureNavigation({}))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    // First simulate pointer down
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Then simulate pointer cancel
+    const pointerCancelEvent = new PointerEvent('pointercancel', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerCancelEvent)
+
+    // Should reset gesture state
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
+  })
+
+  it('should handle pointer out event', () => {
+    const { result } = renderHook(() => useGestureNavigation({}))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    // First simulate pointer down
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Then simulate pointer out
+    const pointerOutEvent = new PointerEvent('pointerout', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerOutEvent)
+
+    // Should reset gesture state
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
+  })
+
+  it('should handle pointer leave event', () => {
+    const { result } = renderHook(() => useGestureNavigation({}))
+
+    // Mock setPointerCapture on the container
+    mockContainer.setPointerCapture = mockSetPointerCapture as (pointerId: number) => void
+
+    // First simulate pointer down
+    const pointerDownEvent = new PointerEvent('pointerdown', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerDownEvent)
+
+    // Then simulate pointer leave
+    const pointerLeaveEvent = new PointerEvent('pointerleave', {
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    })
+    mockContainer.dispatchEvent(pointerLeaveEvent)
+
+    // Should reset gesture state
+    expect(result.current.gestureState).toEqual({
+      scale: 1,
+      rotation: 0,
+      panX: 0,
+      panY: 0,
+    })
   })
 })
 
