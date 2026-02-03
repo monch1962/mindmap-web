@@ -136,6 +136,42 @@ describe('IconPicker', () => {
 
       expect(searchInput).toHaveValue('')
     })
+
+    it('should clear search and category when All button is clicked', () => {
+      render(<IconPicker onSelect={mockOnSelect} onClose={mockOnClose} />)
+
+      // First select a category
+      const statusTab = screen.getByText(/Status \(\d+\)/)
+      fireEvent.click(statusTab)
+
+      // Then click All button
+      const allTab = screen.getByText(/All \(\d+\)/)
+      fireEvent.click(allTab)
+
+      // Should clear search and show all icons
+      const searchInput = screen.getByLabelText('Search icons by name or ID')
+      expect(searchInput).toHaveValue('')
+
+      // Both status and priority icons should be visible
+      expect(screen.getByLabelText('Yes (yes)')).toBeInTheDocument()
+      expect(screen.getByLabelText('Priority 1 (full-1)')).toBeInTheDocument()
+    })
+
+    it('should handle clicking All button when already selected', () => {
+      render(<IconPicker onSelect={mockOnSelect} onClose={mockOnClose} />)
+
+      // All button should be selected by default
+      const allTab = screen.getByText(/All \(\d+\)/)
+      expect(allTab).toHaveAttribute('aria-pressed', 'true')
+
+      // Click All button again (should still work)
+      fireEvent.click(allTab)
+
+      // Should remain selected and show all icons
+      expect(allTab).toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByLabelText('Yes (yes)')).toBeInTheDocument()
+      expect(screen.getByLabelText('Priority 1 (full-1)')).toBeInTheDocument()
+    })
   })
 
   describe('when closing the picker', () => {
