@@ -494,6 +494,97 @@ describe('useTouchControls edge cases', () => {
       renderHook(() => useTouchControls(true))
     }).not.toThrow()
   })
+
+  it('should handle touchmove event with single touch', () => {
+    // Mock touch device
+    Object.defineProperty(window, 'ontouchstart', {
+      value: {},
+      writable: true,
+    })
+
+    const mockContainer = document.createElement('div')
+    vi.spyOn(document, 'querySelector').mockReturnValue(mockContainer)
+    const addEventListenerSpy = vi.spyOn(mockContainer, 'addEventListener')
+
+    renderHook(() => useTouchControls(true))
+
+    // Should set up touchmove listener
+    expect(addEventListenerSpy).toHaveBeenCalledWith('touchmove', expect.any(Function), {
+      passive: false,
+    })
+  })
+
+  it('should handle touchmove event with two touches', () => {
+    // Mock touch device
+    Object.defineProperty(window, 'ontouchstart', {
+      value: {},
+      writable: true,
+    })
+
+    const preventDefaultSpy = vi.fn()
+    const mockContainer = document.createElement('div')
+    vi.spyOn(document, 'querySelector').mockReturnValue(mockContainer)
+
+    // Mock addEventListener to capture the handler
+    const capturedHandlers: Map<string, EventListener> = new Map()
+    const addEventListenerSpy = vi.spyOn(mockContainer, 'addEventListener')
+    addEventListenerSpy.mockImplementation((event, handler) => {
+      capturedHandlers.set(event as string, handler as EventListener)
+    })
+
+    renderHook(() => useTouchControls(true))
+
+    // Get the touchmove handler
+    const touchmoveHandler = capturedHandlers.get('touchmove')
+    expect(touchmoveHandler).toBeDefined()
+
+    // Simulate touch event with 2 touches
+    if (touchmoveHandler) {
+      const mockEvent = {
+        touches: [{}, {}], // 2 touches
+        preventDefault: preventDefaultSpy,
+      }
+      touchmoveHandler(mockEvent as unknown as Event)
+    }
+
+    // Should call preventDefault for two-finger touch
+    expect(preventDefaultSpy).toHaveBeenCalled()
+  })
+
+  it('should handle cleanup when unmounting', () => {
+    // Mock touch device
+    Object.defineProperty(window, 'ontouchstart', {
+      value: {},
+      writable: true,
+    })
+
+    const removeClassSpy = vi.spyOn(document.body.classList, 'remove')
+    const mockContainer = document.createElement('div')
+    vi.spyOn(document, 'querySelector').mockReturnValue(mockContainer)
+
+    const { unmount } = renderHook(() => useTouchControls(true))
+
+    unmount()
+
+    // Should clean up class
+    expect(removeClassSpy).toHaveBeenCalledWith('touch-device')
+    // The removeEventListener is called internally but we can't easily spy on it
+    // because it's captured in the useEffect cleanup
+  })
+
+  it('should handle rapid enable/disable toggling', () => {
+    const { result, rerender } = renderHook(({ enabled }) => useTouchControls(enabled), {
+      initialProps: { enabled: true },
+    })
+
+    // Toggle enabled state
+    rerender({ enabled: false })
+    rerender({ enabled: true })
+    rerender({ enabled: false })
+
+    // Should not crash
+    expect(result.current.isTouch).toBeDefined()
+  })
 })
 
 // Test for animateZoomTo function (deprecated but still in code)

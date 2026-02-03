@@ -264,7 +264,21 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
       const stored = localStorage.getItem(`offline_${key}`)
       if (!stored) return null
 
-      const { data, timestamp } = JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+
+      // Check if parsed object has required properties
+      if (
+        !parsed ||
+        typeof parsed !== 'object' ||
+        !('data' in parsed) ||
+        !('timestamp' in parsed)
+      ) {
+        // Invalid format, remove corrupted data
+        localStorage.removeItem(`offline_${key}`)
+        return null
+      }
+
+      const { data, timestamp } = parsed
 
       // Check if data is stale (older than 24 hours)
       const age = Date.now() - timestamp
@@ -307,6 +321,7 @@ export function useOfflineSync(options: OfflineSyncOptions = {}) {
    */
   const formatBytes = useCallback((bytes: number): string => {
     if (bytes === 0) return '0 Bytes'
+    if (bytes < 0) return '0 Bytes' // Handle negative numbers
 
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']

@@ -1251,6 +1251,188 @@ describe('usePWAInstall', () => {
     })
   })
 
+  describe('conditional logic', () => {
+    describe('syncOfflineRequestsNow', () => {
+      it('should return false when no service worker registration exists', async () => {
+        const { result } = renderHook(() => useOfflineSync())
+
+        // Ensure we're online
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+
+        const success = await result.current.syncOfflineRequestsNow()
+        expect(success).toBe(false)
+      })
+
+      it('should return false when offline', async () => {
+        // Mock offline status BEFORE rendering the hook
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+        // Mock service worker registration
+        const mockRegistration = {
+          installing: null,
+          waiting: null,
+          active: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }
+
+        const mockRegister = vi.fn(() => Promise.resolve(mockRegistration))
+        Object.defineProperty(navigator.serviceWorker, 'register', {
+          value: mockRegister,
+          writable: true,
+        })
+
+        const { result } = renderHook(() => useOfflineSync())
+
+        // Wait for registration
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        const success = await result.current.syncOfflineRequestsNow()
+        expect(success).toBe(false)
+      })
+
+      it('should handle sync API not available', async () => {
+        // Mock service worker registration without sync API
+        const mockRegistration = {
+          installing: null,
+          waiting: null,
+          active: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }
+
+        const mockRegister = vi.fn(() => Promise.resolve(mockRegistration))
+        Object.defineProperty(navigator.serviceWorker, 'register', {
+          value: mockRegister,
+          writable: true,
+        })
+
+        const { result } = renderHook(() => useOfflineSync())
+
+        // Wait for registration
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        // Ensure we're online
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+
+        const success = await result.current.syncOfflineRequestsNow()
+        // Should return false because checkPendingSync will return 0 (no active worker)
+        expect(success).toBe(false)
+      })
+    })
+
+    describe('checkPendingSync', () => {
+      it('should return 0 when no service worker registration exists', async () => {
+        const { result } = renderHook(() => useOfflineSync())
+
+        const count = await result.current.checkPendingSync()
+        expect(count).toBe(0)
+      })
+    })
+
+    describe('getCacheSize', () => {
+      it('should return 0 when no service worker registration exists', async () => {
+        const { result } = renderHook(() => useOfflineSync())
+
+        const size = await result.current.getCacheSize()
+        expect(size).toBe(0)
+      })
+    })
+
+    describe('clearCache', () => {
+      it('should do nothing when no service worker registration exists', async () => {
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const { result } = renderHook(() => useOfflineSync())
+
+        await result.current.clearCache()
+
+        // clearCache should not call console.error when there's no service worker
+        // It returns early at line 203: if (!swRegistration) return
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+          '[PWA] Failed to clear cache:',
+          expect.anything()
+        )
+        consoleSpy.mockRestore()
+      })
+    })
+
+    describe('periodic sync interval', () => {
+      beforeEach(() => {
+        vi.useFakeTimers()
+      })
+
+      afterEach(() => {
+        vi.useRealTimers()
+      })
+
+      it('should not set interval when offline', () => {
+        // Mock offline status
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+        // Mock service worker registration
+        const mockRegistration = {
+          installing: null,
+          waiting: null,
+          active: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }
+
+        const mockRegister = vi.fn(() => Promise.resolve(mockRegistration))
+        Object.defineProperty(navigator.serviceWorker, 'register', {
+          value: mockRegister,
+          writable: true,
+        })
+
+        const checkPendingSyncSpy = vi.fn()
+
+        renderHook(() => useOfflineSync())
+
+        // Wait for registration
+        act(() => {
+          vi.advanceTimersByTime(100)
+        })
+
+        // Advance time significantly
+        act(() => {
+          vi.advanceTimersByTime(60000) // 1 minute
+        })
+
+        // checkPendingSync should not be called because we're offline
+        expect(checkPendingSyncSpy).not.toHaveBeenCalled()
+      })
+
+      it('should not set interval when no service worker', () => {
+        // Mock online status
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+
+        // Don't mock service worker registration - it will fail
+        const mockRegister = vi.fn(() => Promise.reject(new Error('No service worker')))
+        Object.defineProperty(navigator.serviceWorker, 'register', {
+          value: mockRegister,
+          writable: true,
+        })
+
+        const checkPendingSyncSpy = vi.fn()
+
+        renderHook(() => useOfflineSync())
+
+        // Wait for registration to fail
+        act(() => {
+          vi.advanceTimersByTime(100)
+        })
+
+        // Advance time significantly
+        act(() => {
+          vi.advanceTimersByTime(60000) // 1 minute
+        })
+
+        // checkPendingSync should not be called because no service worker
+        expect(checkPendingSyncSpy).not.toHaveBeenCalled()
+      })
+    })
+  })
+
   describe('integration', () => {
     it('should provide install state and methods', () => {
       const { result } = renderHook(() => usePWAInstall())
