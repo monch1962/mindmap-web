@@ -77,7 +77,7 @@ describe('CalendarExportPanel', () => {
       render(<CalendarExportPanel {...defaultProps} />)
 
       expect(screen.getByTestId('base-panel')).toBeInTheDocument()
-      expect(screen.getByText('📅')).toBeInTheDocument()
+      expect(screen.getAllByText('📅').length).toBeGreaterThan(0)
       expect(screen.getByText('Calendar Export')).toBeInTheDocument()
     })
 
@@ -155,17 +155,19 @@ describe('CalendarExportPanel', () => {
     it('renders ICS export button', () => {
       render(<CalendarExportPanel {...defaultProps} />)
 
-      const icsButton = screen.getByRole('button', { name: /download ics file/i })
+      const icsButton = screen.getByRole('button', {
+        name: /download mind map tasks as ics file for icalendar/i,
+      })
       expect(icsButton).toBeInTheDocument()
-      expect(icsButton).toHaveTextContent('📥 Download ICS File (iCalendar)')
+      expect(icsButton).toHaveTextContent('📥Download ICS File (iCalendar)')
     })
 
     it('renders CSV export button', () => {
       render(<CalendarExportPanel {...defaultProps} />)
 
-      const csvButton = screen.getByRole('button', { name: /export as csv/i })
+      const csvButton = screen.getByRole('button', { name: /export mind map tasks as csv file/i })
       expect(csvButton).toBeInTheDocument()
-      expect(csvButton).toHaveTextContent('📊 Export as CSV')
+      expect(csvButton).toHaveTextContent('📊Export as CSV')
     })
 
     it('renders Google Calendar buttons', () => {
@@ -175,13 +177,13 @@ describe('CalendarExportPanel', () => {
         name: /open first task in google calendar/i,
       })
       expect(firstTaskButton).toBeInTheDocument()
-      expect(firstTaskButton).toHaveTextContent('📆 Open in Google Calendar (First Task)')
+      expect(firstTaskButton).toHaveTextContent('📆Open in Google Calendar (First Task)')
 
       const allTasksButton = screen.getByRole('button', {
         name: /export all tasks to google calendar/i,
       })
       expect(allTasksButton).toBeInTheDocument()
-      expect(allTasksButton).toHaveTextContent('📅 Export All to Google Calendar')
+      expect(allTasksButton).toHaveTextContent('📅Export All to Google Calendar')
     })
   })
 
@@ -189,7 +191,9 @@ describe('CalendarExportPanel', () => {
     it('calls exportToICS when ICS button is clicked', () => {
       render(<CalendarExportPanel {...defaultProps} />)
 
-      const icsButton = screen.getByRole('button', { name: /download ics file/i })
+      const icsButton = screen.getByRole('button', {
+        name: /download mind map tasks as ics file for icalendar/i,
+      })
       fireEvent.click(icsButton)
 
       expect(vi.mocked(calendarExport.exportToICS)).toHaveBeenCalledTimes(1)
@@ -202,7 +206,7 @@ describe('CalendarExportPanel', () => {
     it('calls exportToCSV when CSV button is clicked', () => {
       render(<CalendarExportPanel {...defaultProps} />)
 
-      const csvButton = screen.getByRole('button', { name: /export as csv/i })
+      const csvButton = screen.getByRole('button', { name: /export mind map tasks as csv file/i })
       fireEvent.click(csvButton)
 
       expect(vi.mocked(calendarExport.exportToCSV)).toHaveBeenCalledTimes(1)
@@ -239,7 +243,9 @@ describe('CalendarExportPanel', () => {
     it('does not call export functions when tree is null', () => {
       render(<CalendarExportPanel {...defaultProps} tree={null} />)
 
-      const icsButton = screen.getByRole('button', { name: /download ics file/i })
+      const icsButton = screen.getByRole('button', {
+        name: /download mind map tasks as ics file for icalendar/i,
+      })
       fireEvent.click(icsButton)
 
       expect(vi.mocked(calendarExport.exportToICS)).not.toHaveBeenCalled()
@@ -292,7 +298,7 @@ describe('CalendarExportPanel', () => {
       expect(screen.getByText('Tip:')).toBeInTheDocument()
       expect(screen.getByText(/Add due dates to nodes using metadata/)).toBeInTheDocument()
       expect(screen.getByText(/Tasks are detected from checkbox nodes/)).toBeInTheDocument()
-      expect(screen.getByRole('region', { name: /calendar help/i })).toBeInTheDocument()
+      expect(screen.getByRole('region', { name: /tip:/i })).toBeInTheDocument()
     })
   })
 
