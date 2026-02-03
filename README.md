@@ -111,6 +111,62 @@ npm run deploy
 
 Deploys to GitHub Pages automatically. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment options.
 
+### Automated Builds & Artifacts
+
+This project uses GitHub Actions to automatically build deployable artifacts on every push to the main branch.
+
+#### 📦 Download Latest Build
+
+1. **Go to GitHub Actions**: Navigate to the "Actions" tab in your repository
+2. **Select latest workflow**: Click on the most recent "Build Artifacts" workflow run
+3. **Download artifacts**: Scroll to the "Artifacts" section and download `mindmap-web-artifacts`
+4. **Extract and use**: The archive contains production-ready builds in multiple formats
+
+#### 🚀 Available Artifacts
+
+Each build includes:
+
+- **Versioned builds**: `mindmap-web-v{version}.zip` and `.tar.gz`
+- **Latest build**: `mindmap-web-latest-{commit}.zip` and `.tar.gz`
+- **Quick test page**: `quick-test.html` with download links
+
+#### 🏷️ Create Versioned Release
+
+To create a proper GitHub Release with versioned artifacts:
+
+```bash
+# Update version in package.json if needed
+# Create and push a tag
+git tag v1.0.2
+git push origin v1.0.2
+```
+
+This will trigger the release workflow and create a GitHub Release with:
+
+- Production build archives
+- Source code archives
+- Release notes
+- All artifacts downloadable from the "Releases" page
+
+#### ⚙️ Using the Build Artifacts
+
+```bash
+# Extract the archive
+unzip mindmap-web-v1.0.1.zip
+
+# Serve with Python (simplest)
+cd mindmap-web-v1.0.1
+python3 -m http.server 8000
+
+# Or with Node.js
+npx serve@latest -s . -p 8000
+
+# Open in browser
+open http://localhost:8000
+```
+
+The build is self-contained with all dependencies bundled, ready to deploy as a static website.
+
 ### Testing
 
 ```bash

@@ -29,23 +29,52 @@ npm run deploy
 
 ### 2. GitHub Actions Workflows
 
-Two workflows are configured:
+Three workflows are configured for automated builds and releases:
 
-#### CI Workflow (`/.github/workflows/ci.yml`)
+#### 1. Build Artifacts Workflow (`/.github/workflows/build-artifacts.yml`)
 
-- Runs on: push to `main`, `develop` branches and pull requests
-- Jobs:
-  - Lint and test
-  - TypeScript compilation
-  - Test coverage with Codecov integration
-  - Build verification
+- **Triggers**: Every push to `main` branch
+- **Jobs**:
+  - Lint code with ESLint
+  - Run all tests with coverage
+  - Build production bundle
+  - Create versioned artifacts (ZIP and TAR.GZ)
+  - Upload artifacts to GitHub Actions
+- **Artifacts**:
+  - `mindmap-web-latest-{commit}.zip` and `.tar.gz`
+  - `mindmap-web-v{version}.zip` and `.tar.gz`
+  - `quick-test.html` for easy deployment testing
 
-#### Deployment Workflow (`/.github/workflows/deploy.yml`)
+#### 2. Create Release Workflow (`/.github/workflows/create-release.yml`)
 
-- Runs on: push to `main` branch
-- Deploys to GitHub Pages automatically
-- Includes PWA configuration
-- Single-file build for optimal performance
+- **Triggers**: When pushing tags starting with `v` (e.g., `v1.0.2`)
+- **Creates**: Proper GitHub Releases with:
+  - Production build archives
+  - Source code archives
+  - Release notes
+  - All artifacts downloadable from "Releases" page
+
+#### 3. Build and Release Workflow (`/.github/workflows/build-and-release.yml`)
+
+- **Comprehensive workflow**: Combines testing, building, and artifact creation
+- **Optional deployment**: Can deploy to GitHub Pages
+- **Quality gates**: Ensures tests pass before creating artifacts
+
+#### Downloading Build Artifacts:
+
+1. **Go to GitHub Actions**: Navigate to the "Actions" tab in your repository
+2. **Select latest workflow**: Click on the most recent "Build Artifacts" workflow run
+3. **Download artifacts**: Scroll to the "Artifacts" section and download `mindmap-web-artifacts`
+4. **Extract and use**: The archive contains production-ready builds in multiple formats
+
+#### Creating Versioned Releases:
+
+```bash
+# Update version in package.json if needed
+# Create and push a tag
+git tag v1.0.2
+git push origin v1.0.2
+```
 
 ## Build Configuration
 
