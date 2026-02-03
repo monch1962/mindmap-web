@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Coverage directories
+coverage/
+*.lcov
+
+# Debug/test files
+debug-test.js
