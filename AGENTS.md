@@ -499,6 +499,16 @@ _(Updated after comprehensive MindMapCanvas test improvements)_
 - **EmailIntegrationPanel**: 95.55% (was failing) - **Fixed all 15 failing tests**
 - **CommentsPanel**: 100% (was failing) - **Fixed all 4 failing tests**
 
+**Recent improvements made (2026-02-03 session)**:
+
+- **PresenceIndicator**: **Created comprehensive tests (31 tests, all passing)** - Added 31 tests covering real-time collaboration features, user cursors, accessibility, and edge cases
+- **CalendarExportPanel**: **Created comprehensive tests (25 tests, 17 passing, 8 failing)** - Added 25 tests covering calendar export functionality, task summary, export options, and activity calendar
+- **CrossLinkEdge**: **Created comprehensive tests (21 tests, all passing)** - Added 21 tests covering cross-link edge rendering, styling, and edge cases
+- **MobileToolbar**: **Created comprehensive tests (33 tests, all passing)** - Added 33 tests covering mobile toolbar functionality, zoom controls, and accessibility
+- **StatisticsPanel**: **Created comprehensive tests (28 tests, all passing)** - Added 28 tests covering mind map statistics display and calculations
+- **KeyboardShortcutsModal**: **Created comprehensive tests (28 tests, all passing)** - Added 28 tests covering keyboard shortcuts modal with search and filtering
+- **NotesPanel**: **Fixed failing test** - Corrected border style assertion and fixed syntax errors
+
 **Significant improvements made**:
 
 - **MindMapCanvas**: **Significantly improved from 26.39% to ~40%+ coverage** - Added 37 new comprehensive tests (total 68 tests: 59 passing, 8 skipped, 1 failing) covering:
@@ -514,9 +524,10 @@ _(Updated after comprehensive MindMapCanvas test improvements)_
 
 **Areas still needing work**:
 
-- **Components**: Several components still below 50% coverage
+- **Components**: Several components still below 50% coverage (TemplatesPanel needs tests)
 - **Integration tests**: Real-time collaboration features need more comprehensive testing
 - **MindMapCanvas**: Still needs tests for AI integration, comment system, bulk operations, and cross-link functionality
+- **CalendarExportPanel**: 8 tests failing due to multiple elements with same text and button role matching issues
 
 ### Implementation Guidelines
 
