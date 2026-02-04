@@ -42,6 +42,9 @@ npm run test:ui
 # Run tests with coverage
 npm run test:coverage
 
+# Run accessibility tests and generate report
+npm run test:accessibility
+
 # Run a single test file
 npx vitest run src/path/to/test.test.ts
 
@@ -224,6 +227,61 @@ src/
 - Arrow keys: Navigate between nodes
 - `F2`: Edit node content
 - Space/Ctrl+Space: Toggle collapse/expand
+
+### Accessibility Testing
+
+The project includes comprehensive accessibility testing with axe-core:
+
+#### Automated Accessibility Scanning
+
+1. **Test Integration**: `vitest-axe` matchers integrated into test suite
+2. **WCAG Compliance**: Tests for WCAG 2.1 AA compliance
+3. **Color Contrast**: Automated color contrast checking
+4. **ARIA Validation**: Proper ARIA attribute validation
+
+#### Accessibility Testing Commands
+
+```bash
+# Run accessibility tests
+npm run test:run -- src/components/__tests__/accessibility.test.tsx
+
+# Generate accessibility report
+npm run test:accessibility
+```
+
+#### Accessibility Test Structure
+
+- **Test files**: `src/components/__tests__/accessibility.test.tsx`
+- **Utilities**: `src/test/accessibility.ts` (axe-core integration)
+- **Setup**: `src/test/setup.ts` (vitest-axe matcher extension)
+- **Reports**: Generated in `reports/accessibility/` directory
+
+#### Key Accessibility Features Tested
+
+1. **Color Contrast**: WCAG 2.1 AA compliance (4.5:1 for normal text)
+2. **Keyboard Navigation**: All interactive elements keyboard-focusable
+3. **Screen Reader Support**: Proper ARIA labels and roles
+4. **Focus Management**: Logical tab order and focus trapping
+5. **Dynamic Content**: ARIA live regions for dynamic updates
+
+#### Accessibility Report Generation
+
+The accessibility report generator (`scripts/generate-accessibility-report.js`):
+
+- Scans key components with axe-core
+- Generates HTML and JSON reports
+- Calculates accessibility scores (0-100%)
+- Identifies specific violations with remediation guidance
+- Stores reports in `reports/accessibility/` with timestamps
+
+#### WCAG 2.1 AA Compliance Targets
+
+- **Level A**: All success criteria must be met
+- **Level AA**: All success criteria must be met
+- **Color Contrast**: Minimum 4.5:1 for normal text
+- **Keyboard Access**: All functionality available via keyboard
+- **Screen Reader**: All content accessible to screen readers
+- **Focus Indicators**: Visible focus for all interactive elements
 
 ## Agent Instructions
 

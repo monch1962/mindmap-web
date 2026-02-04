@@ -35,15 +35,15 @@ export const colorSchemes: ColorScheme[] = [
     preview: ['#667eea', '#764ba2'],
     colors: {
       primary: '#667eea',
-      secondary: '#764ba2',
+      secondary: '#8b5cf6', // Brighter purple for better luminance difference
       background: '#ffffff',
-      surface: '#f9fafb',
+      surface: '#f3f4f6', // Darkened from #f9fafb to increase contrast with background
       text: '#111827',
       textSecondary: '#6b7280',
-      border: '#d1d5db',
+      border: '#6b7280',
       nodeBackground: '#ffffff',
-      nodeBorder: '#d1d5db',
-      edge: '#9ca3af',
+      nodeBorder: '#6b7280',
+      edge: '#4b5563',
     },
   },
   {
@@ -52,16 +52,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Calm blue and teal tones',
     preview: ['#0ea5e9', '#14b8a6'],
     colors: {
-      primary: '#0ea5e9',
-      secondary: '#14b8a6',
+      primary: '#0284c7',
+      secondary: '#0ea5e9', // Brighter blue for better luminance difference
       background: '#f0f9ff',
       surface: '#e0f2fe',
       text: '#0c4a6e',
       textSecondary: '#075985',
-      border: '#bae6fd',
+      border: '#0284c7',
       nodeBackground: '#ffffff',
-      nodeBorder: '#7dd3fc',
-      edge: '#38bdf8',
+      nodeBorder: '#0369a1',
+      edge: '#075985',
     },
   },
   {
@@ -70,16 +70,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Natural green palette',
     preview: ['#22c55e', '#16a34a'],
     colors: {
-      primary: '#22c55e',
-      secondary: '#16a34a',
+      primary: '#16a34a',
+      secondary: '#22c55e', // Brighter green for better luminance difference
       background: '#f0fdf4',
-      surface: '#dcfce7',
+      surface: '#d1fae5', // Darkened from #dcfce7 to increase contrast with background
       text: '#14532d',
       textSecondary: '#166534',
-      border: '#bbf7d0',
+      border: '#16a34a',
       nodeBackground: '#ffffff',
-      nodeBorder: '#86efac',
-      edge: '#4ade80',
+      nodeBorder: '#15803d',
+      edge: '#166534',
     },
   },
   {
@@ -88,16 +88,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Warm orange and coral',
     preview: ['#f97316', '#ef4444'],
     colors: {
-      primary: '#f97316',
-      secondary: '#ef4444',
+      primary: '#ea580c',
+      secondary: '#f97316', // Brighter orange for better luminance difference
       background: '#fff7ed',
       surface: '#ffedd5',
       text: '#7c2d12',
       textSecondary: '#9a3412',
-      border: '#fed7aa',
+      border: '#ea580c',
       nodeBackground: '#ffffff',
-      nodeBorder: '#fdba74',
-      edge: '#fb923c',
+      nodeBorder: '#c2410c',
+      edge: '#9a3412',
     },
   },
   {
@@ -106,16 +106,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Elegant purple tones',
     preview: ['#a855f7', '#7c3aed'],
     colors: {
-      primary: '#a855f7',
-      secondary: '#7c3aed',
+      primary: '#7c3aed',
+      secondary: '#a855f7', // Brighter purple for better luminance difference
       background: '#faf5ff',
       surface: '#f3e8ff',
       text: '#581c87',
       textSecondary: '#6b21a8',
-      border: '#e9d5ff',
+      border: '#7c3aed',
       nodeBackground: '#ffffff',
-      nodeBorder: '#c4b5fd',
-      edge: '#a78bfa',
+      nodeBorder: '#6d28d9',
+      edge: '#5b21b6',
     },
   },
   {
@@ -125,15 +125,15 @@ export const colorSchemes: ColorScheme[] = [
     preview: ['#1f2937', '#111827'],
     colors: {
       primary: '#6366f1',
-      secondary: '#8b5cf6',
+      secondary: '#ec4899', // Pink color for better luminance difference (was #8b5cf6)
       background: '#111827',
       surface: '#1f2937',
       text: '#f9fafb',
       textSecondary: '#d1d5db',
-      border: '#374151',
+      border: '#6b7280',
       nodeBackground: '#1f2937',
-      nodeBorder: '#4b5563',
-      edge: '#6b7280',
+      nodeBorder: '#9ca3af',
+      edge: '#d1d5db',
     },
   },
   {
@@ -143,15 +143,15 @@ export const colorSchemes: ColorScheme[] = [
     preview: ['#1e3a8a', '#172554'],
     colors: {
       primary: '#3b82f6',
-      secondary: '#2563eb',
+      secondary: '#60a5fa', // Brighter blue for better luminance difference
       background: '#0f172a',
       surface: '#1e293b',
       text: '#f1f5f9',
       textSecondary: '#cbd5e1',
-      border: '#334155',
+      border: '#64748b',
       nodeBackground: '#1e293b',
-      nodeBorder: '#475569',
-      edge: '#64748b',
+      nodeBorder: '#94a3b8',
+      edge: '#cbd5e1',
     },
   },
   {
@@ -160,16 +160,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Soft pink and rose tones',
     preview: ['#fb7185', '#f43f5e'],
     colors: {
-      primary: '#fb7185',
-      secondary: '#f43f5e',
+      primary: '#f43f5e',
+      secondary: '#fb7185', // Brighter pink for better luminance difference
       background: '#fff1f2',
       surface: '#ffe4e6',
       text: '#881337',
       textSecondary: '#9f1239',
-      border: '#fecdd3',
+      border: '#f43f5e',
       nodeBackground: '#ffffff',
-      nodeBorder: '#fda4af',
-      edge: '#fb7185',
+      nodeBorder: '#e11d48',
+      edge: '#be123c',
     },
   },
   {
@@ -178,16 +178,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Warm amber and yellow',
     preview: ['#f59e0b', '#d97706'],
     colors: {
-      primary: '#f59e0b',
-      secondary: '#d97706',
+      primary: '#d97706',
+      secondary: '#f59e0b', // Brighter amber for better luminance difference
       background: '#fffbeb',
       surface: '#fef3c7',
       text: '#78350f',
       textSecondary: '#92400e',
-      border: '#fde68a',
+      border: '#d97706',
       nodeBackground: '#ffffff',
-      nodeBorder: '#fcd34d',
-      edge: '#fbbf24',
+      nodeBorder: '#b45309',
+      edge: '#92400e',
     },
   },
   {
@@ -196,16 +196,16 @@ export const colorSchemes: ColorScheme[] = [
     description: 'Professional gray tones',
     preview: ['#64748b', '#475569'],
     colors: {
-      primary: '#64748b',
-      secondary: '#475569',
+      primary: '#475569',
+      secondary: '#64748b', // Brighter gray for better luminance difference
       background: '#f8fafc',
-      surface: '#f1f5f9',
+      surface: '#e2e8f0', // Darkened from #f1f5f9 to increase contrast with background
       text: '#0f172a',
       textSecondary: '#334155',
-      border: '#e2e8f0',
+      border: '#475569',
       nodeBackground: '#ffffff',
-      nodeBorder: '#cbd5e1',
-      edge: '#94a3b8',
+      nodeBorder: '#334155',
+      edge: '#1e293b',
     },
   },
 ]

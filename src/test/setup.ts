@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom'
 import { vi, afterAll } from 'vitest'
+import 'vitest-axe/extend-expect'
+
+// Extend expect with axe-core matchers
+import * as matchers from 'vitest-axe/matchers'
+import { expect } from 'vitest'
+expect.extend(matchers)
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -25,7 +31,7 @@ const originalConsoleWarn = console.warn
 const originalConsoleInfo = console.info
 
 // Only mock in test environment
-if (import.meta.env.MODE === 'test') {
+if (process.env.NODE_ENV === 'test') {
   console.error = vi.fn()
   console.warn = vi.fn()
   console.info = vi.fn()

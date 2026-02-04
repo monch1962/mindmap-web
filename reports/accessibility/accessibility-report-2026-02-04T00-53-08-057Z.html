@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accessibility Report - Mind Map Web App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .summary-card h3 {
+      color: #666;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .summary-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .score-excellent { color: #10b981; }
+    .score-good { color: #3b82f6; }
+    .score-fair { color: #f59e0b; }
+    .score-poor { color: #ef4444; }
+    
+    .component-reports {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .component-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .component-header {
+      background: #f8fafc;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .component-header h2 {
+      font-size: 1.5rem;
+      color: #1e293b;
+    }
+    
+    .component-score {
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      background: #f1f5f9;
+    }
+    
+    .component-content {
+      padding: 1.5rem;
+    }
+    
+    .violation {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .violation h3 {
+      color: #dc2626;
+      margin-bottom: 0.5rem;
+    }
+    
+    .violation h4 {
+      color: #7f1d1d;
+      margin: 1rem 0 0.5rem;
+    }
+    
+    .violation ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .violation li {
+      background: white;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      border-left: 4px solid #dc2626;
+    }
+    
+    .no-violations {
+      background: #d1fae5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      padding: 1rem;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .timestamp {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    @media (max-width: 768px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .component-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Accessibility Report</h1>
+      <p class="subtitle">Mind Map Web App - WCAG 2.1 AA Compliance</p>
+    </header>
+    
+    <div class="summary">
+      <div class="summary-card">
+        <h3>Components Scanned</h3>
+        <div class="value">3</div>
+      </div>
+      
+      <div class="summary-card">
+        <h3>Total Violations</h3>
+        <div class="value score-excellent">0</div>
+      </div>
+      
+      <div class="summary-card">
+        <h3>Average Score</h3>
+        <div class="value score-poor">
+          0.0%
+        </div>
+      </div>
+      
+      <div class="summary-card">
+        <h3>WCAG Level</h3>
+        <div class="value">AA</div>
+      </div>
+    </div>
+    
+    <div class="component-reports">
+      
+        <div class="component-card">
+          <div class="component-header">
+            <h2>ThemeSettingsPanel</h2>
+            <div class="component-score score-poor">
+              0%
+            </div>
+          </div>
+          <div class="component-content">
+            <p class="no-violations">No accessibility violations found! 🎉</p>
+          </div>
+        </div>
+      
+        <div class="component-card">
+          <div class="component-header">
+            <h2>IconPicker</h2>
+            <div class="component-score score-poor">
+              0%
+            </div>
+          </div>
+          <div class="component-content">
+            <p class="no-violations">No accessibility violations found! 🎉</p>
+          </div>
+        </div>
+      
+        <div class="component-card">
+          <div class="component-header">
+            <h2>SearchPanel</h2>
+            <div class="component-score score-poor">
+              0%
+            </div>
+          </div>
+          <div class="component-content">
+            <p class="no-violations">No accessibility violations found! 🎉</p>
+          </div>
+        </div>
+      
+    </div>
+    
+    <div class="timestamp">
+      Report generated: 04/02/2026, 11:53:08 am
+    </div>
+  </div>
+</body>
+</html>
+  

@@ -1,0 +1,307 @@
+{
+  "timestamp": "2026-02-04T00:53:08.057Z",
+  "summary": {
+    "totalComponents": 3,
+    "totalViolations": 0,
+    "averageScore": 0
+  },
+  "components": [
+    {
+      "component": "ThemeSettingsPanel",
+      "timestamp": "2026-02-04T00:53:07.998Z",
+      "violations": [],
+      "passes": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "error": {
+            "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+            "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+            "name": "TypeError",
+            "ruleId": "color-contrast",
+            "method": "#matches"
+          },
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "error-occurred",
+                  "data": {
+                    "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+                    "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+                    "name": "TypeError",
+                    "ruleId": "color-contrast",
+                    "method": "#matches"
+                  },
+                  "relatedNodes": [],
+                  "message": "Axe encountered an error; test the page for this type of problem manually",
+                  "impact": "serious"
+                }
+              ],
+              "impact": "serious",
+              "html": "<div aria-label=\"🎨 Theme Settings\" aria-modal=\"true\" role=\"dialog\" style=\"padding:20px;background:white\">Theme Settings Panel</div>",
+              "target": [":root"]
+            }
+          ]
+        }
+      ],
+      "inapplicable": [
+        {
+          "id": "meta-viewport",
+          "impact": null,
+          "tags": [
+            "cat.sensory-and-visual-cues",
+            "wcag2aa",
+            "wcag144",
+            "EN-301-549",
+            "EN-9.1.4.4",
+            "ACT",
+            "RGAAv4",
+            "RGAA-10.4.2"
+          ],
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "help": "Zooming and scaling must not be disabled",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/meta-viewport?application=axeAPI",
+          "nodes": []
+        },
+        {
+          "id": "valid-lang",
+          "impact": null,
+          "tags": [
+            "cat.language",
+            "wcag2aa",
+            "wcag312",
+            "TTv5",
+            "TT11.b",
+            "EN-301-549",
+            "EN-9.3.1.2",
+            "ACT",
+            "RGAAv4",
+            "RGAA-8.8.1"
+          ],
+          "description": "Ensure lang attributes have valid values",
+          "help": "lang attribute must have a valid value",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/valid-lang?application=axeAPI",
+          "nodes": []
+        }
+      ],
+      "score": 0
+    },
+    {
+      "component": "IconPicker",
+      "timestamp": "2026-02-04T00:53:08.031Z",
+      "violations": [],
+      "passes": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "error": {
+            "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+            "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+            "name": "TypeError",
+            "ruleId": "color-contrast",
+            "method": "#matches"
+          },
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "error-occurred",
+                  "data": {
+                    "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+                    "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+                    "name": "TypeError",
+                    "ruleId": "color-contrast",
+                    "method": "#matches"
+                  },
+                  "relatedNodes": [],
+                  "message": "Axe encountered an error; test the page for this type of problem manually",
+                  "impact": "serious"
+                }
+              ],
+              "impact": "serious",
+              "html": "<div aria-label=\"Icon Picker\" role=\"dialog\" style=\"padding:20px;background:white\">Icon Picker</div>",
+              "target": ["div[aria-label=\"Icon Picker\"]"]
+            }
+          ]
+        }
+      ],
+      "inapplicable": [
+        {
+          "id": "meta-viewport",
+          "impact": null,
+          "tags": [
+            "cat.sensory-and-visual-cues",
+            "wcag2aa",
+            "wcag144",
+            "EN-301-549",
+            "EN-9.1.4.4",
+            "ACT",
+            "RGAAv4",
+            "RGAA-10.4.2"
+          ],
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "help": "Zooming and scaling must not be disabled",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/meta-viewport?application=axeAPI",
+          "nodes": []
+        },
+        {
+          "id": "valid-lang",
+          "impact": null,
+          "tags": [
+            "cat.language",
+            "wcag2aa",
+            "wcag312",
+            "TTv5",
+            "TT11.b",
+            "EN-301-549",
+            "EN-9.3.1.2",
+            "ACT",
+            "RGAAv4",
+            "RGAA-8.8.1"
+          ],
+          "description": "Ensure lang attributes have valid values",
+          "help": "lang attribute must have a valid value",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/valid-lang?application=axeAPI",
+          "nodes": []
+        }
+      ],
+      "score": 0
+    },
+    {
+      "component": "SearchPanel",
+      "timestamp": "2026-02-04T00:53:08.057Z",
+      "violations": [],
+      "passes": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "error": {
+            "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+            "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+            "name": "TypeError",
+            "ruleId": "color-contrast",
+            "method": "#matches"
+          },
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "error-occurred",
+                  "data": {
+                    "message": "Cannot read properties of null (reading 'canvas') Skipping color-contrast rule.",
+                    "stack": "TypeError: Cannot read properties of null (reading 'canvas')\n    at _isIconLigature (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:15543:34)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27572:54\n    at Array.some (<anonymous>)\n    at hasRealTextChildren (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27571:35)\n    at Rule.colorContrastMatches [as matches] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:27533:12)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28206:26\n    at Array.filter (<anonymous>)\n    at Rule.gatherAndMatchNodes (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28204:21)\n    at Rule.run2 [as run] (/home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28064:22)\n    at /home/davidm/Projects/mindmap-web/node_modules/axe-core/axe.js:28859:14",
+                    "name": "TypeError",
+                    "ruleId": "color-contrast",
+                    "method": "#matches"
+                  },
+                  "relatedNodes": [],
+                  "message": "Axe encountered an error; test the page for this type of problem manually",
+                  "impact": "serious"
+                }
+              ],
+              "impact": "serious",
+              "html": "<div aria-label=\"Search Panel\" role=\"search\" style=\"padding:20px;background:white\">Search Panel</div>",
+              "target": ["div[aria-label=\"Search Panel\"]"]
+            }
+          ]
+        }
+      ],
+      "inapplicable": [
+        {
+          "id": "meta-viewport",
+          "impact": null,
+          "tags": [
+            "cat.sensory-and-visual-cues",
+            "wcag2aa",
+            "wcag144",
+            "EN-301-549",
+            "EN-9.1.4.4",
+            "ACT",
+            "RGAAv4",
+            "RGAA-10.4.2"
+          ],
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "help": "Zooming and scaling must not be disabled",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/meta-viewport?application=axeAPI",
+          "nodes": []
+        },
+        {
+          "id": "valid-lang",
+          "impact": null,
+          "tags": [
+            "cat.language",
+            "wcag2aa",
+            "wcag312",
+            "TTv5",
+            "TT11.b",
+            "EN-301-549",
+            "EN-9.3.1.2",
+            "ACT",
+            "RGAAv4",
+            "RGAA-8.8.1"
+          ],
+          "description": "Ensure lang attributes have valid values",
+          "help": "lang attribute must have a valid value",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/valid-lang?application=axeAPI",
+          "nodes": []
+        }
+      ],
+      "score": 0
+    }
+  ]
+}
