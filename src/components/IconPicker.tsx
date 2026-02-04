@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FREE_MIND_ICONS, ICON_CATEGORIES } from '../utils/icons'
+import { FREE_MIND_ICONS, ICON_CATEGORIES, type FreeMindIcon } from '../utils/icons'
 
 interface IconPickerProps {
   onSelect: (iconId: string | null) => void
@@ -20,6 +20,18 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
     : selectedCategory
       ? ICON_CATEGORIES.find(cat => cat.id === selectedCategory)?.icons || []
       : FREE_MIND_ICONS
+
+  // Group icons into rows for proper ARIA grid structure
+  const itemsPerRow = 6
+  const rows: FreeMindIcon[][] = []
+
+  // Group icons into rows
+  for (let i = 0; i < filteredIcons.length; i += itemsPerRow) {
+    rows.push(filteredIcons.slice(i, i + itemsPerRow))
+  }
+
+  // Calculate total rows (remove icon row + icon rows)
+  const totalRows = rows.length + 1 // +1 for remove icon row
 
   return (
     <div
@@ -157,60 +169,98 @@ export default function IconPicker({ onSelect, onClose, currentIcon }: IconPicke
         <div
           role="grid"
           aria-label={`Available icons${filteredIcons.length < FREE_MIND_ICONS.length ? ` (${filteredIcons.length} shown)` : ''}`}
+          aria-rowcount={totalRows}
+          aria-colcount={itemsPerRow}
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))',
+            display: 'flex',
+            flexDirection: 'column',
             gap: '8px',
           }}
         >
-          {/* Remove icon option */}
-          <button
-            onClick={() => onSelect(null)}
-            role="gridcell"
-            aria-label="Remove icon"
-            aria-selected={currentIcon === null}
-            style={{
-              padding: '8px',
-              border: currentIcon === null ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-              borderRadius: '8px',
-              background: currentIcon === null ? '#eff6ff' : 'white',
-              cursor: 'pointer',
-              fontSize: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '50px',
-            }}
-            title="Remove icon"
-          >
-            ❌
-          </button>
-
-          {/* Icon options */}
-          {filteredIcons.map(icon => (
-            <button
-              key={icon.id}
-              onClick={() => onSelect(icon.id)}
+          {/* Remove icon option - first row */}
+          <div role="row" aria-rowindex={1} style={{ display: 'flex', gap: '8px' }}>
+            <div
               role="gridcell"
-              aria-label={`${icon.name} (${icon.id})`}
-              aria-selected={currentIcon === icon.id}
+              aria-colindex={1}
               style={{
-                padding: '8px',
-                border: currentIcon === icon.id ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                borderRadius: '8px',
-                background: currentIcon === icon.id ? '#eff6ff' : 'white',
-                cursor: 'pointer',
-                fontSize: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '50px',
-                transition: 'all 0.2s ease',
+                flex: '1 0 calc((100% - 40px) / 6)', // 6 columns with 8px gaps
+                maxWidth: 'calc((100% - 40px) / 6)',
+                minWidth: '50px',
               }}
-              title={`${icon.name} (${icon.id})`}
             >
-              {icon.emoji}
-            </button>
+              <button
+                onClick={() => onSelect(null)}
+                aria-label="Remove icon"
+                aria-pressed={currentIcon === null}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: currentIcon === null ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  background: currentIcon === null ? '#eff6ff' : 'white',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '50px',
+                  boxSizing: 'border-box',
+                }}
+                title="Remove icon"
+              >
+                ❌
+              </button>
+            </div>
+          </div>
+
+          {/* Icon options - organized in rows */}
+          {rows.map((rowIcons, rowIndex) => (
+            <div
+              key={`row-${rowIndex}`}
+              role="row"
+              aria-rowindex={rowIndex + 2} // +2 because remove icon is row 1
+              style={{
+                display: 'flex',
+                gap: '8px',
+              }}
+            >
+              {rowIcons.map((icon, colIndex) => (
+                <div
+                  key={icon.id}
+                  role="gridcell"
+                  aria-colindex={colIndex + 1}
+                  style={{
+                    flex: '1 0 calc((100% - 40px) / 6)',
+                    maxWidth: 'calc((100% - 40px) / 6)',
+                    minWidth: '50px',
+                  }}
+                >
+                  <button
+                    onClick={() => onSelect(icon.id)}
+                    aria-label={`${icon.name} (${icon.id})`}
+                    aria-pressed={currentIcon === icon.id}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: currentIcon === icon.id ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      background: currentIcon === icon.id ? '#eff6ff' : 'white',
+                      cursor: 'pointer',
+                      fontSize: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '50px',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                    }}
+                    title={`${icon.name} (${icon.id})`}
+                  >
+                    {icon.emoji}
+                  </button>
+                </div>
+              ))}
+            </div>
           ))}
         </div>
 

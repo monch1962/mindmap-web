@@ -56,10 +56,12 @@ describe('WCAG 2.1 AA Compliance - Real Component Tests', () => {
       const grid = screen.getByRole('grid')
       expect(grid).toHaveAttribute('aria-label', 'Available icons')
 
-      // Grid cells should have aria-label
+      // Grid cells should contain buttons with aria-label
       const firstIcon = screen.getByLabelText('Yes (yes)')
       expect(firstIcon).toBeInTheDocument()
-      expect(firstIcon).toHaveAttribute('role', 'gridcell')
+      // The button should be inside a gridcell element
+      const gridcell = firstIcon.closest('[role="gridcell"]')
+      expect(gridcell).toBeInTheDocument()
     })
 
     it('should manage focus appropriately', async () => {
@@ -302,8 +304,8 @@ describe('WCAG 2.1 AA Compliance - Real Component Tests', () => {
 
       // Selected icon should have more than just color change
       const selectedIcon = screen.getByLabelText('Yes (yes)')
-      // Should have aria-selected or other indication
-      expect(selectedIcon).toHaveAttribute('aria-selected')
+      // Should have aria-pressed or other indication
+      expect(selectedIcon).toHaveAttribute('aria-pressed')
     })
 
     it('should have sufficient contrast for text', () => {

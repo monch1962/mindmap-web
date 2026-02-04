@@ -54,10 +54,7 @@ describe('Accessibility Scanning', () => {
       onClose: () => {},
     }
 
-    it.skip('should have no accessibility violations - IconPicker has ARIA role structure issues', async () => {
-      // This test is skipped because IconPicker has actual accessibility violations
-      // that need to be fixed in the component implementation
-      // Issue: gridcell elements need to be contained within row elements
+    it('should have no accessibility violations', async () => {
       const { container } = render(<IconPicker {...mockProps} />)
       const results = await axe(container)
       expect(results).toHaveNoViolations()
@@ -70,6 +67,40 @@ describe('Accessibility Scanning', () => {
       const iconButtons = getAllByRole('button')
       iconButtons.forEach(button => {
         expect(button).toHaveAccessibleName()
+      })
+    })
+
+    it('should support screen reader navigation through grid', () => {
+      const { getByRole, getAllByRole } = render(<IconPicker {...mockProps} />)
+
+      // Grid should have proper ARIA attributes
+      const grid = getByRole('grid', { name: 'Available icons' })
+      expect(grid).toBeInTheDocument()
+      expect(grid).toHaveAttribute('aria-rowcount')
+      expect(grid).toHaveAttribute('aria-colcount', '6')
+
+      // Grid should have rows
+      const rows = getAllByRole('row')
+      expect(rows.length).toBeGreaterThan(0)
+
+      // Each row should have gridcells
+      rows.forEach(row => {
+        const gridcells = row.querySelectorAll('[role="gridcell"]')
+        expect(gridcells.length).toBeGreaterThan(0)
+      })
+
+      // Icon buttons should be inside gridcells (filter out non-icon buttons)
+      const allButtons = getAllByRole('button')
+      const iconButtons = allButtons.filter(button => {
+        // Icon buttons have aria-label containing icon names
+        const label = button.getAttribute('aria-label')
+        return label && (label.includes('(') || label === 'Remove icon')
+      })
+
+      expect(iconButtons.length).toBeGreaterThan(0)
+      iconButtons.forEach(button => {
+        const gridcell = button.closest('[role="gridcell"]')
+        expect(gridcell).toBeInTheDocument()
       })
     })
   })

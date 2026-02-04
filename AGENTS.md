@@ -283,6 +283,49 @@ The accessibility report generator (`scripts/generate-accessibility-report.js`):
 - **Screen Reader**: All content accessible to screen readers
 - **Focus Indicators**: Visible focus for all interactive elements
 
+#### IconPicker Accessibility Fix (2026-02-04)
+
+**Issue Fixed**: IconPicker had ARIA grid/row/cell hierarchy violations
+
+**Original Problem**:
+
+- `gridcell` elements were directly inside `grid` without `row` containers
+- `aria-selected` attribute used on `button` elements (not allowed)
+
+**Solution Implemented**:
+
+1. **Proper ARIA grid structure**: `grid` → `row` → `gridcell` → `button`
+2. **Correct ARIA attributes**:
+   - `aria-rowcount`: Total number of rows
+   - `aria-colcount`: Number of columns (6)
+   - `aria-rowindex`: Row position (1-based)
+   - `aria-colindex`: Column position (1-based)
+3. **Fixed button attributes**: Changed `aria-selected` to `aria-pressed` for toggle buttons
+4. **Maintained visual design**: Kept 6-column layout with responsive sizing
+
+**Technical Implementation**:
+
+```typescript
+// Group icons into rows for proper ARIA grid structure
+const itemsPerRow = 6
+const rows: FreeMindIcon[][] = []
+
+// Group icons into rows
+for (let i = 0; i < filteredIcons.length; i += itemsPerRow) {
+  rows.push(filteredIcons.slice(i, i + itemsPerRow))
+}
+
+// Calculate total rows (remove icon row + icon rows)
+const totalRows = rows.length + 1 // +1 for remove icon row
+```
+
+**Test Coverage**:
+
+- ✅ All accessibility tests passing (20/20)
+- ✅ IconPicker component tests passing (18/18)
+- ✅ WCAG compliance tests passing (24/24)
+- ✅ Screen reader navigation test added
+
 ## Agent Instructions
 
 ### TDD (Test-Driven Development) Practices

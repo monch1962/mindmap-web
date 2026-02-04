@@ -75,7 +75,7 @@ describe('IconPicker', () => {
       render(<IconPicker onSelect={mockOnSelect} onClose={mockOnClose} currentIcon="yes" />)
 
       const yesIcon = screen.getByLabelText('Yes (yes)')
-      expect(yesIcon).toHaveAttribute('aria-selected', 'true')
+      expect(yesIcon).toHaveAttribute('aria-pressed', 'true')
     })
   })
 
