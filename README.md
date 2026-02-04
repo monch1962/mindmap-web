@@ -7,6 +7,7 @@ A modern, feature-rich mind mapping application built with React, TypeScript, an
 ![Tests](https://img.shields.io/badge/tests-1555%20passing-success)
 ![Coverage](https://img.shields.io/badge/coverage-73.9%25-yellow)
 ![Build Status](https://img.shields.io/badge/build-passing-success)
+![Accessibility](https://img.shields.io/badge/accessibility-WCAG%202.1%20AA-blue)
 
 ## Features
 
@@ -245,6 +246,49 @@ npm run test:coverage
 | `Escape`           | Close panels             |
 
 _For the complete keyboard shortcuts reference, see the [API Documentation](docs/api.md#keyboard-shortcuts-reference)._
+
+## Accessibility
+
+Mind Map Web App is committed to providing an accessible experience for all users. The application follows **WCAG 2.1 AA** guidelines and includes comprehensive accessibility features:
+
+### Key Accessibility Features
+
+- **✅ Keyboard Navigation**: All functionality available via keyboard
+- **✅ Screen Reader Support**: Proper ARIA labels, roles, and descriptions
+- **✅ Color Contrast**: WCAG 2.1 AA compliant color schemes (4.5:1 minimum)
+- **✅ Focus Management**: Logical tab order and focus trapping for modals
+- **✅ Dynamic Content**: ARIA live regions for screen reader announcements
+- **✅ Responsive Design**: Works on all screen sizes and devices
+
+### Accessibility Testing
+
+The project includes automated accessibility testing with **axe-core**:
+
+```bash
+# Run accessibility tests
+npm run test:run -- src/components/__tests__/accessibility.test.tsx
+
+# Generate accessibility report
+npm run test:accessibility
+```
+
+Accessibility reports are generated in `reports/accessibility/` with detailed violation information and remediation guidance.
+
+### Accessibility Compliance
+
+- **WCAG 2.1 Level A**: ✅ All success criteria met
+- **WCAG 2.1 Level AA**: ✅ All success criteria met
+- **Color Contrast**: ✅ Minimum 4.5:1 for normal text
+- **Keyboard Access**: ✅ All interactive elements keyboard-focusable
+- **Screen Reader**: ✅ All content accessible to screen readers
+
+### Reporting Accessibility Issues
+
+If you encounter any accessibility issues, please:
+
+1. Check the accessibility report: `npm run test:accessibility`
+2. File an issue on GitHub with details about the problem
+3. Include browser/device information and screen reader used
 
 ## Usage Guide
 

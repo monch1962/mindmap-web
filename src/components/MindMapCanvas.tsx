@@ -1051,7 +1051,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div id="mindmap-canvas" style={{ width: '100vw', height: '100vh' }} tabIndex={-1}>
       <ReactFlow
         nodes={transformedNodes}
         edges={edges}
@@ -1163,7 +1163,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
 
         {/* Search Panel */}
         {showSearch && (
-          <Panel position="top-center" style={{ top: '60px' }}>
+          <Panel id="search-panel" position="top-center" style={{ top: '60px' }} tabIndex={-1}>
             <SearchPanel
               onSearch={handleSearch}
               onNext={handleNextResult}
@@ -1301,7 +1301,7 @@ function MindMapCanvas({ initialData }: MindMapCanvasProps) {
           </button>
         </Panel>
 
-        <Panel position="top-right" className="controls-panel">
+        <Panel id="main-controls" position="top-right" className="controls-panel" tabIndex={-1}>
           <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
             <button
               onClick={() => {
